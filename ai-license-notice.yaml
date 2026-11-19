@@ -1,0 +1,40 @@
+schema: https://oss.korext.com/ai-license/schema
+version: '1.0'
+repo:
+  owner: dezhidki
+  name: dude
+  url: https://github.com/dezhidki/dude
+notice_generated: '2026-11-19T07:58:41.617Z'
+attestation_source: .ai-attestation.yaml
+ai_provenance:
+  assisted_commits: 1
+  total_commits: 1
+  percentage: 100
+tools_used:
+  - name: Claude Code
+    identifier: claude-code
+    first_seen: '2026-11-19'
+    last_seen: '2026-11-19'
+    commit_count: 1
+human_review:
+  reviewed: true
+  reviewers_of_record: developers
+governance:
+  engine: null
+  last_scan: null
+  result: null
+  score: null
+  packs: []
+  findings:
+    critical: 0
+    high: 0
+    medium: 0
+    low: 0
+  proof_bundle_url: null
+  proof_bundle_count: 0
+verification:
+  attestation_file: .ai-attestation.yaml
+  online_report: https://oss.korext.com/ai-attestation/report/dezhidki/dude
+specification:
+  url: https://oss.korext.com/ai-license
+  license: CC0 1.0 Universal

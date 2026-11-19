@@ -1,0 +1,22 @@
+# Craft Anything workspace: the build agent's notes, captures and logs. Not part of the app.
+/agent-session.jsonl
+/build-activity.log
+/capture/
+/checks/
+/craft.json
+/feed.json
+/inbox/
+/investigation.cany/
+/questions.json
+/reference/
+/usage.json
+
+# Build output (app/desktop/ui is copied from app/dist by `npm run ui`)
+node_modules/
+app/dist/
+app/desktop/dist/
+app/desktop/ui/
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -1,0 +1,23 @@
+{
+  "name": "dude",
+  "productName": "dude",
+  "version": "0.1.0",
+  "description": "no super. just email.",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "ui": "cd .. && npm run build && cd desktop && node -e \"require('fs').cpSync('../dist','ui',{recursive:true})\"",
+    "start": "npm run ui && electron . --no-sandbox",
+    "test": "node ics.test.js && node threads.test.js && node auth-errors.test.js && node files.test.js && node calendar.test.js && node invite.test.js",
+    "package": "npm run ui && electron-builder --config electron-builder.json"
+  },
+  "dependencies": {
+    "imapflow": "^2.12.1",
+    "mailparser": "^3.14.5",
+    "nodemailer": "^10.6.0"
+  },
+  "devDependencies": {
+    "electron": "^45.3.3",
+    "electron-builder": "^26.18.0"
+  }
+}
