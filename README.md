@@ -107,11 +107,12 @@ npm run package     # installer for the current OS, into app/desktop/dist
 ```
 
 - Tests: `cd app && npm test` (plain Node, no install needed).
+- Lint + format: `cd app && npm ci && npm run lint` ([Biome](https://biomejs.dev)). `npm run fix` applies the fixes.
 - Separate profile: `DUDE_PROFILE=/some/folder npm start`.
 
 ## Release
 
-- CI: `.github/workflows/build.yml`. Builds Linux, macOS, Windows on every push to `main`. Tests run first.
+- CI: `.github/workflows/build.yml`. Builds Linux, macOS, Windows on every push to `main`. Lint and tests run first.
 - Push to `main` replaces the `nightly` prerelease.
 - Versioned release: push a tag. Version comes from the tag.
 

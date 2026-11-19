@@ -2,19 +2,11 @@
   "appId": "sh.deni.dude",
   "productName": "dude",
   "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
-  "files": [
-    "ui/**",
-    "*.js",
-    "*.png",
-    "package.json",
-    "!*.test.js"
-  ],
+  "files": ["ui/**", "*.js", "*.png", "package.json", "!*.test.js"],
   "linux": {
     "target": "AppImage",
     "category": "Office",
-    "executableArgs": [
-      "--no-sandbox"
-    ],
+    "executableArgs": ["--no-sandbox"],
     "icon": "icon.png"
   },
   "mac": {

@@ -29,8 +29,14 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: app/desktop/package-lock.json
+          cache-dependency-path: |
+            app/package-lock.json
+            app/desktop/package-lock.json
       - run: npm ci
+      - name: Lint (Biome)
+        if: runner.os == 'Linux' # Windows checks out CRLF, which the formatter would flag
+        working-directory: app
+        run: npm ci && npm run lint
       - run: npm test
         working-directory: app
       - name: Version from tag

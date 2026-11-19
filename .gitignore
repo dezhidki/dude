@@ -11,7 +11,7 @@
 /reference/
 /usage.json
 
-# Build output (app/desktop/ui is copied from app/dist by `npm run ui`)
+# Build output: `npm run build` makes app/dist, `npm run ui` makes app/desktop/ui
 node_modules/
 app/dist/
 app/desktop/dist/
