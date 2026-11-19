@@ -84,6 +84,7 @@
     S.authNeeded = { email: (info && info.email) || S.account.email, provider: (info && info.provider) || S.account.provider };
     if (S.screen !== 'signin') render();
   }
+  const errText = e => String((e && e.message) || e).replace(/^Error invoking remote method 'mail': (Error: )?/, '');
   function toast(html, ms = 4000) {
     if (/SIGNIN_NEEDED/.test(html)) { needSignIn(); return; }
     const d = document.createElement('div');
@@ -113,14 +114,14 @@
       S.fileUrl = URL.createObjectURL(new Blob([bytes], { type }));
       S.overlay = { kind: 'file', url: S.fileUrl, name: r.name, pdf: type === 'application/pdf', folder, uid, index };
       renderLayer();
-    } catch (e) { toast('file no open: ' + esc(String(e.message || e).replace(/^Error invoking remote method 'mail': (Error: )?/, ''))); }
+    } catch (e) { toast('file no open: ' + esc(errText(e))); }
   }
   async function openFile(folder, uid, name, index, mode) {
     if (!B.attachment || !folder || !uid) { toast('demo. no real file.'); return; }
     if (mode === 'open' && B.attachmentData && previewable(name, '')) return viewFile(folder, uid, name, index);
     toast(mode === 'save' ? 'saving…' : 'opening…', 1500);
     try { const r = await B.attachment(folder, uid, name, index, mode); if (mode === 'save') toast(`saved: ${esc(r.name)}`); }
-    catch (e) { toast('file no open: ' + esc(String(e.message || e).replace(/^Error invoking remote method 'mail': (Error: )?/, ''))); }
+    catch (e) { toast('file no open: ' + esc(errText(e))); }
   }
 
   // ---------- data ----------
@@ -196,7 +197,7 @@
   const snapKey = () => 'snap:' + meAddr();
   function cachedList(view) {
     if (S.cache[view]) return S.cache[view];
-    if (view === 'inbox' && !B.demo) { const snap = LS.get(snapKey(), null); if (snap) return (S.cache.inbox = snap); }
+    if (view === 'inbox' && !B.demo) { const snap = LS.get(snapKey(), null); if (snap) { S.cache.inbox = snap; return snap; } }
     return null;
   }
   async function load(view = S.view, keepSel = false) {
@@ -375,7 +376,7 @@
   function withLocalDraft(t, list) {
     const c = S.replyDrafts.get(keyOf(t));
     const out = list.filter(m => !(m.draft && c && c.draftUid && m.uid === c.draftUid));
-    if (c && !blankDraft(c)) out.push({ id: 'local-draft', draft: true, local: c, to: c.to.split(/[,;]/).map(x => ({ name: x.replace(/<.*>/, '').trim(), address: (/<([^>]+)>/.exec(x) || [, x.trim()])[1] })), text: c.text, date: Date.now() });
+    if (c && !blankDraft(c)) out.push({ id: 'local-draft', draft: true, local: c, to: c.to.split(/[,;]/).map(x => ({ name: x.replace(/<.*>/, '').trim(), address: (/<([^>]+)>/.exec(x) || [null, x.trim()])[1] })), text: c.text, date: Date.now() });
     return out;
   }
   async function mergeRelated(t) {
@@ -570,7 +571,9 @@ ${esc(st.signature)}</textarea></div></section>
     const mine = inThread && { id: messageId, messageId, pending: true, from: { name: (S.account && S.account.name) || '', address: meAddr() }, to: parse(c.to), cc: parse(c.cc), date: Date.now(), subject: c.subject, text: c.text, html: window.Markdown.toHtml(c.text), references: [c.references, c.inReplyTo].filter(Boolean).join(' '), attachments: (c.files || []).map(f => ({ filename: f.name, size: f.size, type: f.type })) };
     S.composer = null; S.pop = false;
     if (mine) {
-      (S.sentIn[keyOf(inThread)] = S.sentIn[keyOf(inThread)] || []).push(mine);
+      const k = keyOf(inThread);
+      S.sentIn[k] = S.sentIn[k] || [];
+      S.sentIn[k].push(mine);
       if (S.open === inThread) { S.msgs.push(mine); S.expanded.add(S.msgs.length - 1); S.focus = S.msgs.length - 1; }
     }
     if (S.screen === 'compose') leaveCompose(true); else render();
@@ -631,7 +634,7 @@ ${esc(st.signature)}</textarea></div></section>
     if (S.screen === 'thread') closeThread();
     S.picked.clear(); S.sel = Math.min(S.sel, Math.max(0, visible().length - 1));
     render(); renderLayer();
-    toast(`remind ${esc(new Date(until).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }))} <span class="key">Z</span> undo`);
+    toast(`remind ${esc(whenLabel(until))} <span class="key">Z</span> undo`);
   }
 
   // ---------- calendar ----------
@@ -680,7 +683,7 @@ ${esc(st.signature)}</textarea></div></section>
   async function connectCalendar() {
     toast('login window…');
     try { await B.calConnect(); S.cal.status = { connected: true, canConnect: true }; S.cal.days.clear(); S.cal.error = null; toast('calendar linked.'); ensureCalDay(true); render(); }
-    catch (e) { toast('calendar link fail: ' + esc(String(e.message || e).replace(/^Error invoking remote method 'mail': (Error: )?/, '')), 8000); }
+    catch (e) { toast('calendar link fail: ' + esc(errText(e)), 8000); }
   }
   const events = () => LS.get('events', []);
   function eventDialog(at = {}) {
@@ -733,7 +736,6 @@ ${esc(st.signature)}</textarea></div></section>
     } catch (e) { toast('event kept. invite fail: ' + esc(e.message || e)); }
   }
   function dayMove(d) { S.calDay = dayStart(S.calDay + d * DAY + 2 * 3600e3); render(); }
-  const errText = e => String((e && e.message) || e).replace(/^Error invoking remote method 'mail': (Error: )?/, '');
   function findEvent(id) {
     for (const d of S.cal.days.values()) { const x = (d.list || []).find(e => String(e.id) === id); if (x) return x; }
     return events().find(e => String(e.id) === id) || null;
@@ -889,7 +891,7 @@ ${esc(st.signature)}</textarea></div></section>
       S.cal.days.clear(); ensureCalDay(true);
     } catch (e) {
       keep(before); mark(before || '');
-      toast('rsvp fail: ' + esc(String(e.message || e).replace(/^Error invoking remote method 'mail': (Error: )?/, '')), 8000);
+      toast('rsvp fail: ' + esc(errText(e)), 8000);
     }
   }
 
@@ -1115,7 +1117,8 @@ ${esc(st.signature)}</textarea></div></section>
       for (const f of inp.files) {
         if (f.size > 25 * 1048576) { toast(`${esc(f.name)} too big. 25 mb max.`); continue; }
         const data = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(',')[1] || ''); fr.onerror = () => r(''); fr.readAsDataURL(f); });
-        (c.files = c.files || []).push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data });
+        c.files = c.files || [];
+        c.files.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data });
       }
       if (S.composer === c) { render(); scheduleDraftSave(); }
     };
@@ -1328,18 +1331,17 @@ ${esc(st.signature)}</textarea></div></section>
 
   function renderSignin() {
     document.body.classList.add('on-signin');
-    const desk = DESKTOP;
     root.innerHTML = `<div class="signin"><div class="signin-inner">
         <div class="logo"><span class="logo-mark">d</span><span class="logo-word">dude</span></div>
         <div class="prompt" role="heading" aria-level="1"><span>no super.</span> <span>just email.</span></div>
         <button class="btn-main" data-a="start">go</button>
         ${S.more ? `<div class="signin-more">
-          ${desk ? `<input type="email" placeholder="you@uni.fi" data-a="email" value="${esc(S.email || '')}" autocomplete="email">
+          ${DESKTOP ? `<input type="email" placeholder="you@uni.fi" data-a="email" value="${esc(S.email || '')}" autocomplete="email">
           <button data-a="signin-ms">microsoft login</button>
           <button data-a="signin-g">google login</button>
           <p>login like thunderbird. uni say ok.</p>` :
           `<button data-a="demo">try demo</button><p>demo only. real mail need desktop app.</p>`}
-          ${desk ? `<button data-a="demo">try demo</button>` : ''}
+          ${DESKTOP ? `<button data-a="demo">try demo</button>` : ''}
         </div>` : ''}
       </div></div>`;
   }
@@ -1485,7 +1487,7 @@ ${esc(c.text)}</textarea></div>
   const weekStartsOn = () => LS.get('cal:monday', false) ? 1 : 0;
   const weekStartOf = t => { const d = new Date(dayStart(t)); d.setDate(d.getDate() - ((d.getDay() - weekStartsOn() + 7) % 7)); return d.getTime(); };
   const isAllDay = x => !!x.allDay || x.end - x.start >= DAY;
-  const fmtRange = (a, b) => new Date(a).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) + ' – ' + fmtTime(b);
+  const fmtRange = (a, b) => fullDate(a) + ' – ' + fmtTime(b);
   function weekDays() {
     const ws = weekStartOf(S.calDay), all = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
     return LS.get('cal:weekends', true) ? all : all.filter(t => { const g = new Date(t).getDay(); return g !== 0 && g !== 6; });
@@ -1653,7 +1655,7 @@ ${esc(c.text)}</textarea></div>
   const ACTIONS = {
     start: () => { S.more = true; renderSignin(); root.querySelector('[data-a="email"]')?.focus(); },
     'signin-ms': () => signIn('microsoft'), 'signin-g': () => signIn('google'),
-    demo: async () => { const D = window.DemoBackend; useBackend(D); S.account = (await D.accounts())[0]; S.screen = 'list'; load('inbox'); },
+    demo: async () => { const D = window.DemoBackend; B = D; S.account = (await D.accounts())[0]; S.screen = 'list'; load('inbox'); },
     'go-inbox': () => { if (S.pane === 'calendar' && window.innerWidth <= 768) { S.pane = 'contact'; LS.set('pane', S.pane); } goto('inbox', S.split)(); },
     cal: () => COMMANDS.find(c => c.k[0] === '0').run(),
     menu: () => S.menu ? closeMenu() : openMenu(), 'close-menu': () => closeMenu(),
@@ -1665,7 +1667,7 @@ ${esc(c.text)}</textarea></div>
       try {
         S.account = await B.signIn(a.provider, a.email);
         S.authNeeded = null; toast('login ok.'); load(S.view === 'search' ? 'inbox' : S.view, true);
-      } catch (e) { toast('login fail: ' + esc((e.message || String(e)).replace(/^Error invoking remote method 'mail': (Error: )?/, '')), 7000); }
+      } catch (e) { toast('login fail: ' + esc(errText(e)), 7000); }
     },
     cmd: () => openPalette(), search: () => openSearch(), compose: () => startCompose('new'),
     'row-done': () => act('done'), 'row-remind': () => openWhen('remind'),
@@ -1689,12 +1691,10 @@ ${esc(c.text)}</textarea></div>
     keys: () => { S.overlay = { kind: 'keys' }; renderLayer(); },
     'save-event': () => saveEvent(),
   };
-  function useBackend(x) { B = x; }
 
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-a]');
-    if (a && a.dataset.a === 'close' && e.target !== a) { /* click inside a dialog */ }
-    else if (a && a.dataset.a === 'close') { S.overlay = null; renderLayer(); return; }
+    if (a && a.dataset.a === 'close' && e.target === a) { S.overlay = null; renderLayer(); return; } // not a click inside the dialog
     const ci = e.target.closest('[data-ci]');
     if (ci) { const c = paletteItems(S.overlay.q)[+ci.dataset.ci]; S.overlay = null; renderLayer(); c && c.run(); return; }
     if (a && ACTIONS[a.dataset.a] && a.tagName !== 'INPUT') {
@@ -1757,8 +1757,7 @@ ${esc(c.text)}</textarea></div>
       else setSetting(el.dataset.set, el.value);
       if (el.dataset.set === 'signature') { const pv = root.querySelector('.sigprev'); if (pv) pv.innerHTML = window.Markdown.toHtml(el.value); }
     }
-    if (el.dataset.c && S.composer) scheduleDraftSave();
-    if (el.dataset.c && S.composer) { S.composer[el.dataset.c] = el.value; if (el.dataset.c === 'subject' && S.screen === 'compose') { const h = root.querySelector('.thead h1'); if (h) h.textContent = el.value.trim() || 'new mail'; } }
+    if (el.dataset.c && S.composer) { scheduleDraftSave(); S.composer[el.dataset.c] = el.value; if (el.dataset.c === 'subject' && S.screen === 'compose') { const h = root.querySelector('.thead h1'); if (h) h.textContent = el.value.trim() || 'new mail'; } }
     else if (el.dataset.e && S.eventForm) {
       S.eventForm[el.dataset.e] = el.value; S.eventForm.dirty = true; if (el.dataset.e === 'guests') S.eventForm.guestsTouched = true;
       if (el.dataset.e === 'when' || el.dataset.e === 'title') refreshCal();
@@ -1800,7 +1799,7 @@ ${esc(c.text)}</textarea></div>
       if (k === 'Escape') { e.preventDefault(); if (typing(tgt)) tgt.blur(); else { S.screen = 'list'; render(); } }
       return;
     }
-    if (mod && k.toLowerCase() === 'k') { e.preventDefault(); o && o.kind === 'cmd' ? (S.overlay = null, renderLayer()) : openPalette(); return; }
+    if (mod && k.toLowerCase() === 'k') { e.preventDefault(); if (o && o.kind === 'cmd') { S.overlay = null; renderLayer(); } else openPalette(); return; }
     if (o) {
       if (k === 'Escape') { e.preventDefault(); S.overlay = null; renderLayer(); return; }
       if (o.kind === 'file') { if (k === 's' || k === 'S') { e.preventDefault(); ACTIONS['file-save'](); } return; }
@@ -1916,7 +1915,7 @@ ${esc(c.text)}</textarea></div>
     } catch { }
     render();
   })();
-  // Refresh the inbox every two minutes while the window is open.
+  // Refresh the open folder (not the inbox: poll() below does that) every two minutes.
   setInterval(() => { if (S.screen === 'list' && S.view !== 'inbox' && !S.overlay && !S.composer && !S.search && !B.demo) load(S.view, true); }, 120e3);
   // Every minute: look for new inbox mail, notify about it (Settings: important / all / off),
   // keep the tray's unread count right, and refresh the inbox on screen without moving you.

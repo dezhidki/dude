@@ -10,8 +10,8 @@
   // Colours code with inline styles: comments, strings, numbers, keywords, function calls.
   function highlight(code) {
     const re = /(\/\/[^\n]*|#[^\n]*|--[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|\b(\d+(?:\.\d+)?)\b|\b([A-Za-z_]\w*)(?=\s*\()|\b([A-Za-z_]\w*)\b/g;
-    let out = '', last = 0, m;
-    while ((m = re.exec(code))) {
+    let out = '', last = 0;
+    for (const m of code.matchAll(re)) {
       out += esc(code.slice(last, m.index));
       const [t] = m;
       const color = m[1] ? C.com : m[2] ? C.str : m[3] ? C.num : m[4] ? (KW.has(m[4]) ? C.kw : C.fn) : KW.has(m[5]) ? C.kw : null;
@@ -23,6 +23,7 @@
 
   function inline(s) {
     const codes = [];
+    // code spans are set aside behind NUL markers so the rules below leave them alone
     s = s.replace(/`([^`\n]+)`/g, (_, c) => { codes.push(c); return `\u0000${codes.length - 1}\u0000`; });
     s = esc(s)
       .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g, '<a href="$2">$1</a>')
@@ -32,6 +33,7 @@
       .replace(/(^|[^*\w])\*(?=\S)([^*\n]*?\S)\*(?!\*)/g, '$1<i>$2</i>')
       .replace(/(^|[^_\w])_(?=\S)([^_\n]*?\S)_(?!\w)/g, '$1<i>$2</i>')
       .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<s>$1</s>');
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: the NUL markers set above
     return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code style="font-family:Menlo,Consolas,monospace;font-size:90%;background:#f2f0eb;border-radius:3px;padding:1px 4px">${esc(codes[+i])}</code>`);
   }
 

@@ -17,22 +17,27 @@
     if (!m && /(am|pm|\d:\d\d|noon|tomorrow|today|mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/.test(s)) m = take(new RegExp(' ' + DUR + ' (?!(am|pm))'));
     if (m) minutes = Math.round(parseFloat(m[1]) * UNIT[m[2]] / 60e3);
 
-    if ((m = take(/ (?:in )?(\d+(?:\.\d+)?) ?(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|wk|week|weeks|mo|month|months) /))) rel = parseFloat(m[1]) * UNIT[m[2]];
-    if ((m = take(/ (\d{1,2})(?::(\d{2}))? ?(am|pm) /)) || (m = take(/ (\d{1,2}):(\d{2}) /))) {
+    m = take(/ (?:in )?(\d+(?:\.\d+)?) ?(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|wk|week|weeks|mo|month|months) /);
+    if (m) rel = parseFloat(m[1]) * UNIT[m[2]];
+    m = take(/ (\d{1,2})(?::(\d{2}))? ?(am|pm) /) || take(/ (\d{1,2}):(\d{2}) /);
+    if (m) {
       hour = +m[1] % (m[3] ? 12 : 24) + (m[3] === 'pm' ? 12 : 0); minute = +(m[2] || 0);
-    } else if ((m = take(/ (noon|midday) /))) hour = 12;
-    else if ((m = take(/ (tonight|evening) /))) { hour = 19; day = day ?? 0; }
-    else if ((m = take(/ morning /))) hour = 8;
+    } else if (take(/ (noon|midday) /)) hour = 12;
+    else if (take(/ (tonight|evening) /)) { hour = 19; day = day ?? 0; }
+    else if (take(/ morning /)) hour = 8;
 
     const base = new Date(now); base.setSeconds(0, 0);
     if (take(/ today /)) day = 0;
     if (take(/ tomorrow /)) day = 1;
     if (take(/ (next week) /)) { const d = (8 - base.getDay()) % 7 || 7; day = d; }
     if (take(/ (this )?weekend /)) { const d = (6 - base.getDay() + 7) % 7 || 7; day = d; }
-    if ((m = take(/ (?:next |on )?(sun|mon|tue|wed|thu|fri|sat)[a-z]* /))) { const d = (DAYS.indexOf(m[1]) - base.getDay() + 7) % 7 || 7; day = d; }
+    m = take(/ (?:next |on )?(sun|mon|tue|wed|thu|fri|sat)[a-z]* /);
+    if (m) { const d = (DAYS.indexOf(m[1]) - base.getDay() + 7) % 7 || 7; day = d; }
     let date = null;
-    if ((m = take(/ (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* (\d{1,2}) /) || take(/ (\d{1,2}) (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* /))) {
-      const mon = MONTHS.indexOf(isNaN(m[1]) ? m[1] : m[2]), dd = +(isNaN(m[1]) ? m[2] : m[1]);
+    m = take(/ (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* (\d{1,2}) /) || take(/ (\d{1,2}) (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* /);
+    if (m) {
+      const named = Number.isNaN(+m[1]); // "aug 7" or "7 aug"
+      const mon = MONTHS.indexOf(named ? m[1] : m[2]), dd = +(named ? m[2] : m[1]);
       date = new Date(base.getFullYear(), mon, dd);
       if (date < new Date(base.getFullYear(), base.getMonth(), base.getDate())) date.setFullYear(date.getFullYear() + 1);
     }

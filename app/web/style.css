@@ -19,14 +19,13 @@
   --bar: #714cb6;
   --dot: #714cb6;
   --brand: #714cb6;
-  --brand-soft: #f7f5ff;
   --pal: #ffffff;
   --pal-on: #f2f0eb;
   --key: #f2f0eb;
   --ev: #dbe8f8;
   --ev-bar: #3b7ddd;
   --now: #e5534b;
-  --r-s: 4px; --r-m: 6px; --r-l: 12px;
+  --r-s: 4px; --r-m: 6px;
   color-scheme: light;
 }
 :root.carbon {
@@ -46,7 +45,6 @@
   --bar: #aeb1dd;
   --dot: #6fa3e0;
   --brand: #aeb1dd;
-  --brand-soft: rgba(174,177,221,.16);
   --pal: #686d77;
   --pal-on: rgba(255,255,255,.1);
   --key: #555b64;
@@ -65,10 +63,8 @@ input, textarea { font: inherit; color: inherit; }
 /* ---------- Sign-in (matches the captured start page) ---------- */
 .signin { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #ffffff; }
 body.on-signin { font-family: var(--serif); background: #ffffff; }
-.shade { position: absolute; inset: 0; background: radial-gradient(25.08% 35.11% at 50% 62.67%, rgba(0,0,0,.9) 0%, rgba(0,0,0,0) 100%), linear-gradient(0deg, rgba(0,0,0,.2), rgba(0,0,0,.2)); }
-.art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 /* The original's backdrop is shown zoomed out on tablets. */
-@media (min-width: 600px) and (max-width: 900px) { .signin { background: #ffffff linear-gradient(#1f2830, #1f2830); } .signin .art { height: 80%; } }
+@media (min-width: 600px) and (max-width: 900px) { .signin { background: #ffffff linear-gradient(#1f2830, #1f2830); } }
 .signin-inner { position: relative; padding: 6px 0; display: flex; flex-direction: column; align-items: center; width: 360px; max-width: calc(100% - 30px); }
 .logo { display: flex; align-items: center; gap: 10px; height: 32px; color: #fff; font: 600 22px/1 var(--sans); }
 .logo-mark { width: 26px; height: 26px; border-radius: 7px; background: #d4c7ff; display: grid; place-items: center; color: #141413; }
@@ -88,7 +84,6 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .rail { width: 40px; flex-shrink: 0; background: var(--list); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 8px; }
 .rail button { width: 24px; height: 24px; border-radius: 12px; display: grid; place-items: center; color: var(--text-2); }
 .rail button.on { color: var(--text); background: var(--hi); }
-.rail .acct { font: 600 13px/1 var(--sans); color: var(--text-2); margin-bottom: 30px; }
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; margin-left: 6px; }
 .head { position: relative; display: flex; align-items: center; height: 76px; flex-shrink: 0; padding: 0 30px 0 63px; gap: 16px; }
 .menu-btn { position: absolute; left: 18px; top: 26px; width: 24px; height: 24px; display: grid; place-items: center; color: var(--text-2); }
@@ -126,7 +121,6 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .row .acts button:hover { color: var(--text); }
 .row .star { color: #e2a400; margin-right: 6px; }
 .row .cnt { color: var(--text-3); margin-left: 4px; }
-.chip { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border-radius: 3px; background: var(--brand-soft); color: var(--brand); margin-right: 8px; }
 .note { padding: 24px 63px; color: var(--text-2); }
 
 /* ---------- Inbox zero ---------- */
@@ -175,7 +169,7 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 
 /* ---------- Composer (new message page and inline replies) ---------- */
 .composer { background: var(--card); border-radius: 4px; padding: 6px 36px 14px; margin-top: 8px; box-shadow: 0 0 20px rgba(0,0,0,.03); }
-.thread .msg + .composer, .replying .composer { box-shadow: inset 3px 0 0 var(--bar); }
+.thread .msg + .composer { box-shadow: inset 3px 0 0 var(--bar); }
 .crow { display: flex; align-items: center; gap: 10px; min-height: 38px; }
 .crow b { font: 700 15px/20px var(--sans); color: var(--text-h); min-width: 24px; }
 .crow input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font: 15px/24px var(--sans); color: var(--text); }
@@ -189,7 +183,6 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .cfoot > button.primary { color: var(--text-h); }
 .cfoot > button:not(.ibtn):hover { color: var(--text); }
 .cfoot .grow { flex: 1; }
-.btn-send { height: 30px; padding: 0 14px; border-radius: 4px; background: var(--bar); color: #141413; font-weight: 700; }
 
 /* ---------- Search page ---------- */
 .search-head { padding-right: 30px; }
@@ -259,17 +252,6 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .cmd li .ic { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; opacity: .8; flex-shrink: 0; }
 .dlg { width: 560px; max-width: calc(100vw - 24px); background: var(--pal); border-radius: 4px; box-shadow: 0 15px 50px rgba(0,0,0,.5); padding: 24px 36px 28px; }
 .dlg h2 { margin: 0 0 16px; font: 400 17px/24px var(--sans); }
-.opts button { display: flex; width: calc(100% + 72px); margin: 0 -36px; justify-content: space-between; align-items: center; height: 44px; padding: 0 36px; font-size: 15px; color: var(--text-2); }
-.opts button.on, .opts button:hover { background: var(--pal-on); color: var(--text); }
-.opts small { color: var(--text-3); font-size: 13px; }
-.form { display: grid; gap: 12px; }
-.form label { display: grid; gap: 4px; color: var(--text-2); }
-.form input, .form textarea { height: 36px; border: 1px solid var(--line-2); border-radius: 4px; padding: 0 10px; background: var(--list); color: var(--text); outline: none; font-size: 15px; }
-.form textarea { height: 64px; padding: 6px 10px; resize: vertical; }
-.form input:focus, .form textarea:focus { border-color: var(--bar); }
-.form .row3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px; }
-.form .actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-.form .actions span { color: var(--text-3); flex: 1; }
 .keys { columns: 2; column-gap: 32px; max-height: 62vh; overflow-y: auto; }
 .keys section { break-inside: avoid; margin-bottom: 14px; }
 .keys h5 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
@@ -317,8 +299,6 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
   .scrim, .scrim.dim { padding-top: 10vh; }
   .cmd-h, .cmd-in, .cmd li, .dlg { padding-left: 16px; padding-right: 16px; }
   .cmd-h { margin: 12px 16px 0; padding: 0; }
-  .opts button { width: calc(100% + 32px); margin: 0 -16px; padding: 0 16px; }
-  .form .row3 { grid-template-columns: 1fr; }
   .keys { columns: 1; }
   #toast { left: 12px; bottom: 68px; }
   .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 56px; z-index: 26; background: var(--list); border-top: 1px solid var(--line); }
@@ -408,12 +388,12 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .authbar button { flex-shrink: 0; background: #fff; color: #141413; font-weight: 700; padding: 6px 12px; border-radius: 4px; }
 
 /* ================= dude look: really dark, flat, one sharp accent, no pictures ================= */
-:root { --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace; --bar: #4d7c0f; --dot: #4d7c0f; --brand: #4d7c0f; --brand-soft: #eef7dc; --r-s: 2px; --r-m: 3px; --r-l: 4px; }
+:root { --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace; --bar: #4d7c0f; --dot: #4d7c0f; --brand: #4d7c0f; --r-s: 2px; --r-m: 3px; }
 :root.carbon {
   --page: #000; --list: #000; --pane: #070707; --card: #0e0e0e; --hi: #171717; --hover: #0b0b0b;
   --line: rgba(255,255,255,.07); --line-2: rgba(255,255,255,.12);
   --text: rgba(255,255,255,.88); --text-2: rgba(255,255,255,.5); --text-3: rgba(255,255,255,.3); --text-m: rgba(255,255,255,.55); --text-h: rgba(255,255,255,.93);
-  --bar: #c8f135; --dot: #c8f135; --brand: #c8f135; --brand-soft: rgba(200,241,53,.1);
+  --bar: #c8f135; --dot: #c8f135; --brand: #c8f135;
   --pal: #0c0c0c; --pal-on: #1b1b1b; --key: #1f1f1f; --ev: #1d2a0b; --ev-bar: #c8f135;
 }
 .pane { border-left-color: var(--line); }
@@ -422,7 +402,7 @@ body.on-signin { font-family: var(--serif); background: #ffffff; }
 .cmd-h, .sm-head, .split .n, .row .meta, .msg-h .dt, .mrow .dt, .key, .when, .sm-keys, .cal-hr span, .cal-tz, .evparsed { font-family: var(--mono); }
 .row .meta, .msg-h .dt, .mrow .dt { font-size: 12px; text-transform: lowercase; }
 .key { border-radius: 2px; font-size: 11px; }
-.btn-send, .evbtns button.save { border-radius: 2px; }
+.evbtns button.save { border-radius: 2px; }
 .newmsgs button { color: var(--brand); border-radius: 2px; box-shadow: none; }
 :root.carbon .cal-ev { color: #e6ffa8; }
 :root.carbon .body iframe.paper { filter: brightness(.92); }

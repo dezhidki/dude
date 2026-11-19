@@ -32,4 +32,4 @@ function buildInvite(ev, organizer) {
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
-module.exports = { buildInvite };
+module.exports = { buildInvite, stamp, text };

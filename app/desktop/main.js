@@ -95,6 +95,7 @@ const handlers = {
   folders: () => persistAfter(mail.folders(active())),
   attachment: async (folder, uid, name, index, mode) => {
     const f = await mail.attachment(active(), folder, uid, name, index);
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: control characters aren't allowed in file names
     const safe = String(f.name).replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0, 180) || 'attachment';
     const dir = app.getPath('downloads'); // apps installed as snaps can't read temporary or hidden folders
     fs.mkdirSync(dir, { recursive: true });

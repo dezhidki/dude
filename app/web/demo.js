@@ -1,5 +1,5 @@
 // Demo mailbox used when the app runs in a plain browser (no desktop mail engine).
-// Same interface as the desktop bridge in electron/preload.js.
+// Same interface as the desktop bridge in desktop/preload.js.
 (function () {
   const now = Date.now(), H = 3600e3, D = 24 * H;
   const P = (name, address) => ({ name, address });
@@ -94,7 +94,8 @@
       return pub(x);
     },
     async send(msg) {
-      threads.push(mk('sent', msg.to.split(',')[0].trim() ? P(msg.to.split(',')[0].trim(), msg.to.split(',')[0].trim()) : me, msg.subject || '(no subject)', msg.text, 0));
+      const to = msg.to.split(',')[0].trim();
+      threads.push(mk('sent', to ? P(to, to) : me, msg.subject || '(no subject)', msg.text, 0));
       return { ok: true };
     },
     async invite() { return { ok: true }; },

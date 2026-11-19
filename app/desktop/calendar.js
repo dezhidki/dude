@@ -4,9 +4,13 @@
 const { freshToken } = require('./oauth');
 
 const EWS = 'https://outlook.office365.com/EWS/Exchange.asmx';
+const GCAL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 const x = s => String(s == null ? '' : s).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 const unx = s => String(s || '').replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/\r/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 const iso = t => new Date(t).toISOString().replace(/\.\d{3}Z$/, 'Z');
+// A refused calendar token: main.js then disconnects only the calendar.
+const refused = msg => Object.assign(new Error(msg), { authenticationFailed: true });
+const attendeesXml = guests => `<t:RequiredAttendees>${guests.map(g => `<t:Attendee><t:Mailbox><t:EmailAddress>${x(g)}</t:EmailAddress></t:Mailbox></t:Attendee>`).join('')}</t:RequiredAttendees>`;
 const tag = (xml, name) => { const m = new RegExp(`<t:${name}(?:\\s[^>]*)?>([\\s\\S]*?)</t:${name}>`).exec(xml); return m ? unx(m[1]) : ''; };
 
 function soap(body) {
@@ -20,7 +24,7 @@ async function ews(acct, body) {
   const token = await freshToken(acct.cal);
   const r = await fetch(EWS, { method: 'POST', headers: { 'Content-Type': 'text/xml; charset=utf-8', Authorization: 'Bearer ' + token, 'X-AnchorMailbox': acct.email }, body: soap(body) });
   const text = await r.text();
-  if (r.status === 401 || r.status === 403) { const e = new Error('calendar sign-in refused (' + r.status + ')'); e.authenticationFailed = true; throw e; }
+  if (r.status === 401 || r.status === 403) throw refused('calendar sign-in refused (' + r.status + ')');
   const err = /ResponseClass="Error"[\s\S]*?<m:MessageText>([\s\S]*?)<\/m:MessageText>/.exec(text);
   if (!r.ok || err) throw new Error('calendar: ' + (err ? unx(err[1]) : 'HTTP ' + r.status));
   return text;
@@ -46,11 +50,11 @@ function parseEws(xml) {
 async function events(acct, from, to) {
   if (acct.provider === 'google') {
     const token = await freshToken(acct);
-    const u = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');
+    const u = new URL(GCAL);
     Object.entries({ timeMin: iso(from), timeMax: iso(to), singleEvents: 'true', orderBy: 'startTime', maxResults: '250' }).forEach(([k, v]) => u.searchParams.set(k, v));
     const r = await fetch(u, { headers: { Authorization: 'Bearer ' + token } });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 401 || r.status === 403) { const e = new Error('calendar sign-in refused'); e.authenticationFailed = true; throw e; }
+    if (r.status === 401 || r.status === 403) throw refused('calendar sign-in refused');
     if (!r.ok) throw new Error('calendar: ' + ((j.error && j.error.message) || r.status));
     return (j.items || []).filter(e => e.status !== 'cancelled').map(e => ({
       id: e.id, title: e.summary || '(no title)', where: e.location || '', organizer: (e.organizer && (e.organizer.displayName || e.organizer.email)) || '',
@@ -60,7 +64,7 @@ async function events(acct, from, to) {
       start: Date.parse((e.start && (e.start.dateTime || e.start.date + 'T00:00:00')) || 0), end: Date.parse((e.end && (e.end.dateTime || e.end.date + 'T00:00:00')) || 0),
     }));
   }
-  if (!acct.cal) { const e = new Error('CAL_NOT_CONNECTED'); throw e; }
+  if (!acct.cal) throw new Error('CAL_NOT_CONNECTED');
   const xml = await ews(acct, `<m:FindItem Traversal="Shallow"><m:ItemShape><t:BaseShape>IdOnly</t:BaseShape><t:AdditionalProperties>
     <t:FieldURI FieldURI="item:Subject"/><t:FieldURI FieldURI="calendar:Start"/><t:FieldURI FieldURI="calendar:End"/><t:FieldURI FieldURI="calendar:Location"/>
     <t:FieldURI FieldURI="calendar:IsAllDayEvent"/><t:FieldURI FieldURI="calendar:Organizer"/><t:FieldURI FieldURI="calendar:MyResponseType"/><t:FieldURI FieldURI="calendar:IsMeeting"/><t:FieldURI FieldURI="calendar:IsCancelled"/></t:AdditionalProperties></m:ItemShape>
@@ -73,7 +77,7 @@ async function events(acct, from, to) {
 async function create(acct, ev) {
   if (acct.provider === 'google') {
     const token = await freshToken(acct);
-    const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all', {
+    const r = await fetch(`${GCAL}?sendUpdates=all`, {
       method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ summary: ev.title, location: ev.where || undefined, description: ev.notes || undefined, start: { dateTime: iso(ev.start) }, end: { dateTime: iso(ev.end) }, attendees: ev.guests.map(email => ({ email })) }),
     });
@@ -82,7 +86,7 @@ async function create(acct, ev) {
     return { id: j.id };
   }
   if (!acct.cal) throw new Error('CAL_NOT_CONNECTED');
-  const att = ev.guests.length ? `<t:RequiredAttendees>${ev.guests.map(g => `<t:Attendee><t:Mailbox><t:EmailAddress>${x(g)}</t:EmailAddress></t:Mailbox></t:Attendee>`).join('')}</t:RequiredAttendees>` : '';
+  const att = ev.guests.length ? attendeesXml(ev.guests) : '';
   const xml = await ews(acct, `<m:CreateItem SendMeetingInvitations="${ev.guests.length ? 'SendToAllAndSaveCopy' : 'SendToNone'}"><m:SavedItemFolderId><t:DistinguishedFolderId Id="calendar"/></m:SavedItemFolderId><m:Items>
     <t:CalendarItem><t:Subject>${x(ev.title)}</t:Subject><t:Body BodyType="Text">${x(ev.notes || '')}</t:Body><t:Start>${iso(ev.start)}</t:Start><t:End>${iso(ev.end)}</t:End>${ev.where ? `<t:Location>${x(ev.where)}</t:Location>` : ''}${att}</t:CalendarItem>
     </m:Items></m:CreateItem>`);
@@ -119,15 +123,14 @@ async function respond(acct, inv, answer) {
   if (!word || !inv || !(inv.uid || inv.ews || inv.gid)) throw new Error('bad answer');
   if (acct.provider === 'google') {
     const token = await freshToken(acct), H = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
-    const base = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
-    const r = await fetch(inv.gid ? `${base}/${encodeURIComponent(inv.gid)}` : base + '?iCalUID=' + encodeURIComponent(inv.uid), { headers: H });
-    if (r.status === 401 || r.status === 403) { const e = new Error('calendar sign-in refused'); e.authenticationFailed = true; throw e; }
+    const r = await fetch(inv.gid ? `${GCAL}/${encodeURIComponent(inv.gid)}` : GCAL + '?iCalUID=' + encodeURIComponent(inv.uid), { headers: H });
+    if (r.status === 401 || r.status === 403) throw refused('calendar sign-in refused');
     const j = await r.json().catch(() => ({})), ev = inv.gid ? (r.ok ? j : null) : (j.items || [])[0];
     if (!ev) return null;
     const me = String(acct.email).toLowerCase(), mine = a => a.self || String(a.email).toLowerCase() === me;
     const attendees = (ev.attendees || []).map(a => mine(a) ? { ...a, responseStatus: word[0] } : a);
     if (!attendees.some(mine)) attendees.push({ email: acct.email, responseStatus: word[0] });
-    const p = await fetch(`${base}/${encodeURIComponent(ev.id)}?sendUpdates=all`, { method: 'PATCH', headers: H, body: JSON.stringify({ attendees }) });
+    const p = await fetch(`${GCAL}/${encodeURIComponent(ev.id)}?sendUpdates=all`, { method: 'PATCH', headers: H, body: JSON.stringify({ attendees }) });
     if (!p.ok) throw new Error('calendar: ' + p.status);
     return { ok: true };
   }
@@ -153,10 +156,9 @@ async function people(acct, q) {
 }
 
 // ---------- one event: read, change, delete ----------
-const GCAL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 async function gfetch(acct, url, opts = {}) {
   const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + await freshToken(acct), 'Content-Type': 'application/json' } });
-  if (r.status === 401 || r.status === 403) { const e = new Error('calendar sign-in refused'); e.authenticationFailed = true; throw e; }
+  if (r.status === 401 || r.status === 403) throw refused('calendar sign-in refused');
   const j = r.status === 204 ? {} : await r.json().catch(() => ({}));
   if (!r.ok && r.status !== 410) throw new Error('calendar: ' + ((j.error && j.error.message) || r.status));
   return j;
@@ -194,7 +196,7 @@ async function update(acct, id, ev) {
     set('calendar:Start', `<t:Start>${iso(ev.start)}</t:Start>`),
     set('calendar:End', `<t:End>${iso(ev.end)}</t:End>`),
     ev.where ? set('calendar:Location', `<t:Location>${x(ev.where)}</t:Location>`) : del('calendar:Location'),
-    ...(ev.guests ? [guests.length ? set('calendar:RequiredAttendees', `<t:RequiredAttendees>${guests.map(g => `<t:Attendee><t:Mailbox><t:EmailAddress>${x(g)}</t:EmailAddress></t:Mailbox></t:Attendee>`).join('')}</t:RequiredAttendees>`) : del('calendar:RequiredAttendees')] : []),
+    ...(ev.guests ? [guests.length ? set('calendar:RequiredAttendees', attendeesXml(guests)) : del('calendar:RequiredAttendees')] : []),
   ];
   await ews(acct, `<m:UpdateItem ConflictResolution="AlwaysOverwrite" SendMeetingInvitationsOrCancellations="SendToChangedAndSaveCopy"><m:ItemChanges><t:ItemChange><t:ItemId Id="${x(id)}"/><t:Updates>${changes.join('')}</t:Updates></t:ItemChange></m:ItemChanges></m:UpdateItem>`);
   return { ok: true };

@@ -1,4 +1,6 @@
 // IMAP/SMTP engine over XOAUTH2: list conversations, open them, triage, send, invite.
+const fs = require('node:fs');
+const path = require('node:path');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const { parseInvite, buildReply } = require('./invite');
@@ -10,12 +12,12 @@ const { chainIds, group } = require('./threads');
 const { filesIn } = require('./files');
 
 const clients = new Map(); // email -> { client, folders }
+const imapClient = async (acct, extra) => new ImapFlow({ ...PROVIDERS[acct.provider].imap, auth: { user: acct.email, accessToken: await freshToken(acct) }, logger: false, ...extra });
 
 async function connect(acct) {
   const c = clients.get(acct.email);
   if (c && c.client.usable) return c;
-  const p = PROVIDERS[acct.provider];
-  const client = new ImapFlow({ ...p.imap, auth: { user: acct.email, accessToken: await freshToken(acct) }, logger: false });
+  const client = await imapClient(acct);
   client.on('error', () => clients.delete(acct.email));
   client.on('close', () => clients.delete(acct.email));
   await client.connect();
@@ -41,7 +43,7 @@ async function connect(acct) {
 
 // A separate short-lived connection, so background reading never queues behind what you're doing.
 async function withOwnBox(acct, folder, fn) {
-  const client = new ImapFlow({ ...PROVIDERS[acct.provider].imap, auth: { user: acct.email, accessToken: await freshToken(acct) }, logger: false });
+  const client = await imapClient(acct);
   client.on('error', () => {});
   await client.connect();
   try { const lock = await client.getMailboxLock(folder); try { return await fn(client); } finally { lock.release(); } }
@@ -56,7 +58,6 @@ async function withBox(acct, folder, fn) {
 }
 
 const addr = a => (a || []).map(x => ({ name: x.name || '', address: x.address || '' }));
-const norm = s => (s || '').replace(/^\s*((re|fw|fwd|aw|sv|vs)(\[\d+\])?:\s*)+/i, '').trim().toLowerCase();
 
 // What's been read before is remembered (per account, folder and message number), so a refresh
 // asks the server only for read/starred flags plus the messages that are new since last time.
@@ -65,7 +66,6 @@ const metaCache = new Map(); // email|folder -> { validity, order: [uid] (newest
 // ---------- folder lists kept on disk ----------
 // Each account's folder lists live in one file in the app's data folder, so any folder shows at once,
 // even right after start; the server is then asked only for flags and mail that's new since.
-const fs = require('fs'), path = require('path');
 let cacheDir = null;
 const restored = new Set(), savedFolders = new Map(), saveTimers = new Map();
 function setCacheDir(d) { cacheDir = d; }
@@ -200,7 +200,6 @@ async function parseMsg(m) {
   };
 }
 
-// A conversation also includes your own replies, which live in Sent (and Archive when reading the inbox).
 // Your replies to a conversation live in Sent (and Archive): find them by reply chain
 // (In-Reply-To/References), never by subject, since servers often find nothing for subjects
 // with letters like ä/ö. The reply-chain ids of each folder's recent mail are remembered, so
@@ -344,7 +343,7 @@ function toCriteria(q) {
   for (let tok of toks) {
     const neg = tok.startsWith('-'); if (neg) tok = tok.slice(1);
     const i = tok.indexOf(':'), k = i > 0 ? tok.slice(0, i).toLowerCase() : '', v = (i > 0 ? tok.slice(i + 1) : tok).replace(/^"|"$/g, '');
-    if (k === 'in' || k === 'label') { folder = v.toLowerCase() === 'inbox' ? 'inbox' : v.toLowerCase(); continue; }
+    if (k === 'in' || k === 'label') { folder = v.toLowerCase(); continue; }
     if (k === 'is') { if (v === 'unread') c.seen = neg; else if (v === 'read') c.seen = !neg; else if (v === 'starred') c.flagged = !neg; continue; }
     if (k === 'from' || k === 'to' || k === 'subject' || k === 'cc' || k === 'bcc') { if (neg) not.push({ [k]: v }); else c[k] = v; continue; }
     if (k === 'domain') { c.from = '@' + v.replace(/^@/, ''); continue; }
@@ -363,7 +362,7 @@ function toCriteria(q) {
   return { folder, criteria: c, post };
 }
 
-const fold = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '');
+const fold = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 async function search(acct, q) {
   const e = await connect(acct);
   if (e.gmail) return fetchList(acct, 'all', { gmraw: q });
@@ -371,7 +370,7 @@ async function search(acct, q) {
   // so "Isomöttönen" is asked as "Isomottonen".
   const { folder, criteria, post } = toCriteria(fold(q));
   const view = folder === 'all' ? 'inbox' : folder;
-  let results = await fetchList(acct, e.folders[view] ? view : (folder === 'all' ? 'inbox' : folder), criteria);
+  let results = await fetchList(acct, view, criteria);
   // Without "in:", look in Done (Archive) and Sent too, as Superhuman searches all mail.
   if (folder === 'all') for (const f of ['done', 'sent']) {
     if (!e.folders[f] || e.folders[f] === 'INBOX') continue;
@@ -467,7 +466,7 @@ async function contacts(acct) {
 const watchers = new Map(); // email -> { client, stopped, live }
 function watch(acct, onChange) {
   if (watchers.has(acct.email)) return;
-  const p = PROVIDERS[acct.provider], w = { stopped: false, live: false };
+  const w = { stopped: false, live: false };
   watchers.set(acct.email, w);
   let timer = null;
   const ping = () => { clearTimeout(timer); timer = setTimeout(onChange, 500); };
@@ -475,7 +474,7 @@ function watch(acct, onChange) {
     if (w.stopped) return;
     let client = null;
     try {
-      client = new ImapFlow({ ...p.imap, auth: { user: acct.email, accessToken: await freshToken(acct) }, logger: false, maxIdleTime: 4 * 60e3 });
+      client = await imapClient(acct, { maxIdleTime: 4 * 60e3 });
       w.client = client;
       client.on('exists', ping); client.on('expunge', ping); client.on('flags', ping);
       client.on('error', () => { });
@@ -499,6 +498,6 @@ function unwatch(email) {
 }
 // After the computer wakes up the old connection is dead: start again at once.
 function rewatch(acct, onChange) { unwatch(acct.email); watch(acct, onChange); }
-const pushLive = email => !!(watchers.get(email) && watchers.get(email).live);
+const pushLive = email => !!watchers.get(email)?.live;
 
-module.exports = { watch, unwatch, rewatch, pushLive, setCacheDir, listCached, dropCache, contacts, list: fetchList, thread, related, warm, attachment, saveDraft, deleteDraft, folders, act, send, invite, rsvp, search, forget, toCriteria };
+module.exports = { watch, unwatch, rewatch, pushLive, setCacheDir, listCached, dropCache, contacts, list: fetchList, thread, related, warm, attachment, saveDraft, deleteDraft, folders, act, send, invite, rsvp, search, forget };

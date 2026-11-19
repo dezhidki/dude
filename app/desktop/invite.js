@@ -1,6 +1,7 @@
 // Reading a calendar invitation (text/calendar, iCalendar) and writing the RSVP answer (iMIP REPLY).
 // Times are turned into real moments: UTC ("…Z"), named time zones (IANA, or the Windows names
 // Outlook uses), or the invitation's own VTIMEZONE offset. Tested by invite.test.js.
+const { stamp, text: esc } = require('./ics');
 
 const WIN_TZ = {
   'FLE Standard Time': 'Europe/Helsinki', 'W. Europe Standard Time': 'Europe/Berlin', 'Central Europe Standard Time': 'Europe/Budapest',
@@ -77,17 +78,14 @@ function parseInvite(ics) {
 
 // The answer: METHOD:REPLY with your PARTSTAT, for the organiser (RFC 5546 iMIP).
 function buildReply(inv, me, myName, answer) {
-  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const utc = t => new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const esc = v => String(v || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
   const part = { yes: 'ACCEPTED', maybe: 'TENTATIVE', no: 'DECLINED' }[answer];
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//dude//EN', 'METHOD:REPLY', 'BEGIN:VEVENT',
-    `UID:${inv.uid}`, `SEQUENCE:${inv.sequence || 0}`, `DTSTAMP:${stamp}`,
-    `DTSTART:${utc(inv.start)}`, `DTEND:${utc(inv.end)}`, `SUMMARY:${esc(inv.title)}`,
+    `UID:${inv.uid}`, `SEQUENCE:${inv.sequence || 0}`, `DTSTAMP:${stamp(Date.now())}`,
+    `DTSTART:${stamp(inv.start)}`, `DTEND:${stamp(inv.end)}`, `SUMMARY:${esc(inv.title)}`,
     inv.organizer ? `ORGANIZER${inv.organizer.name ? `;CN="${inv.organizer.name.replace(/"/g, '')}"` : ''}:mailto:${inv.organizer.email}` : null,
     `ATTENDEE;PARTSTAT=${part}${myName ? `;CN="${myName.replace(/"/g, '')}"` : ''}:mailto:${me}`,
     'END:VEVENT', 'END:VCALENDAR'].filter(Boolean);
   return lines.join('\r\n') + '\r\n';
 }
 
-module.exports = { parseInvite, buildReply, zoneOffset };
+module.exports = { parseInvite, buildReply };
