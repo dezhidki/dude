@@ -4,7 +4,8 @@
 
 No super. Just email. Keyboard-first desktop client for Gmail and Microsoft 365.
 
-[![dude demo](docs/demo.gif)](docs/demo.mp4)
+https://github.com/user-attachments/assets/b9aec33d-f4af-49ec-88bf-b918c40e68bc
+
 
 ## Download
 
