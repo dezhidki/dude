@@ -1,4 +1,4 @@
-// Understands typed times like Superhuman: "8 am", "3 days", "2h", "tomorrow 2 pm 30 min",
+// Understands typed times: "8 am", "3 days", "2h", "tomorrow 2 pm 30 min",
 // "mon 9:30", "aug 7", "next week". Returns { start, minutes } or null. Also loaded by when.test.js.
 const DAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];

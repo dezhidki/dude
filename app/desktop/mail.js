@@ -555,7 +555,7 @@ async function invite(acct, ev) {
   });
 }
 
-// Superhuman-style search words -> an IMAP search (Gmail understands them natively).
+// Search words (from:, subject:, has:attachment, …) -> an IMAP search (Gmail understands them natively).
 function toCriteria(q) {
   const toks = String(q).match(/-?\w+:"[^"]*"|-?\w+:\S+|-?"[^"]*"|\S+/g) || [];
   const c = {},
@@ -654,7 +654,7 @@ async function search(acct, q) {
   const { folder, criteria, post } = toCriteria(fold(q));
   const view = folder === 'all' ? 'inbox' : folder;
   let results = await fetchList(acct, view, criteria);
-  // Without "in:", look in Done (Archive) and Sent too, as Superhuman searches all mail.
+  // Without "in:", look in Done (Archive) and Sent too: a search covers all your mail.
   if (folder === 'all')
     for (const f of ['done', 'sent']) {
       if (!e.folders[f] || e.folders[f] === 'INBOX') continue;

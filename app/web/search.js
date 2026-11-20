@@ -1,4 +1,4 @@
-// Search words, as in Superhuman: from: to: subject: domain: is:unread is:starred is:list,
+// Search words: from: to: subject: domain: is:unread is:starred is:list,
 // "exact phrase", -word to exclude, plain words anywhere. matchQuery(conversation, words) says
 // whether one conversation matches: for splits and the demo's search. Also loaded by search.test.js.
 function matchQuery(t, q) {

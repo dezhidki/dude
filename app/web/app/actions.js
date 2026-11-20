@@ -1,8 +1,9 @@
 // ---------- actions ----------
 
+import { onSettled } from 'solid-js';
 import { goto } from './commands.js';
 import { leaveCompose } from './compose.js';
-import { B, esc, LS, root, S, toast } from './core.js';
+import { B, change, LS, M, minus, plus, root, S, toast } from './core.js';
 import { allSplits, current, load, snoozes, visible } from './data.js';
 import { render } from './render.jsx';
 import { closeThread, step } from './thread.js';
@@ -51,43 +52,47 @@ export async function act(action, list = targets(), quiet = false, folder) {
       v = visible();
     const rows = [...root.querySelectorAll('.row')].filter((r) => v[+r.dataset.i] && ids.has(v[+r.dataset.i].id));
     if (rows.length) {
-      list.forEach((t) => {
-        t._leaving = true;
-      });
+      change(() =>
+        list.forEach((t) => {
+          t._leaving = true;
+        }),
+      );
       rows.forEach((r) => {
         r.classList.add('leaving');
       });
       await new Promise((r) => setTimeout(r, 170));
     }
   }
-  if (removes) {
-    const ids = new Set(list.map((t) => t.id));
-    S.threads = S.threads.filter((t) => !ids.has(t.id));
-    if (S.cache[S.view]) S.cache[S.view] = S.threads;
-    ids.forEach((id) => {
-      S.tcache.delete(id);
-    });
-    S.picked.clear();
-    if (S.screen === 'thread') closeThread(true);
-  } else
-    list.forEach((t) => {
-      if (action === 'star' || action === 'unstar') t.starred = action === 'star';
-      if (action === 'read' || action === 'unread') t.unread = action === 'unread';
-    });
-  S.sel = Math.min(S.sel, Math.max(0, visible().length - 1));
-  render();
-  if (!quiet) toast(`${LABEL[action]}${list.length > 1 ? ` · ${list.length}` : ''} <span class="key">Z</span> undo`);
+  change(() => {
+    if (removes) {
+      const ids = new Set(list.map((t) => t.id));
+      S.threads = S.threads.filter((t) => !ids.has(t.id));
+      if (M.cache[S.view]) M.cache[S.view] = S.threads;
+      ids.forEach((id) => {
+        M.tcache.delete(id);
+      });
+      S.picked = new Set();
+      if (S.screen === 'thread') closeThread(true);
+    } else
+      list.forEach((t) => {
+        if (action === 'star' || action === 'unstar') t.starred = action === 'star';
+        if (action === 'read' || action === 'unread') t.unread = action === 'unread';
+      });
+    S.sel = Math.min(S.sel, Math.max(0, visible().length - 1));
+    render();
+  });
+  if (!quiet) toast([`${LABEL[action]}${list.length > 1 ? ` · ${list.length}` : ''} `, 'Z', ' undo']);
   try {
     const res = await Promise.all(list.map((t) => B.act(t, action, folder)));
-    S.undo.push({ action: INVERSE[action], threads: res.map((r, i) => (r?.id ? r : list[i])), reload: removes });
+    M.undo.push({ action: INVERSE[action], threads: res.map((r, i) => (r?.id ? r : list[i])), reload: removes });
   } catch (e) {
-    toast(`no work: ${esc(e.message || e)}`);
+    toast(`no work: ${e.message || e}`);
     load(S.view, true);
   }
 }
 
 export async function undo() {
-  const u = S.undo.pop();
+  const u = M.undo.pop();
   if (!u) return toast('nothing undo.');
   if (u.snooze) {
     const sn = snoozes();
@@ -123,17 +128,17 @@ export function toggle(kind) {
 export function openSearch() {
   if (S.screen === 'compose') leaveCompose();
   if (S.screen !== 'search')
-    S.back = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs, view: S.view };
+    M.back = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs, view: S.view };
   S.screen = 'search';
   S.search = { q: S.search?.q || '' };
   render();
-  setTimeout(() => {
+  onSettled(() => {
     const i = root.querySelector('.sq');
     if (i) {
       i.focus();
       i.select();
     }
-  }, 0);
+  });
 }
 
 export function runSearch(q) {
@@ -146,8 +151,8 @@ export function runSearch(q) {
 }
 
 export function closeSearch() {
-  const b = S.back || {};
-  S.back = null;
+  const b = M.back || {};
+  M.back = null;
   S.search = null;
   if (b.screen === 'thread' && b.open) {
     S.screen = 'thread';
@@ -172,7 +177,7 @@ export function switchSplit(d = 1) {
 export function pick() {
   const t = current();
   if (!t) return;
-  S.picked.has(t.id) ? S.picked.delete(t.id) : S.picked.add(t.id);
+  S.picked = S.picked.has(t.id) ? minus(S.picked, t.id) : plus(S.picked, t.id);
   step(1);
   render();
 }

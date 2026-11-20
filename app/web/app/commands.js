@@ -1,5 +1,6 @@
 // ---------- commands ----------
 
+import { onSettled } from 'solid-js';
 import { parseWhen } from '../when.js';
 import { act, openSearch, pick, switchSplit, targets, toggle, undo } from './actions.js';
 import {
@@ -29,16 +30,19 @@ import {
 import {
   addrList,
   B,
+  change,
   DAY,
   dayStart,
-  esc,
   firstOf,
   fold,
   fullDate,
   keyOf,
-  LS,
   layer,
+  LS,
+  M,
+  now,
   openFile,
+  plus,
   root,
   S,
   setBackend,
@@ -48,7 +52,7 @@ import {
 } from './core.js';
 import { addSplit, current, customSplits, load, removeSplit, snoozes, visible } from './data.js';
 import { ACTIONS } from './events.js';
-import { openMenu, render, renderLayer } from './render.jsx';
+import { openCmd, openMenu, render, renderLayer } from './render.jsx';
 import { openSettings, SET, setSetting, sigBlock } from './settings.jsx';
 import { closeThread, lastRealIndex, toggleMsg } from './thread.js';
 
@@ -155,8 +159,7 @@ export const COMMANDS = [
     k: [],
     a: ['add split', 'create split', 'filter'],
     run: () => {
-      S.overlay = { kind: 'cmd', mode: 'split', q: '', i: 0 };
-      renderLayer(true);
+      openCmd('split');
     },
   },
   {
@@ -270,7 +273,7 @@ export const COMMANDS = [
     t: 'Remove Reminder',
     k: [],
     a: ['unsnooze', 'snooze'],
-    when: () => anyThread() && targets().some((t) => snoozes()[keyOf(t)] > Date.now()),
+    when: () => anyThread() && targets().some((t) => snoozes()[keyOf(t)] > now()),
     run: () => {
       const sn = snoozes();
       targets().forEach((t) => {
@@ -301,8 +304,7 @@ export const COMMANDS = [
     a: ['bulk mark done', 'bulk archive', 'inbox zero', 'clean up my inbox'],
     when: () => S.screen === 'list' && visible().length > 0,
     run: () => {
-      S.overlay = { kind: 'cmd', mode: 'zero', q: '', i: 0 };
-      renderLayer(true);
+      openCmd('zero');
     },
   },
   {
@@ -457,8 +459,7 @@ export const COMMANDS = [
     a: ['save template', 'new snippet'],
     when: () => !!S.composer && !!S.composer.text.trim(),
     run: () => {
-      S.overlay = { kind: 'cmd', mode: 'snipname', q: '', i: 0 };
-      renderLayer(true);
+      openCmd('snipname');
     },
   },
   {
@@ -466,8 +467,7 @@ export const COMMANDS = [
     k: [],
     a: ['go to date', 'calendar day', 'open day'],
     run: () => {
-      S.overlay = { kind: 'cmd', mode: 'date', q: '', i: 0 };
-      renderLayer(true);
+      openCmd('date');
     },
   },
   {
@@ -502,7 +502,7 @@ export const COMMANDS = [
     a: ['calendar sync'],
     when: () => !!B.calEvents,
     run: () => {
-      S.cal.days.clear();
+      S.cal.days = new Map();
       ensureCalDay(true);
     },
   },
@@ -522,10 +522,12 @@ export const COMMANDS = [
     when: () => !B.demo,
     run: async () => {
       await B.signOut(S.account.email);
-      S.account = null;
-      S.screen = 'signin';
-      S.more = false;
-      render();
+      change(() => {
+        S.account = null;
+        S.screen = 'signin';
+        S.more = false;
+        render();
+      });
     },
   },
   {
@@ -611,13 +613,13 @@ export function paletteItems(q) {
       })
       .filter((x) => !q || x.t.toLowerCase().includes(q.toLowerCase()));
   if (o.mode === 'date') {
-    const now = new Date(),
+    const today = new Date(now()),
       opts = [
-        ['today', now.getTime()],
-        ['tomorrow', now.getTime() + DAY],
-        ['next week', parseWhen('next week', now).start],
+        ['today', today.getTime()],
+        ['tomorrow', today.getTime() + DAY],
+        ['next week', parseWhen('next week', today).start],
       ];
-    const typed = q ? parseWhen(q, now, 9) : null;
+    const typed = q ? parseWhen(q, today, 9) : null;
     if (typed) opts.unshift([q, typed.start]);
     return opts
       .filter(([l], i) => !q || (typed && i === 0) || l.startsWith(q.toLowerCase()))
@@ -626,7 +628,7 @@ export function paletteItems(q) {
         lbl: new Date(at).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }),
         run: () => {
           S.calDay = dayStart(at);
-          S.calScroll = undefined;
+          M.calScroll = undefined;
           S.pane = 'calendar';
           LS.set('pane', S.pane);
           render();
@@ -698,8 +700,7 @@ export function paletteItems(q) {
 
 export function openPalette() {
   rememberCaret();
-  S.overlay = { kind: 'cmd', q: '', i: 0 };
-  renderLayer(true);
+  openCmd();
 }
 
 // ---------- more commands ----------
@@ -728,7 +729,7 @@ export function expandAll() {
 export function selectAll(fromHere) {
   const v = visible();
   (fromHere ? v.slice(S.sel) : v).forEach((t) => {
-    S.picked.add(t.id);
+    S.picked = plus(S.picked, t.id);
   });
   render();
   toast(`${S.picked.size} picked.`);
@@ -736,15 +737,18 @@ export function selectAll(fromHere) {
 
 export async function openFolderPick(mode) {
   if (!targets().length) return;
-  S.overlay = { kind: 'cmd', mode, q: '', i: 0 };
-  renderLayer(true);
+  openCmd(mode);
   if (!S.folders) {
+    let f;
     try {
-      S.folders = B.folders ? await B.folders() : [];
+      f = B.folders ? await B.folders() : [];
     } catch {
-      S.folders = [];
+      f = [];
     }
-    if (S.overlay && S.overlay.mode === mode) renderLayer();
+    change(() => {
+      S.folders = f;
+      if (S.overlay && S.overlay.mode === mode) renderLayer();
+    });
   }
 }
 
@@ -754,15 +758,15 @@ async function moveTo(f, mode) {
   if (mode === 'copy') {
     try {
       await Promise.all(list.map((t) => B.act(t, 'copy', f.path)));
-      toast(`label ${esc(f.name)}.`);
+      toast(`label ${f.name}.`);
     } catch (e) {
-      toast(`no work: ${esc(e.message || e)}`);
+      toast(`no work: ${e.message || e}`);
     }
     return;
   }
   if (list.every((t) => t.folder === f.path)) return toast('already there.');
   act('move', list, true, f.path);
-  toast(`moved to ${esc(f.name)}. <span class="key">Z</span> undo`);
+  toast([`moved to ${f.name}. `, 'Z', ' undo']);
 }
 
 // Muted conversations and blocked senders are cleared out of the inbox whenever it loads.
@@ -794,8 +798,8 @@ function block(on) {
   LS.set('blocked', on ? [...b, a] : b);
   if (on) {
     act('trash', targets(), true);
-    toast(`${esc(a)} blocked. mail go trash.`);
-  } else toast(`${esc(a)} unblocked.`);
+    toast(`${a} blocked. mail go trash.`);
+  } else toast(`${a} unblocked.`);
 }
 
 export function autoClear(list) {
@@ -811,7 +815,7 @@ export function autoClear(list) {
 }
 
 function composeNew(p) {
-  S.draft = {
+  M.draft = {
     mode: 'new',
     to: p.to || '',
     cc: p.cc || '',
@@ -879,7 +883,7 @@ export function attachFiles() {
   inp.onchange = async () => {
     for (const f of inp.files) {
       if (f.size > 25 * 1048576) {
-        toast(`${esc(f.name)} too big. 25 mb max.`);
+        toast(`${f.name} too big. 25 mb max.`);
         continue;
       }
       const data = await new Promise((r) => {
@@ -888,8 +892,12 @@ export function attachFiles() {
         fr.onerror = () => r('');
         fr.readAsDataURL(f);
       });
-      c.files = c.files || [];
-      c.files.push({ name: f.name, type: f.type || 'application/octet-stream', size: f.size, data });
+      change(() => {
+        c.files = [
+          ...(c.files || []),
+          { name: f.name, type: f.type || 'application/octet-stream', size: f.size, data },
+        ];
+      });
     }
     if (S.composer === c) {
       render();
@@ -909,8 +917,7 @@ function rememberCaret() {
 
 export function snippetPick() {
   rememberCaret();
-  S.overlay = { kind: 'cmd', mode: 'snippet', q: '', i: 0 };
-  renderLayer(true);
+  openCmd('snippet');
 }
 
 function saveSnippet(name) {
@@ -923,7 +930,7 @@ function saveSnippet(name) {
     ...snippets().filter((x) => x.name !== name),
     { id: `sn${Date.now()}`, name, text: text.trim(), subject: c.mode === 'new' ? c.subject : '' },
   ]);
-  toast(`snippet “${esc(name)}” saved. <span class="key">;</span> use.`);
+  toast([`snippet “${name}” saved. `, ';', ' use.']);
 }
 
 function useSnippet(sn) {
@@ -941,12 +948,14 @@ function useSnippet(sn) {
   if (!c.subject && sn.subject) c.subject = sn.subject;
   render();
   scheduleDraftSave();
-  setTimeout(() => {
+  onSettled(() => {
     const ta = root.querySelector('[data-c="text"]') || layer.querySelector('[data-c="text"]');
     if (ta) {
       ta.focus();
       ta.setSelectionRange(at + body.length, at + body.length);
-      c.caret = at + body.length;
+      change(() => {
+        c.caret = at + body.length;
+      });
     }
-  }, 0);
+  });
 }

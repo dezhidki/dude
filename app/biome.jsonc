@@ -27,12 +27,23 @@
       "correctness": {
         "noUndeclaredVariables": "error"
       },
-      // the app has no <form>, so a button can't submit anything: type="button" would be noise
       "a11y": {
-        "useButtonType": "off"
+        // the app has no <form>, so a button can't submit anything: type="button" would be noise
+        "useButtonType": "off",
+        // rows, messages and calendar blocks take clicks as mouse shortcuts; the keyboard has its own
+        // keys for them (events.js)
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off"
       }
     }
   },
+  "overrides": [
+    {
+      // the icons sit in buttons that carry the label (title / aria-label), as they always have
+      "includes": ["web/app/icons.jsx"],
+      "linter": { "rules": { "a11y": { "noSvgWithoutTitle": "off" } } }
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "single"

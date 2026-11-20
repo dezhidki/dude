@@ -1,11 +1,29 @@
 // ---------- compose ----------
 
+import { onSettled } from 'solid-js';
 import { toHtml } from '../markdown.js';
 import { parseWhen } from '../when.js';
 import { act, targets } from './actions.js';
-import { addrList, B, DAY, esc, fullDate, keyOf, LS, layer, nameOf, root, S, splitList, toast } from './core.js';
+import {
+  addrList,
+  B,
+  change,
+  DAY,
+  fullDate,
+  keyOf,
+  layer,
+  LS,
+  M,
+  minus,
+  nameOf,
+  plus,
+  root,
+  S,
+  splitList,
+  toast,
+} from './core.js';
 import { learnMyName, snoozes, visible } from './data.js';
-import { render, renderLayer } from './render.jsx';
+import { openCmd, render, renderLayer } from './render.jsx';
 import { SET, sigBlock } from './settings.jsx';
 import { closeThread, lastRealIndex } from './thread.js';
 
@@ -13,9 +31,9 @@ export const meAddr = () => (S.account?.email || '').toLowerCase();
 
 export function startCompose(mode) {
   if (mode === 'new') {
-    S.back = S.screen === 'compose' ? S.back : { screen: S.screen, open: S.open, msgs: S.msgs };
-    S.composer = S.draft || { mode, to: '', cc: '', subject: '', text: sigBlock() };
-    S.draft = null;
+    M.back = S.screen === 'compose' ? M.back : { screen: S.screen, open: S.open, msgs: S.msgs };
+    S.composer = M.draft || { mode, to: '', cc: '', subject: '', text: sigBlock() };
+    M.draft = null;
     S.screen = 'compose';
     render();
     focusComposer(S.composer.to ? 'text' : 'to');
@@ -78,10 +96,14 @@ export function scheduleDraftSave() {
 async function saveDraftNow(c) {
   if (!c || !B.saveDraft || c.sent || c.discarded || blankDraft(c)) return;
   if (c.saving) {
-    c.again = true;
+    change(() => {
+      c.again = true;
+    });
     return;
   }
-  c.saving = true;
+  change(() => {
+    c.saving = true;
+  });
   try {
     const body = c.text + quoted(c);
     const r = await B.saveDraft({
@@ -97,24 +119,27 @@ async function saveDraftNow(c) {
       fromName: S.account?.name || '',
       replaceUid: c.draftUid,
     });
-    if (c.sent || c.discarded) {
-      if (r?.uid) B.deleteDraft(r.uid).catch(() => {});
-    } else if (r?.uid) c.draftUid = r.uid;
-    if (!c.sent && !c.discarded && c.extraDrafts?.length) {
-      const ex = c.extraDrafts;
-      c.extraDrafts = [];
-      ex.forEach((u) => {
-        if (u !== c.draftUid) B.deleteDraft(u).catch(() => {});
-      });
-    }
+    change(() => {
+      if (c.sent || c.discarded) {
+        if (r?.uid) B.deleteDraft(r.uid).catch(() => {});
+      } else if (r?.uid) c.draftUid = r.uid;
+      if (!c.sent && !c.discarded && c.extraDrafts?.length) {
+        const ex = c.extraDrafts;
+        c.extraDrafts = [];
+        ex.forEach((u) => {
+          if (u !== c.draftUid) B.deleteDraft(u).catch(() => {});
+        });
+      }
+    });
   } catch {
     /* kept here; saved again on the next change */
   } finally {
-    c.saving = false;
-    if (c.again && !c.sent && !c.discarded) {
-      c.again = false;
-      saveDraftNow(c);
-    }
+    const again = c.again && !c.sent && !c.discarded;
+    change(() => {
+      c.saving = false;
+      if (again) c.again = false;
+    });
+    if (again) saveDraftNow(c);
   }
 }
 
@@ -123,7 +148,7 @@ function discardDraft(c) {
   c.discarded = true;
   clearTimeout(draftTimer);
   if (c.draftUid && B.deleteDraft) B.deleteDraft(c.draftUid).catch(() => {});
-  if (S.open) S.replyDrafts.delete(keyOf(S.open));
+  if (S.open) S.replyDrafts = minus(S.replyDrafts, keyOf(S.open));
 }
 
 // A reply you leave behind stays with its conversation, as "Draft to …".
@@ -132,7 +157,7 @@ export function stashReply() {
   if (!c || !S.open || c.mode === 'new') return;
   if (blankDraft(c)) discardDraft(c);
   else {
-    S.replyDrafts.set(keyOf(S.open), c);
+    S.replyDrafts = plus(S.replyDrafts, keyOf(S.open), c);
     saveDraftNow(c);
   }
 }
@@ -156,7 +181,7 @@ export function resumeDraft(i) {
   S.composer.extraDrafts = [...(S.composer.extraDrafts || []), ...(m.others || [])].filter(
     (u) => u && u !== S.composer.draftUid,
   );
-  S.replyDrafts.delete(keyOf(S.open));
+  S.replyDrafts = minus(S.replyDrafts, keyOf(S.open));
   render();
   focusComposer('text');
 }
@@ -165,13 +190,13 @@ export function resumeDraft(i) {
 export function leaveCompose(discard) {
   if (discard) discardDraft(S.composer);
   else if (!blankDraft(S.composer)) {
-    S.draft = S.composer;
+    M.draft = S.composer;
     saveDraftNow(S.composer);
-    toast('draft kept. <span class="key">C</span> resume.');
+    toast(['draft kept. ', 'C', ' resume.']);
   }
   S.composer = null;
-  const b = S.back || { screen: 'list' };
-  S.back = null;
+  const b = M.back || { screen: 'list' };
+  M.back = null;
   S.screen = b.screen === 'thread' && b.open ? 'thread' : b.screen === 'calendar' ? 'calendar' : 'list';
   if (S.screen === 'thread') {
     S.open = b.open;
@@ -181,13 +206,13 @@ export function leaveCompose(discard) {
 }
 
 export function focusComposer(f) {
-  setTimeout(() => {
+  onSettled(() => {
     const el = root.querySelector(`[data-c="${f}"]`) || layer.querySelector(`[data-c="${f}"]`);
     if (el) {
       el.focus();
       if (f === 'text') el.setSelectionRange(0, 0);
     }
-  }, 0);
+  });
 }
 
 function quoted(c) {
@@ -232,7 +257,7 @@ export function sendComposer(done) {
   };
   c.sent = true;
   clearTimeout(draftTimer);
-  if (S.open) S.replyDrafts.delete(keyOf(S.open));
+  if (S.open) S.replyDrafts = minus(S.replyDrafts, keyOf(S.open));
   const draft = c;
   const inThread = S.screen === 'thread' && S.open && c.mode !== 'new' ? S.open : null;
   const parse = (list) =>
@@ -257,48 +282,55 @@ export function sendComposer(done) {
   S.composer = null;
   if (mine) {
     const k = keyOf(inThread);
-    S.sentIn[k] = S.sentIn[k] || [];
-    S.sentIn[k].push(mine);
+    M.sentIn[k] = M.sentIn[k] || [];
+    M.sentIn[k].push(mine);
     if (S.open === inThread) {
       S.msgs.push(mine);
-      S.expanded.add(S.msgs.length - 1);
+      S.expanded = plus(S.expanded, S.msgs.length - 1);
       S.focus = S.msgs.length - 1;
     }
   }
   if (S.screen === 'compose') leaveCompose(true);
   else render();
-  if (mine) root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+  if (mine)
+    onSettled(() => {
+      root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+    });
   const unshow = () => {
     if (!mine) return;
     const k = keyOf(inThread);
-    S.sentIn[k] = (S.sentIn[k] || []).filter((m) => m !== mine);
-    const i = S.msgs.indexOf(mine);
+    M.sentIn[k] = (M.sentIn[k] || []).filter((m) => m !== mine);
+    const i = S.msgs.findIndex((m) => m.messageId === messageId); // the store's copy of mine
     if (i >= 0) {
       S.msgs.splice(i, 1);
-      S.expanded.delete(i);
+      S.expanded = minus(S.expanded, i);
       S.focus = Math.min(S.focus, S.msgs.length - 1);
     }
   };
   const timer = setTimeout(async () => {
-    S.undo = S.undo.filter((u) => u.send !== timer);
+    M.undo = M.undo.filter((u) => u.send !== timer);
     try {
       await B.send(msg);
-      if (mine) {
-        mine.pending = false;
-        if (S.screen === 'thread') render();
-      }
+      if (mine)
+        change(() => {
+          mine.pending = false; // what M.sentIn brings back
+          for (const m of S.msgs) if (m.messageId === messageId) m.pending = false; // what's on screen
+          if (S.screen === 'thread') render();
+        });
       toast('sent.');
       if (draft.draftUid && B.deleteDraft) B.deleteDraft(draft.draftUid).catch(() => {});
     } catch (e) {
-      toast(`not sent: ${esc(e.message || e)}`);
-      unshow();
-      draft.sent = false;
-      S.composer = draft;
-      render();
+      toast(`not sent: ${e.message || e}`);
+      change(() => {
+        unshow();
+        draft.sent = false;
+        S.composer = draft;
+        render();
+      });
     }
   }, SET().undoSeconds * 1000);
-  S.undo.push({ send: timer, draft, unshow });
-  if (SET().undoSeconds) toast('sending… <span class="key">Z</span> undo', SET().undoSeconds * 1000);
+  M.undo.push({ send: timer, draft, unshow });
+  if (SET().undoSeconds) toast(['sending… ', 'Z', ' undo'], SET().undoSeconds * 1000);
   if ((done === true || SET().sendAndDone) && inThread) act('done', [inThread], true);
 }
 
@@ -335,7 +367,7 @@ export function sendLater(at) {
   S.composer = null;
   if (S.screen === 'compose') leaveCompose(true);
   else render();
-  toast(`send ${esc(whenLabel(at))}.`);
+  toast(`send ${whenLabel(at)}.`);
 }
 
 async function sendDue() {
@@ -390,18 +422,17 @@ export function remind(until) {
     sn[keyOf(t)] = until;
   });
   LS.set('snooze', sn);
-  S.undo.push({ snooze: list.map(keyOf) });
+  M.undo.push({ snooze: list.map(keyOf) });
   S.overlay = null;
   if (S.screen === 'thread') closeThread();
-  S.picked.clear();
+  S.picked = new Set();
   S.sel = Math.min(S.sel, Math.max(0, visible().length - 1));
   render();
   renderLayer();
-  toast(`remind ${esc(whenLabel(until))} <span class="key">Z</span> undo`);
+  toast([`remind ${whenLabel(until)} `, 'Z', ' undo']);
 }
 
 export function openWhen(mode) {
   if (mode === 'remind' && !targets().length) return;
-  S.overlay = { kind: 'cmd', mode, q: '', i: 0 };
-  renderLayer(true);
+  openCmd(mode);
 }

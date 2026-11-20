@@ -2,9 +2,10 @@
 // Every minute: look for new inbox mail, notify about it (Settings: important / all / off),
 // keep the tray's unread count right, and refresh the inbox on screen without moving you.
 
+import { onSettled } from 'solid-js';
 import { autoClear } from './commands.js';
 import { startCompose } from './compose.js';
-import { B, DESKTOP, keyOf, LS, nameOf, needSignIn, root, S, VIEWS } from './core.js';
+import { B, change, DESKTOP, keyOf, LS, M, nameOf, needSignIn, plus, root, S, VIEWS } from './core.js';
 import { current, load, snapKey, snoozes, splitOf, visible } from './data.js';
 import { loadContacts } from './people.js';
 import { render } from './render.jsx';
@@ -36,7 +37,7 @@ async function poll() {
       setTimeout(poll, 300);
     }
   }
-  S.cache.inbox = list;
+  M.cache.inbox = list;
   LS.set(snapKey(), list.slice(0, 150));
   const mode = SET().notify || 'important',
     fresh = [];
@@ -70,13 +71,14 @@ async function poll() {
       });
     });
   window.mail.setUnread(list.filter((t) => t.unread && splitOf(t) !== 'other').length);
-  if (S.screen === 'list' && S.view === 'inbox' && !S.overlay && !S.composer && !S.menu) {
-    const selId = current()?.id;
-    S.threads = list;
-    const i = visible().findIndex((t) => t.id === selId);
-    S.sel = i >= 0 ? i : Math.min(S.sel, Math.max(0, visible().length - 1));
-    render();
-  }
+  if (S.screen === 'list' && S.view === 'inbox' && !S.overlay && !S.composer && !S.menu)
+    change(() => {
+      const selId = current()?.id;
+      S.threads = list;
+      const i = visible().findIndex((t) => t.id === selId);
+      S.sel = i >= 0 ? i : Math.min(S.sel, Math.max(0, visible().length - 1));
+      render();
+    });
 }
 
 // The timer is the backup (Settings → check mail); pushed changes from the server come at once.
@@ -95,8 +97,8 @@ export function schedulePoll() {
 
 async function checkThread() {
   const t = S.open;
-  if (S.screen !== 'thread' || !t || !S.msgs.length || S.checking) return;
-  S.checking = true;
+  if (S.screen !== 'thread' || !t || !S.msgs.length || M.checking) return;
+  M.checking = true;
   try {
     let next = t;
     if (VIEWS[S.view] && S.view !== 'reminders') {
@@ -105,7 +107,9 @@ async function checkThread() {
       const mine = new Set(t.uids || []);
       next = list.find((g) => (g.uids || []).some((u) => mine.has(u)) && g.folder === t.folder) || t;
       if (S.open !== t) return;
-      S.threads = list;
+      change(() => {
+        S.threads = list;
+      });
     }
     const got = await B.thread(next);
     if (B.related) {
@@ -117,14 +121,15 @@ async function checkThread() {
     for (let i = got.length - 1; i >= 0; i--) if (got[i].draft) got.splice(i, 1);
     const have = new Set(S.msgs.map((m) => m.messageId || m.id));
     const fresh = got.filter((m) => !have.has(m.messageId || m.id));
-    if (fresh.length) {
-      S.newer = { thread: next, msgs: got, count: fresh.length };
-      render();
-    }
+    if (fresh.length)
+      change(() => {
+        S.newer = { thread: next, msgs: got, count: fresh.length };
+        render();
+      });
   } catch {
     /* offline for a moment: try again next time */
   } finally {
-    S.checking = false;
+    M.checking = false;
   }
 }
 
@@ -132,7 +137,7 @@ export function showNewMessages() {
   const n = S.newer;
   if (!n) return;
   const have = new Set(S.msgs.map((m) => m.messageId || m.id));
-  const extra = (S.sentIn[keyOf(S.open)] || []).filter((m) => !n.msgs.some((x) => x.messageId === m.messageId));
+  const extra = (M.sentIn[keyOf(S.open)] || []).filter((m) => !n.msgs.some((x) => x.messageId === m.messageId));
   const merged = tidyDrafts(
     n.thread,
     [...n.msgs, ...extra, ...S.msgs.filter((m) => m.draft)].sort((a, b) => a.date - b.date),
@@ -141,12 +146,14 @@ export function showNewMessages() {
   S.msgs = merged;
   S.newer = null;
   merged.forEach((m, i) => {
-    if (!have.has(m.messageId || m.id)) S.expanded.add(i);
+    if (!have.has(m.messageId || m.id)) S.expanded = plus(S.expanded, i);
   });
   S.focus = merged.findIndex((m) => !have.has(m.messageId || m.id));
   if (S.focus < 0) S.focus = merged.length - 1;
   render();
-  root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+  onSettled(() => {
+    root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+  });
 }
 
 // Runs once every module has loaded (../main.js calls it): show the first screen, start the timers.
@@ -155,9 +162,11 @@ export function start() {
     try {
       const acc = DESKTOP ? await B.accounts() : [];
       if (acc.length) {
-        S.account = acc[0];
-        S.screen = 'list';
-        load('inbox');
+        change(() => {
+          S.account = acc[0];
+          S.screen = 'list';
+          load('inbox');
+        });
         setTimeout(loadContacts, 8000);
         return;
       }
@@ -182,10 +191,11 @@ export function start() {
     setInterval(async () => {
       try {
         const live = (await window.mail.pushStatus()).live;
-        if (live !== S.pushLive) {
-          S.pushLive = live;
-          if (S.screen === 'settings') render();
-        }
+        if (live !== S.pushLive)
+          change(() => {
+            S.pushLive = live;
+            if (S.screen === 'settings') render();
+          });
       } catch {}
     }, 10e3);
   if (window.mail?.onAuth)
@@ -194,15 +204,15 @@ export function start() {
     });
   if (window.mail?.onOpen) {
     window.mail.onOpen((id) => {
-      const t = [...S.threads, ...(S.cache.inbox || [])].find((x) => x.id === id);
+      const t = [...S.threads, ...(M.cache.inbox || [])].find((x) => x.id === id);
       if (!t) return;
-      if (S.screen !== 'list' && S.screen !== 'thread') {
-        S.screen = 'list';
-      }
-      openThread(t);
+      change(() => {
+        if (S.screen !== 'list' && S.screen !== 'thread') S.screen = 'list';
+        openThread(t);
+      });
     });
     window.mail.onDo((what) => {
-      if (what === 'compose' && S.account) startCompose('new');
+      if (what === 'compose' && S.account) change(() => startCompose('new'));
     });
   }
   setInterval(checkThread, 30e3);

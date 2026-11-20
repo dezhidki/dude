@@ -1,10 +1,12 @@
 // ---------- the whole calendar: a week ----------
 
 import { For } from 'solid-js';
-import { calKey, events, eventTimes, invOf } from './calendar.js';
+import { answerEvent, calKey, events, eventTimes, invOf, openEvent, setCalOpt, startDrag } from './calendar.js';
 import { MOD } from './commands.js';
-import { DAY, dayStart, fmtTime, fullDate, ic, LS, linkify, S, svg } from './core.js';
-import { Sugg } from './render.jsx';
+import { DAY, dayStart, fmtTime, fullDate, linkify, LS, M, now, on, S } from './core.js';
+import { press } from './events.js';
+import { ic } from './icons.jsx';
+import { render, Sugg } from './render.jsx';
 
 export const HPX = 44; // one hour, in pixels
 
@@ -76,7 +78,12 @@ function dayEvents(t) {
 }
 
 const Chip = (props) => (
-  <span class={['cal-chip', { inv: props.x.invite }]} data-ev={String(props.x.id || '')} title={props.x.title}>
+  <span
+    class={['cal-chip', { inv: props.x.invite }]}
+    data-ev={String(props.x.id || '')}
+    title={props.x.title}
+    onClick={on(() => openEvent(String(props.x.id || '')))}
+  >
     {props.x.title}
   </span>
 );
@@ -98,10 +105,13 @@ function blocks(t, list) {
     const n = timed.filter((o) => o.start < x.end && o.end > x.start).reduce((m, o) => Math.max(m, o._lane + 1), 1),
       w = 100 / n;
     const pend = x.isMeeting && !x.isOrganizer && /NoResponse|Unknown|Tentative/.test(x.response || '');
-    const cls =
-      (x.invite ? ' inv' : !x.server ? ' local' : pend ? ' pending' : '') +
-      (x.response === 'Decline' ? ' declined' : '') +
-      (((x.end - x.start) / 3600e3) * HPX < 30 ? ' short' : '');
+    const cls = {
+      inv: x.invite,
+      local: !x.invite && !x.server,
+      pending: !x.invite && x.server && pend,
+      declined: x.response === 'Decline',
+      short: ((x.end - x.start) / 3600e3) * HPX < 30,
+    };
     return {
       x,
       cls,
@@ -124,7 +134,13 @@ function Blocks(props) {
     <>
       <For each={blocks(props.t, props.list)}>
         {(b) => (
-          <div class={`cal-ev${b.cls}`} data-ev={String(b.x.id || '')} style={b.style} title={b.title}>
+          <div
+            class={['cal-ev', b.cls]}
+            data-ev={String(b.x.id || '')}
+            style={b.style}
+            title={b.title}
+            onClick={on(() => openEvent(String(b.x.id || '')))}
+          >
             <b>{b.x.title}</b>
             {` ${fmtTime(b.x.start)} – ${fmtTime(b.x.end)}${b.x.where ? ` · ${b.x.where}` : ''}`}
           </div>
@@ -139,8 +155,17 @@ function Blocks(props) {
           {` ${fmtTime(ft().start)} – ${fmtTime(ft().end)}`}
         </div>
       ) : null}
-      {Date.now() >= props.t && Date.now() < dayEnd(props.t) ? (
-        <div class="cal-now" style={`top:${((Date.now() - props.t) / 3600e3) * HPX}px`} />
+      {now() >= props.t && now() < dayEnd(props.t) ? (
+        <div class="cal-now" style={`top:${((now() - props.t) / 3600e3) * HPX}px`} />
+      ) : null}
+      {S.drag?.day === props.t ? (
+        <div
+          class="cal-ev draft"
+          style={`${pos(props.t, S.drag.start, S.drag.end)};left:2px;right:auto;width:calc(100% - 4px)`}
+        >
+          <b>new event</b>
+          {` ${fmtTime(S.drag.start)} – ${fmtTime(S.drag.end)}`}
+        </div>
       ) : null}
     </>
   );
@@ -153,7 +178,10 @@ function CalNote(props) {
     <>
       {S.cal.status?.canConnect && !S.cal.status.connected ? (
         <div class={cls()}>
-          calendar not linked. <button data-a="cal-connect">connect</button>
+          calendar not linked.{' '}
+          <button data-a="cal-connect" onClick={press('cal-connect')}>
+            connect
+          </button>
         </div>
       ) : S.cal.error ? (
         <div class={cls()}>{S.cal.error}</div>
@@ -166,12 +194,12 @@ function CalNote(props) {
 
 // the calendar's scroll is kept, so the hours you were at stay when it redraws (render.jsx sets it)
 const keepScroll = (e) => {
-  S.calScroll = e.currentTarget.scrollTop;
+  M.calScroll = e.currentTarget.scrollTop;
 };
 
 export function Week() {
   const days = () => weekDays();
-  const today = () => dayStart(Date.now());
+  const today = () => dayStart(now());
   const lists = () => days().map(dayEvents);
   const title = () => {
     const a = new Date(days()[0]),
@@ -183,22 +211,22 @@ export function Week() {
   return (
     <div class="wk" style={`--n:${days().length}`}>
       <header class="wk-h">
-        <button class="cal-btn" data-a="cal-today" title="Today (T)">
+        <button class="cal-btn" data-a="cal-today" onClick={press('cal-today')} title="Today (T)">
           today
         </button>
-        <button class="ibtn" data-a="wk-prev" title="Previous week (-)">
-          {svg(ic.left)}
+        <button class="ibtn" data-a="wk-prev" onClick={press('wk-prev')} title="Previous week (-)">
+          <ic.left />
         </button>
-        <button class="ibtn" data-a="wk-next" title="Next week (=)">
-          {svg(ic.right)}
+        <button class="ibtn" data-a="wk-next" onClick={press('wk-next')} title="Next week (=)">
+          <ic.right />
         </button>
         <h1>{title()}</h1>
         <span class="grow" />
-        <button class="ibtn" data-a="event" title="Create event (B)">
+        <button class="ibtn" data-a="event" onClick={press('event')} title="Create event (B)">
           +
         </button>
-        <button class="ibtn" data-a="cmd" title={`Command (${MOD}+K)`}>
-          {svg(ic.cmd)}
+        <button class="ibtn" data-a="cmd" onClick={press('cmd')} title={`Command (${MOD}+K)`}>
+          <ic.cmd />
         </button>
       </header>
       <CalNote t={days()[0]} wide />
@@ -233,7 +261,7 @@ export function Week() {
           </div>
           <For each={days()}>
             {(t, i) => (
-              <div class={['wk-col', { today: t === today() }]} data-day={t}>
+              <div class={['wk-col', { today: t === today() }]} data-day={t} onMouseDown={on((e) => startDrag(e, t))}>
                 <Blocks t={t} list={lists()[i()]} />
               </div>
             )}
@@ -263,9 +291,14 @@ export function CalSide() {
       d.setDate(first().getDate() + i);
       return d;
     });
-  const opt = (k, label, on) => (
+  const opt = (k, label, isOn) => (
     <label class="cal-opt">
-      <input type="checkbox" data-calopt={k} checked={on()} />
+      <input
+        type="checkbox"
+        data-calopt={k}
+        checked={isOn()}
+        onChange={on((e) => setCalOpt(k, e.currentTarget.checked))}
+      />
       {` ${label}`}
     </label>
   );
@@ -283,11 +316,11 @@ export function CalSide() {
             <div class="mm-h">
               <b>{m0().toLocaleDateString([], { month: 'long', year: 'numeric' })}</b>
               <span class="grow" />
-              <button class="ibtn" data-a="mm-prev" title="Previous month">
-                {svg(ic.left)}
+              <button class="ibtn" data-a="mm-prev" onClick={press('mm-prev')} title="Previous month">
+                <ic.left />
               </button>
-              <button class="ibtn" data-a="mm-next" title="Next month">
-                {svg(ic.right)}
+              <button class="ibtn" data-a="mm-next" onClick={press('mm-next')} title="Next month">
+                <ic.right />
               </button>
             </div>
             <div class="mm-g">
@@ -299,11 +332,16 @@ export function CalSide() {
                       'mm-d',
                       {
                         o: d.getMonth() !== m0().getMonth(),
-                        today: d.getTime() === dayStart(Date.now()),
+                        today: d.getTime() === dayStart(now()),
                         inwk: d.getTime() >= weekStartOf(S.calDay) && d.getTime() < addDays(weekStartOf(S.calDay), 7),
                       },
                     ]}
                     data-jump={d.getTime()}
+                    onClick={on(() => {
+                      S.calDay = d.getTime();
+                      M.calScroll = undefined;
+                      render();
+                    })}
                     aria-label={d.toDateString()}
                   >
                     <span>{d.getDate()}</span>
@@ -313,14 +351,18 @@ export function CalSide() {
             </div>
           </div>
           <div class="cal-sec">
-            <div class="cal-sec-h">{svg(ic.cal)} calendar</div>
+            <div class="cal-sec-h">
+              <ic.cal /> calendar
+            </div>
             <div class="cal-acct">
               {`${S.account?.email || ''} `}
               <span>
                 {S.cal.status?.connected ? (
                   'linked'
                 ) : S.cal.status?.canConnect ? (
-                  <button data-a="cal-connect">connect</button>
+                  <button data-a="cal-connect" onClick={press('cal-connect')}>
+                    connect
+                  </button>
                 ) : (
                   'events made here only'
                 )}
@@ -333,7 +375,7 @@ export function CalSide() {
           <div class="grow" />
           <div class="pane-foot">
             <b>{S.account?.email || ''}</b>
-            <button class="ibtn" data-a="event" title="Create Event (B)">
+            <button class="ibtn" data-a="event" onClick={press('event')} title="Create Event (B)">
               +
             </button>
           </div>
@@ -354,19 +396,19 @@ export function DayPane() {
         <span class="d">
           {new Date(t()).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
         </span>
-        <button class="ibtn" data-a="day-prev" title="Previous day (-)">
-          {svg(ic.left)}
+        <button class="ibtn" data-a="day-prev" onClick={press('day-prev')} title="Previous day (-)">
+          <ic.left />
         </button>
-        <button class="ibtn" data-a="day-next" title="Next day (=)">
-          {svg(ic.right)}
+        <button class="ibtn" data-a="day-next" onClick={press('day-next')} title="Next day (=)">
+          <ic.right />
         </button>
         <span class="grow" />
-        {t() !== dayStart(Date.now()) ? (
-          <button class="cal-btn" data-a="day-today" title="Back to today">
+        {t() !== dayStart(now()) ? (
+          <button class="cal-btn" data-a="day-today" onClick={press('day-today')} title="Back to today">
             today
           </button>
         ) : null}
-        <button class="cal-btn" data-a="go-cal" title="Open week (2)">
+        <button class="cal-btn" data-a="go-cal" onClick={press('go-cal')} title="Open week (2)">
           week
         </button>
       </div>
@@ -377,7 +419,7 @@ export function DayPane() {
         </div>
       ) : null}
       <div class="cal-b" onScroll={keepScroll}>
-        <div class="cal-g" data-day={t()}>
+        <div class="cal-g" data-day={t()} onMouseDown={on((e) => startDrag(e, t()))}>
           <span class="cal-tz">{tzName(t())}</span>
           <For each={Array.from({ length: 24 }, (_, h) => h)}>
             {(h) => <div class="cal-hr">{h ? <span>{hourLabel(h)}</span> : null}</div>}
@@ -390,7 +432,7 @@ export function DayPane() {
       ) : (
         <div class="pane-foot">
           <b>{S.account?.email || ''}</b>
-          <button class="ibtn" data-a="event" title="Create Event (B)">
+          <button class="ibtn" data-a="event" onClick={press('event')} title="Create Event (B)">
             +
           </button>
         </div>
@@ -413,18 +455,18 @@ function EvForm() {
         <div class={['evform evview', { fresh: f().fresh }]}>
           <div class="etitle-ro">{f().title}</div>
           <div class="evline">
-            {svg(ic.clock)}
+            <ic.clock />
             <span>{fmtRange(f().start, f().end)}</span>
           </div>
           {f().where ? (
             <div class="evline">
-              {svg(ic.pin)}
+              <ic.pin />
               <span innerHTML={linkify(f().where)} />
             </div>
           ) : null}
           {f().organizer || f().guests ? (
             <div class="evline">
-              {svg(ic.person)}
+              <ic.person />
               <span>{[f().organizer && `${f().organizer} (organizer)`, f().guests].filter(Boolean).join(', ')}</span>
             </div>
           ) : null}
@@ -436,6 +478,7 @@ function EvForm() {
                   <button
                     class={['inv-b', { on: f().said === x }]}
                     data-evrsvp={x}
+                    onClick={on(() => answerEvent(x))}
                     aria-pressed={String(f().said === x)}
                   >
                     {x}
@@ -450,12 +493,16 @@ function EvForm() {
         <div class={['evform', { fresh: f().fresh }]}>
           <input class="etitle" data-e="title" value={f().title ?? ''} placeholder="what" aria-label="Event title" />
           <label class="evrow">
-            <span>{svg(ic.person)}</span>
+            <span>
+              <ic.person />
+            </span>
             <input data-e="guests" value={f().guests ?? ''} placeholder="who" autocomplete="off" />
             <Sugg field="guests" />
           </label>
           <label class="evrow">
-            <span>{svg(ic.clock)}</span>
+            <span>
+              <ic.clock />
+            </span>
             <input
               data-e="when"
               value={f().when ?? ''}
@@ -464,11 +511,15 @@ function EvForm() {
           </label>
           <div class="evparsed">{evParsed(f())}</div>
           <label class="evrow">
-            <span>{svg(ic.pin)}</span>
+            <span>
+              <ic.pin />
+            </span>
             <input data-e="where" value={f().where ?? ''} placeholder="where" />
           </label>
           <label class="evrow">
-            <span>{svg(ic.lines)}</span>
+            <span>
+              <ic.lines />
+            </span>
             <input data-e="notes" value={f().notes ?? ''} placeholder="notes" />
           </label>
         </div>
@@ -481,17 +532,21 @@ const EvBtns = () => (
   <>
     {S.eventForm?.readOnly ? (
       <div class="evbtns">
-        <button data-a="cancel-event">close</button>
+        <button data-a="cancel-event" onClick={press('cancel-event')}>
+          close
+        </button>
         <span>Esc</span>
       </div>
     ) : (
       <div class="evbtns">
-        <button class="save" data-a="save-event">
+        <button class="save" data-a="save-event" onClick={press('save-event')}>
           save
         </button>
-        <button data-a="cancel-event">nope</button>
+        <button data-a="cancel-event" onClick={press('cancel-event')}>
+          nope
+        </button>
         {S.eventForm?.id ? (
-          <button data-a="delete-event" title="Delete event">
+          <button data-a="delete-event" onClick={press('delete-event')} title="Delete event">
             delete
           </button>
         ) : null}

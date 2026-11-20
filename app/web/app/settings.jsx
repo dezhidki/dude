@@ -3,9 +3,12 @@
 import { For } from 'solid-js';
 import { tint, toHtml } from '../markdown.js';
 import { leaveCompose } from './compose.js';
-import { B, carbon, ic, LS, S, svg } from './core.js';
-import { customSplits } from './data.js';
-import { render } from './render.jsx';
+import { B, carbon, LS, M, on, S, setTheme } from './core.js';
+import { customSplits, removeSplit } from './data.js';
+import { press } from './events.js';
+import { ic } from './icons.jsx';
+import { fit, render } from './render.jsx';
+import { schedulePoll } from './start.js';
 import { closeThread } from './thread.js';
 
 export const SET = () => ({ signature: '', undoSeconds: 3, ...LS.get('settings', {}) });
@@ -22,7 +25,7 @@ export const sigBlock = () => {
 export function openSettings() {
   if (S.screen === 'compose') leaveCompose();
   if (S.screen === 'thread') closeThread();
-  if (S.screen !== 'settings') S.back = { screen: 'list' };
+  if (S.screen !== 'settings') M.back = { screen: 'list' };
   S.screen = 'settings';
   S.menu = null;
   render();
@@ -33,7 +36,11 @@ const Seg = (props) => (
   <div class="seg">
     <For each={props.opts}>
       {([v, l]) => (
-        <button {...{ [`data-${props.attr}`]: v }} class={String(v) === String(props.cur) ? 'on' : ''}>
+        <button
+          {...{ [`data-${props.attr}`]: v }}
+          class={{ on: String(v) === String(props.cur) }}
+          onClick={on(() => props.pick(v))}
+        >
           {l}
         </button>
       )}
@@ -44,8 +51,8 @@ const Seg = (props) => (
 export const Settings = () => (
   <div class="thread">
     <div class="thread-top">
-      <button class="back" data-a="close-settings" title="Back (Esc)">
-        {svg(ic.back)}
+      <button class="back" data-a="close-settings" onClick={press('close-settings')} title="Back (Esc)">
+        <ic.back />
       </button>
     </div>
     <div class="tcol settings">
@@ -58,6 +65,7 @@ export const Settings = () => (
         <div class="editor">
           <div class="tint" aria-hidden="true" innerHTML={tint(SET().signature)} />
           <textarea
+            ref={fit(() => SET().signature)}
             data-set="signature"
             placeholder={'Best,\nYour name'}
             aria-label="Signature"
@@ -76,6 +84,10 @@ export const Settings = () => (
         <p class="hint">time to hit Z.</p>
         <Seg
           attr="undo"
+          pick={(v) => {
+            setSetting('undoSeconds', +v);
+            render();
+          }}
           opts={[
             [0, 'off'],
             [3, '3 s'],
@@ -101,6 +113,11 @@ export const Settings = () => (
         </p>
         <Seg
           attr="poll"
+          pick={(v) => {
+            setSetting('pollSeconds', +v);
+            schedulePoll();
+            render();
+          }}
           opts={[
             [15, '15 s'],
             [30, '30 s'],
@@ -116,6 +133,10 @@ export const Settings = () => (
         <p class="hint">new mail ping. dude live in tray.</p>
         <Seg
           attr="notify"
+          pick={(v) => {
+            setSetting('notify', v);
+            render();
+          }}
           opts={[
             ['important', 'important'],
             ['all', 'all'],
@@ -128,6 +149,7 @@ export const Settings = () => (
         <h3>look</h3>
         <Seg
           attr="theme"
+          pick={(v) => setTheme(v === 'carbon')}
           opts={[
             ['carbon', 'dark'],
             ['light', 'light'],
@@ -145,14 +167,23 @@ export const Settings = () => (
                   {`${sp.name} `}
                   <small>{sp.q}</small>
                 </span>
-                <button data-rmsplit={sp.id}>remove</button>
+                <button
+                  data-rmsplit={sp.id}
+                  onClick={on(() => {
+                    removeSplit(sp.id);
+                    S.screen = 'settings';
+                    render();
+                  })}
+                >
+                  remove
+                </button>
               </div>
             )}
           </For>
         ) : (
           <p class="hint">only important + other.</p>
         )}
-        <button class="link" data-a="new-split">
+        <button class="link" data-a="new-split" onClick={press('new-split')}>
           new split
         </button>
       </section>
@@ -160,12 +191,16 @@ export const Settings = () => (
         <h3>account</h3>
         <div class="setrow">
           <span>{S.account?.email || ''}</span>
-          {B.demo ? null : <button data-a="signout">logout</button>}
+          {B.demo ? null : (
+            <button data-a="signout" onClick={press('signout')}>
+              logout
+            </button>
+          )}
         </div>
       </section>
       <section>
         <h3>keys</h3>
-        <button class="link" data-a="keys">
+        <button class="link" data-a="keys" onClick={press('keys')}>
           all keys
         </button>
       </section>

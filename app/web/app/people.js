@@ -3,7 +3,7 @@
 // Outlook calendar is linked. The list sits under the field; ↑ ↓ pick, Enter or Tab take it.
 
 import { meAddr } from './compose.js';
-import { B, fold, S, show } from './core.js';
+import { B, change, fold, M, S } from './core.js';
 
 let contactList = null,
   contactsAsked = false,
@@ -35,7 +35,7 @@ function knownPeople() {
   (contactList || []).forEach((p) => {
     add(p, p.score || 1);
   });
-  Object.values(S.cache).forEach((list) => {
+  Object.values(M.cache).forEach((list) => {
     (list || []).forEach((t) => {
       add(t.from, t.list ? 0.1 : 1);
       (t.to || []).forEach((p) => {
@@ -78,33 +78,26 @@ export function suggest(el) {
   const tok = v.slice(start, pos).trim();
   if (!tok || /[<>]/.test(tok)) return closeSugg();
   loadContacts();
-  const show = (items) => {
+  const offer = (items) => {
     if (!items.length || document.activeElement !== el) return closeSugg();
     const i = S.sugg && S.sugg.el === el ? Math.min(S.sugg.i, items.length - 1) : 0;
-    S.sugg = { el, start, end: pos, items, i };
-    drawSugg();
+    S.sugg = { el, start, end: pos, items, i }; // the field's Sugg (render.jsx) shows it
   };
   const local = matchPeople(tok);
-  show(local);
+  offer(local);
   clearTimeout(suggTimer);
   if (B.people && tok.length >= 3)
     suggTimer = setTimeout(async () => {
       const more = await B.people(tok).catch(() => []);
       if (document.activeElement !== el || el.value.slice(start, el.selectionStart).trim() !== tok) return;
       const have = new Set(local.map((p) => p.address.toLowerCase()));
-      show([...local, ...more.filter((p) => !have.has(p.address.toLowerCase()))].slice(0, 8));
+      change(() => offer([...local, ...more.filter((p) => !have.has(p.address.toLowerCase()))].slice(0, 8)));
     }, 250);
 }
 
-export function drawSugg() {
-  if (S.sugg) show(); // the field's Sugg (render.jsx) shows S.sugg
-}
-
 export function closeSugg() {
-  const had = S.sugg;
   S.sugg = null;
   clearTimeout(suggTimer);
-  if (had) show();
 }
 
 export function takeSugg(i) {
@@ -125,17 +118,9 @@ export function takeSugg(i) {
   sg.el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-document.addEventListener('mousedown', (e) => {
-  const g = e.target.closest?.('.sg');
-  if (g) {
-    e.preventDefault();
-    takeSugg(+g.dataset.sg);
-  }
-});
-
 document.addEventListener('focusout', (e) => {
   if (S.sugg && e.target === S.sugg.el)
     setTimeout(() => {
-      if (S.sugg && document.activeElement !== S.sugg.el) closeSugg();
+      if (S.sugg && document.activeElement !== S.sugg.el) change(closeSugg);
     }, 100);
 });

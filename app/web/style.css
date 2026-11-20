@@ -1,9 +1,9 @@
 /* Theme tokens: light, and carbon (the dark theme). Text colours meet WCAG AA contrast (4.5:1). */
 :root {
   --sans:
-    SuperMailSans, "Superhuman Adelle", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue",
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
-  --serif: SuperMailSerif, Georgia, serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Noto Color Emoji";
+  --serif: Georgia, serif;
   --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace;
   --page: #ffffff;
   --list: #ffffff;
@@ -1313,7 +1313,7 @@ textarea {
   }
 }
 
-/* ---------- Motion: quick and light, like Superhuman; none when the system asks for less ---------- */
+/* ---------- Motion: quick and light; none when the system asks for less ---------- */
 @keyframes k-fade {
   from {
     opacity: 0;
@@ -1387,7 +1387,7 @@ textarea {
   }
 }
 
-/* ---------- Scrollbars: invisible until you hover a scrolling area, thin like Superhuman's ---------- */
+/* ---------- Scrollbars: invisible until you hover a scrolling area, and thin ---------- */
 * {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;

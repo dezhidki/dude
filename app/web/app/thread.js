@@ -1,72 +1,84 @@
 // ---------- thread ----------
 
+import { onSettled } from 'solid-js';
 import { blankDraft, focusComposer, scheduled, stashReply } from './compose.js';
-import { addrList, B, esc, keyOf, LS, root, S, show, toast } from './core.js';
+import { addrList, B, change, keyOf, LS, M, minus, plus, root, S, toast } from './core.js';
 import { current, prefetch, visible } from './data.js';
 import { render } from './render.jsx';
 
 export async function openThread(t) {
   if (!t) return;
-  if (S.screen === 'thread') stashReply();
-  if (t.sched) return openScheduled(t);
-  if (S.view === 'drafts') return openServerDraft(t);
-  S.open = t;
-  S.screen = 'thread';
-  S.msgs = [];
-  S.newer = null;
-  S.composer = null;
-  S.expanded = new Set();
-  S.quotes = new Set();
-  S.focus = 0;
-  const early = S.tcache.get(t.id);
-  if (early) {
-    const extra0 = (S.sentIn[keyOf(t)] || []).filter((m) => !early.some((x) => x.messageId === m.messageId));
-    S.msgs = tidyDrafts(
-      t,
-      withLocalDraft(
+  let early, wasUnread;
+  const opening = change(() => {
+    if (S.screen === 'thread') stashReply();
+    if (t.sched) return openScheduled(t);
+    if (S.view === 'drafts') return openServerDraft(t);
+    S.open = t;
+    t = S.open; // the store's own: what S.open is compared with later
+    S.screen = 'thread';
+    S.msgs = [];
+    S.newer = null;
+    S.composer = null;
+    S.expanded = new Set();
+    S.quotes = new Set();
+    S.focus = 0;
+    early = M.tcache.get(t.id);
+    if (early) {
+      const extra0 = (M.sentIn[keyOf(t)] || []).filter((m) => !early.some((x) => x.messageId === m.messageId));
+      S.msgs = tidyDrafts(
         t,
-        [...early, ...extra0].sort((a, b) => a.date - b.date),
-      ),
-    );
-    const lastReal0 = lastRealIndex(S.msgs);
-    S.expanded = new Set([lastReal0]);
-    S.focus = lastReal0;
-  }
-  render();
-  if (early) root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
-  const wasUnread = t.unread;
-  if (t.unread) {
-    t.unread = false;
-  }
+        withLocalDraft(
+          t,
+          [...early, ...extra0].sort((a, b) => a.date - b.date),
+        ),
+      );
+      const lastReal0 = lastRealIndex(S.msgs);
+      S.expanded = new Set([lastReal0]);
+      S.focus = lastReal0;
+    }
+    render();
+    wasUnread = t.unread;
+    if (t.unread) t.unread = false;
+    return true;
+  });
+  if (opening !== true) return;
+  if (early)
+    onSettled(() => {
+      root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+    });
+  let got;
   try {
-    const got = await B.thread(t, { unread: wasUnread });
+    got = await B.thread(t, { unread: wasUnread });
+  } catch (e) {
+    if (!early) toast(`no open: ${e.message || e}`);
+  }
+  if (got) {
     if (early && S.open === t) {
       // already showing: only redraw if the server knows more than we did
       const ids = new Set(S.msgs.map((m) => m.messageId || m.id));
-      if (got.every((m) => ids.has(m.messageId || m.id))) {
-        mergeRelated(t);
-        return;
-      }
+      if (got.every((m) => ids.has(m.messageId || m.id))) return mergeRelated(t);
     }
     if (S.open !== t) return;
-    const have = new Set(got.map((m) => m.messageId).filter(Boolean));
-    const extra = (S.sentIn[keyOf(t)] || []).filter((m) => !have.has(m.messageId));
-    S.msgs = tidyDrafts(
-      t,
-      withLocalDraft(
+    change(() => {
+      const have = new Set(got.map((m) => m.messageId).filter(Boolean));
+      const extra = (M.sentIn[keyOf(t)] || []).filter((m) => !have.has(m.messageId));
+      S.msgs = tidyDrafts(
         t,
-        [...got, ...extra].sort((a, b) => a.date - b.date),
-      ),
-    );
-    const lastReal = lastRealIndex(S.msgs);
-    S.expanded = new Set([lastReal]);
-    S.focus = lastReal;
-    S.tcache.set(t.id, S.msgs);
-  } catch (e) {
-    if (!early) toast(`no open: ${esc(e.message || e)}`);
+        withLocalDraft(
+          t,
+          [...got, ...extra].sort((a, b) => a.date - b.date),
+        ),
+      );
+      const lastReal = lastRealIndex(S.msgs);
+      S.expanded = new Set([lastReal]);
+      S.focus = lastReal;
+      M.tcache.set(t.id, S.msgs);
+    });
   }
   render();
-  root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+  onSettled(() => {
+    root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest' });
+  });
   mergeRelated(t);
 }
 
@@ -121,6 +133,9 @@ async function mergeRelated(t) {
     return;
   }
   if (S.open !== t || !more || !more.length) return;
+  change(() => mergeIn(t, more));
+}
+function mergeIn(t, more) {
   const have = new Set(S.msgs.map((m) => m.messageId).filter(Boolean));
   const localUid = (S.composer && S.open === t && S.composer.draftUid) || S.replyDrafts.get(keyOf(t))?.draftUid;
   const add = more.filter(
@@ -136,14 +151,14 @@ async function mergeRelated(t) {
   );
   S.expanded = new Set(S.msgs.map((m, i) => (open.has(m.messageId || m.id) ? i : -1)).filter((i) => i >= 0));
   if (wasLast) {
-    S.expanded.add(S.msgs.length - 1);
+    S.expanded = plus(S.expanded, S.msgs.length - 1);
     S.focus = S.msgs.length - 1;
   } else
     S.focus = Math.max(
       0,
       S.msgs.findIndex((m) => (m.messageId || m.id) === focusId),
     );
-  S.tcache.set(t.id, S.msgs);
+  M.tcache.set(t.id, S.msgs);
   if (!S.composer) render();
 }
 
@@ -152,22 +167,24 @@ async function openServerDraft(t) {
     const got = await B.thread(t, { peek: true });
     const m = got[got.length - 1];
     if (!m) return;
-    S.back = { screen: 'list' };
-    S.composer = {
-      mode: m.inReplyTo ? 'reply' : 'new',
-      to: addrList(m.to),
-      cc: addrList(m.cc),
-      subject: m.subject || '',
-      text: m.text || '',
-      inReplyTo: m.inReplyTo,
-      references: m.references,
-      draftUid: m.uid,
-    };
-    S.screen = 'compose';
-    render();
-    focusComposer('text');
+    M.back = { screen: 'list' };
+    change(() => {
+      S.composer = {
+        mode: m.inReplyTo ? 'reply' : 'new',
+        to: addrList(m.to),
+        cc: addrList(m.cc),
+        subject: m.subject || '',
+        text: m.text || '',
+        inReplyTo: m.inReplyTo,
+        references: m.references,
+        draftUid: m.uid,
+      };
+      S.screen = 'compose';
+      render();
+      focusComposer('text');
+    });
   } catch (e) {
-    toast(`draft no open: ${esc(e.message || e)}`);
+    toast(`draft no open: ${e.message || e}`);
   }
 }
 
@@ -177,7 +194,7 @@ function openScheduled(t) {
     scheduled().filter((x) => x.at !== t.sched.at || x.msg.subject !== t.sched.msg.subject),
   );
   const m = t.sched.msg;
-  S.back = { screen: 'list' };
+  M.back = { screen: 'list' };
   S.composer = {
     mode: m.inReplyTo ? 'reply' : 'new',
     to: m.to,
@@ -208,25 +225,25 @@ export function step(d) {
   S.sel = Math.max(0, Math.min(v.length - 1, S.sel + d));
   if (S.screen === 'thread') openThread(v[S.sel]);
   else updateSel();
-  scrollSel();
+  onSettled(scrollSel);
 }
 
 function updateSel() {
   if (S.screen !== 'list' || !root.querySelector('.list')) return render();
-  show(); // only the highlight moves, and the pane beside it follows
-  prefetch(current());
+  prefetch(current()); // only the highlight moves, and the pane beside it follows
 }
 
 // Inside a conversation: arrows move between its messages; J/K move between conversations.
 export function moveFocus(d) {
   if (!S.msgs.length) return;
-  S.focus = Math.max(0, Math.min(S.msgs.length - 1, S.focus + d));
-  show(); // only the highlight moves: open emails stay as they are (no reload, no flicker)
-  root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  S.focus = Math.max(0, Math.min(S.msgs.length - 1, S.focus + d)); // only the highlight moves
+  onSettled(() => {
+    root.querySelector('.msg.focus')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
 }
 
 export function toggleMsg(i = S.focus) {
-  S.expanded.has(i) ? S.expanded.delete(i) : S.expanded.add(i);
+  S.expanded = S.expanded.has(i) ? minus(S.expanded, i) : plus(S.expanded, i);
   S.focus = i;
   render();
 }

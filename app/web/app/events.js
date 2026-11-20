@@ -1,10 +1,10 @@
 // ---------- events ----------
 
+import { onSettled } from 'solid-js';
 import { DemoBackend } from '../demo.js';
 import { act, closeSearch, openSearch, pick, runSearch, switchSplit, toggle, undo } from './actions.js';
 import {
   answerEvent,
-  answerInvite,
   calToday,
   closeEvent,
   connectCalendar,
@@ -13,7 +13,6 @@ import {
   eventDialog,
   goCal,
   goMail,
-  openEvent,
   saveEvent,
   weekMove,
 } from './calendar.js';
@@ -39,12 +38,24 @@ import {
   sendComposer,
   startCompose,
 } from './compose.js';
-import { B, dayStart, errText, esc, LS, openFile, root, S, setBackend, setTheme, show, toast } from './core.js';
-import { current, load, removeSplit, visible } from './data.js';
-import { closeSugg, drawSugg, suggest, takeSugg } from './people.js';
-import { closeMenu, fitEditor, menuItems, openMenu, refreshCal, render, renderLayer, renderSignin } from './render.jsx';
+import { B, change, dayStart, errText, LS, M, openFile, root, S, setBackend, toast } from './core.js';
+import { current, load } from './data.js';
+import { closeSugg, suggest, takeSugg } from './people.js';
+import {
+  closeLayer,
+  closeMenu,
+  menuItems,
+  openCmd,
+  openMenu,
+  refreshCal,
+  render,
+  renderLayer,
+  renderSignin,
+  runCmd,
+  runMenu,
+} from './render.jsx';
 import { openSettings, setSetting } from './settings.jsx';
-import { schedulePoll, showNewMessages } from './start.js';
+import { showNewMessages } from './start.js';
 import { closeThread, moveFocus, openThread, step, toggleMsg } from './thread.js';
 
 async function signIn(provider) {
@@ -56,28 +67,55 @@ async function signIn(provider) {
   }
   toast('login window…');
   try {
-    S.account = await B.signIn(provider, email);
-    S.screen = 'list';
-    load('inbox');
+    const acc = await B.signIn(provider, email);
+    change(() => {
+      S.account = acc;
+      S.screen = 'list';
+      load('inbox');
+    });
   } catch (e) {
-    toast(`login fail: ${esc(e.message || e)}`, 7000);
+    toast(`login fail: ${e.message || e}`, 7000);
   }
 }
+
+// the month beside the week: one back or on
+function monthMove(n) {
+  const d = new Date(S.mmMonth ?? S.calDay);
+  d.setDate(1);
+  d.setMonth(d.getMonth() + n);
+  S.mmMonth = d.getTime();
+  render();
+}
+
+// A button's action (onClick={press('send')}): the click is that button's alone; a button in a
+// row of the list acts on that row.
+export const press = (name, row) => (e) => {
+  e.stopPropagation();
+  change(() => {
+    if (row) S.sel = row(); // the row's place now (rows move when others leave)
+    ACTIONS[name]();
+  });
+};
 
 export const ACTIONS = {
   start: () => {
     S.more = true;
     renderSignin();
-    root.querySelector('[data-a="email"]')?.focus();
+    onSettled(() => {
+      root.querySelector('[data-a="email"]')?.focus();
+    });
   },
   'signin-ms': () => signIn('microsoft'),
   'signin-g': () => signIn('google'),
   demo: async () => {
     const D = DemoBackend;
     setBackend(D);
-    S.account = (await D.accounts())[0];
-    S.screen = 'list';
-    load('inbox');
+    const acc = (await D.accounts())[0];
+    change(() => {
+      S.account = acc;
+      S.screen = 'list';
+      load('inbox');
+    });
   },
   'go-inbox': () => {
     if (S.pane === 'calendar' && window.innerWidth <= 768) {
@@ -95,9 +133,8 @@ export const ACTIONS = {
   },
   'new-split': () => {
     S.screen = 'list';
-    S.overlay = { kind: 'cmd', mode: 'split', q: '', i: 0 };
     render();
-    renderLayer(true);
+    openCmd('split');
   },
   signout: () => COMMANDS.find((c) => c.t === 'Sign Out').run(),
   relogin: async () => {
@@ -105,12 +142,15 @@ export const ACTIONS = {
     if (!a) return;
     toast('login window…');
     try {
-      S.account = await B.signIn(a.provider, a.email);
-      S.authNeeded = null;
-      toast('login ok.');
-      load(S.view === 'search' ? 'inbox' : S.view, true);
+      const acc = await B.signIn(a.provider, a.email);
+      change(() => {
+        S.account = acc;
+        S.authNeeded = null;
+        toast('login ok.');
+        load(S.view === 'search' ? 'inbox' : S.view, true);
+      });
     } catch (e) {
-      toast(`login fail: ${esc(errText(e))}`, 7000);
+      toast(`login fail: ${errText(e)}`, 7000);
     }
   },
   cmd: () => openPalette(),
@@ -133,10 +173,7 @@ export const ACTIONS = {
   },
   attach: () => attachFiles(),
   'cal-connect': () => connectCalendar(),
-  'file-close': () => {
-    S.overlay = null;
-    renderLayer();
-  },
+  'file-close': () => closeLayer(),
   'file-save': () => {
     const o = S.overlay;
     if (o && o.kind === 'file') openFile(o.folder, o.uid, o.name, o.index, 'save');
@@ -164,7 +201,7 @@ export const ACTIONS = {
   'day-next': () => dayMove(1),
   'day-today': () => {
     S.calDay = dayStart(Date.now());
-    S.calScroll = undefined;
+    M.calScroll = undefined;
     render();
   },
   'go-cal': () => goCal(),
@@ -172,20 +209,8 @@ export const ACTIONS = {
   'cal-today': () => calToday(),
   'wk-prev': () => weekMove(-1),
   'wk-next': () => weekMove(1),
-  'mm-prev': () => {
-    const d = new Date(S.mmMonth ?? S.calDay);
-    d.setDate(1);
-    d.setMonth(d.getMonth() - 1);
-    S.mmMonth = d.getTime();
-    render();
-  },
-  'mm-next': () => {
-    const d = new Date(S.mmMonth ?? S.calDay);
-    d.setDate(1);
-    d.setMonth(d.getMonth() + 1);
-    S.mmMonth = d.getTime();
-    render();
-  },
+  'mm-prev': () => monthMove(-1),
+  'mm-next': () => monthMove(1),
   'delete-event': () => deleteEvent(),
   keys: () => {
     S.overlay = { kind: 'keys' };
@@ -194,203 +219,17 @@ export const ACTIONS = {
   'save-event': () => saveEvent(),
 };
 
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('[data-a]');
-  if (a && a.dataset.a === 'close' && e.target === a) {
-    S.overlay = null;
-    renderLayer();
-    return;
-  } // not a click inside the dialog
-  const ci = e.target.closest('[data-ci]');
-  if (ci) {
-    const c = paletteItems(S.overlay.q)[+ci.dataset.ci];
-    S.overlay = null;
-    renderLayer();
-    c?.run();
-    return;
-  }
-  if (a && ACTIONS[a.dataset.a] && a.tagName !== 'INPUT') {
-    const row = a.closest('[data-i]');
-    if (row) S.sel = +row.dataset.i;
-    e.stopPropagation();
-    ACTIONS[a.dataset.a]();
-    return;
-  }
-  const mi = e.target.closest('[data-menu]');
-  if (mi) {
-    const it = menuItems()[+mi.dataset.menu];
-    closeMenu();
-    it.run();
-    if (S.screen === 'list') render();
-    return;
-  }
-  const pl = e.target.closest('[data-poll]');
-  if (pl) {
-    setSetting('pollSeconds', +pl.dataset.poll);
-    schedulePoll();
-    render();
-    return;
-  }
-  const nt = e.target.closest('[data-notify]');
-  if (nt) {
-    setSetting('notify', nt.dataset.notify);
-    render();
-    return;
-  }
-  const un = e.target.closest('[data-undo]');
-  if (un) {
-    setSetting('undoSeconds', +un.dataset.undo);
-    render();
-    return;
-  }
-  const th = e.target.closest('[data-theme]');
-  if (th) {
-    setTheme(th.dataset.theme === 'carbon');
-    return;
-  }
-  const rs = e.target.closest('[data-rmsplit]');
-  if (rs) {
-    removeSplit(rs.dataset.rmsplit);
-    S.screen = 'settings';
-    render();
-    return;
-  }
-  const sp = e.target.closest('[data-split]');
-  if (sp) {
-    S.split = sp.dataset.split;
-    S.sel = 0;
-    render();
-    return;
-  }
-  const rc = e.target.closest('[data-recent]');
-  if (rc) {
-    runSearch(rc.dataset.recent);
-    return;
-  }
-  const rf = e.target.closest('[data-rmfile]');
-  if (rf && S.composer) {
-    S.composer.files.splice(+rf.dataset.rmfile, 1);
-    render();
-    scheduleDraftSave();
-    return;
-  }
-  const evb = e.target.closest('[data-ev]');
-  if (evb) {
-    openEvent(evb.dataset.ev);
-    return;
-  }
-  const er = e.target.closest('[data-evrsvp]');
-  if (er) {
-    answerEvent(er.dataset.evrsvp);
-    return;
-  }
-  const jd = e.target.closest('[data-jump]');
-  if (jd) {
-    S.calDay = +jd.dataset.jump;
-    S.calScroll = undefined;
-    render();
-    return;
-  }
-  const rv = e.target.closest('[data-rsvp]');
-  if (rv) {
-    const [i, x] = rv.dataset.rsvp.split(':');
-    answerInvite(+i, x);
-    return;
-  }
-  const iv = e.target.closest('[data-invday]');
-  if (iv) {
-    const v = S.msgs[+iv.dataset.invday] && S.msgs[+iv.dataset.invday].invite;
-    if (v) {
-      S.calDay = dayStart(v.start);
-      S.calScroll = Math.max(0, (new Date(v.start).getHours() - 1) * 44);
-      render();
-    }
-    return;
-  }
-  const as = e.target.closest('[data-attsave]');
-  if (as) {
-    const [i, j] = as.dataset.attsave.split(':').map(Number),
-      m = S.msgs[i],
-      a = m.attachments[j];
-    openFile(m.folder, m.uid, a.filename, j, 'save');
-    return;
-  }
-  const ao = e.target.closest('[data-att]');
-  if (ao) {
-    const [i, j] = ao.dataset.att.split(':').map(Number),
-      m = S.msgs[i],
-      a = m.attachments[j];
-    openFile(m.folder, m.uid, a.filename, j, 'open');
-    return;
-  }
-  const rc2 = e.target.closest('[data-ratt]');
-  if (rc2) {
-    const [i, k] = rc2.dataset.ratt.split(':').map(Number),
-      t = visible()[i],
-      a = t?.atts[k];
-    if (a) openFile(t.folder, a.uid, a.name, 0, 'open');
-    return;
-  }
-  const tip = e.target.closest('[data-tip]');
-  if (tip) {
-    const i = root.querySelector('.sq');
-    if (i) {
-      i.value = (i.value ? `${i.value} ` : '') + tip.dataset.tip;
-      S.search.q = i.value;
-      i.focus();
-    }
-    return;
-  }
-  const op = e.target.closest('[data-open]');
-  if (op) {
-    const t = S.threads.find((x) => x.id === op.dataset.open);
-    if (t) openThread(t);
-    return;
-  }
-  const q = e.target.closest('[data-q]');
-  if (q) {
-    const i = +q.dataset.q;
-    S.quotes.has(i) ? S.quotes.delete(i) : S.quotes.add(i);
-    render();
-    return;
-  }
-  const m = e.target.closest('.msg');
-  if (m) {
-    const i = +m.dataset.m;
-    if (S.msgs[i]?.draft) return resumeDraft(i);
-    if (!S.expanded.has(i)) toggleMsg(i);
-    else if (S.focus !== i) {
-      S.focus = i;
-      render();
-    }
-    return;
-  }
-  const row = e.target.closest('.row');
-  if (row) {
-    S.sel = +row.dataset.i;
-    openThread(current());
-  }
-});
-
-document.addEventListener('dblclick', (e) => {
-  const m = e.target.closest('.msg.open .msg-h');
-  if (m) toggleMsg(+m.parentElement.dataset.m);
-});
-
-document.addEventListener('input', (e) => {
+function onInput(e) {
   const el = e.target;
-  if (el.closest?.('.editor')) fitEditor(el);
   if (el.dataset.set) {
     if (el.dataset.set === 'name') {
       if (S.account) S.account.name = el.value.trim();
       LS.set(`myname:${meAddr()}`, el.value.trim());
     } else setSetting(el.dataset.set, el.value);
-    show(); // the signature's colouring and preview follow
   }
   if (el.dataset.c && S.composer) {
     scheduleDraftSave();
     S.composer[el.dataset.c] = el.value;
-    show(); // the subject heading and the colouring follow
   } else if (el.dataset.e && S.eventForm) {
     S.eventForm[el.dataset.e] = el.value;
     S.eventForm.dirty = true;
@@ -404,11 +243,12 @@ document.addEventListener('input', (e) => {
   else if (el.dataset.a === 'email') S.email = el.value;
   // only now: the list redraws, and a redraw puts the kept value back in the field
   if (/^(to|cc|bcc)$/.test(el.dataset.c || '') || el.dataset.e === 'guests') suggest(el);
-});
+}
+document.addEventListener('input', (e) => change(() => onInput(e)));
 
 const typing = (el) => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 
-document.addEventListener('keydown', async (e) => {
+function onKey(e) {
   const mod = e.metaKey || e.ctrlKey,
     k = e.key,
     o = S.overlay,
@@ -418,7 +258,6 @@ document.addEventListener('keydown', async (e) => {
     if (k === 'ArrowDown' || k === 'ArrowUp') {
       e.preventDefault();
       sg.i = (sg.i + (k === 'ArrowDown' ? 1 : -1) + sg.items.length) % sg.items.length;
-      drawSugg();
       return;
     }
     if ((k === 'Enter' && !mod) || (k === 'Tab' && !e.shiftKey)) {
@@ -448,16 +287,14 @@ document.addEventListener('keydown', async (e) => {
     const items = menuItems();
     const moveMenu = (d) => {
       S.menu.sel = (S.menu.sel + d + items.length) % items.length;
-      show();
-      root.querySelector('.sm-item.on')?.scrollIntoView({ block: 'nearest' });
+      onSettled(() => {
+        root.querySelector('.sm-item.on')?.scrollIntoView({ block: 'nearest' });
+      });
     };
     if (k === 'ArrowDown' || k === 'j') moveMenu(1);
     else if (k === 'ArrowUp' || k === 'k') moveMenu(-1);
     else if (k === 'Enter') {
-      const it = items[S.menu.sel];
-      closeMenu();
-      it.run();
-      if (S.screen === 'list') render();
+      runMenu(S.menu.sel);
     } else if (k === 'Escape' || k === 'ArrowRight' || k === 'ArrowLeft') closeMenu();
     else return;
     e.preventDefault();
@@ -476,17 +313,14 @@ document.addEventListener('keydown', async (e) => {
   }
   if (mod && k.toLowerCase() === 'k') {
     e.preventDefault();
-    if (o && o.kind === 'cmd') {
-      S.overlay = null;
-      renderLayer();
-    } else openPalette();
+    if (o && o.kind === 'cmd') closeLayer();
+    else openPalette();
     return;
   }
   if (o) {
     if (k === 'Escape') {
       e.preventDefault();
-      S.overlay = null;
-      renderLayer();
+      closeLayer();
       return;
     }
     if (o.kind === 'file') {
@@ -498,8 +332,7 @@ document.addEventListener('keydown', async (e) => {
     }
     if (o.kind === 'cmd') {
       if (k === 'Backspace' && !o.q && o.mode === 'split') {
-        S.overlay = { kind: 'cmd', q: '', i: 0 };
-        renderLayer(true);
+        openCmd();
         e.preventDefault();
         return;
       }
@@ -514,10 +347,7 @@ document.addEventListener('keydown', async (e) => {
         renderLayer();
       } else if (k === 'Enter') {
         e.preventDefault();
-        const c = items[o.i];
-        S.overlay = null;
-        renderLayer();
-        c?.run();
+        runCmd(items[o.i]);
       }
       return;
     }
@@ -543,14 +373,10 @@ document.addEventListener('keydown', async (e) => {
       sendComposer();
     } else if (mod && e.shiftKey && kl === 'c') {
       e.preventDefault();
-      S.composer.showCc = true;
-      render();
-      focusComposer('cc');
+      ACTIONS.showcc();
     } else if (mod && e.shiftKey && kl === 'b') {
       e.preventDefault();
-      S.composer.showBcc = true;
-      render();
-      focusComposer('bcc');
+      ACTIONS.showbcc();
     } else if (mod && e.shiftKey && kl === 'a') {
       e.preventDefault();
       attachFiles();
@@ -588,8 +414,8 @@ document.addEventListener('keydown', async (e) => {
   }
   if (e.altKey || (mod && k !== 'Enter')) return;
 
-  if (S.g) {
-    S.g = false;
+  if (M.g) {
+    M.g = false;
     const map = {
       i: ['inbox', 'important'],
       o: ['inbox', 'other'],
@@ -635,7 +461,7 @@ document.addEventListener('keydown', async (e) => {
     switch (k) {
       case 'ArrowLeft':
         if (!thread) openMenu();
-        return true; // Superhuman: ← opens the folder menu
+        return true; // ← opens the folder menu
       case 'j':
         step(1);
         return true;
@@ -659,7 +485,7 @@ document.addEventListener('keydown', async (e) => {
       case 'Escape':
         if (thread) closeThread();
         else if (S.picked.size) {
-          S.picked.clear();
+          S.picked = new Set();
           render();
         } else if (S.view === 'search') closeSearch();
         return true;
@@ -703,8 +529,8 @@ document.addEventListener('keydown', async (e) => {
         openSearch();
         return true;
       case 'g':
-        S.g = true;
-        setTimeout(() => (S.g = false), 1500);
+        M.g = true;
+        setTimeout(() => (M.g = false), 1500);
         return true;
       case 'Tab':
         switchSplit(e.shiftKey ? -1 : 1);
@@ -750,4 +576,5 @@ document.addEventListener('keydown', async (e) => {
     return false;
   })();
   if (handled) e.preventDefault();
-});
+}
+document.addEventListener('keydown', (e) => change(() => onKey(e)));
