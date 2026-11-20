@@ -1,6 +1,7 @@
 // Run: node files.test.js
 const assert = require('node:assert');
 const { filesIn } = require('./files');
+
 const bs = {
   childNodes: [
     { type: 'multipart/alternative', childNodes: [{ type: 'text/plain' }, { type: 'text/html' }] },
@@ -15,10 +16,12 @@ const bs = {
     { type: 'text/calendar', parameters: { name: 'invite.ics' } },
   ],
 };
+
 assert.deepStrictEqual(
   filesIn(bs, 7).map((a) => a.name),
   ['Invoice.pdf', 'photo.jpg', 'invite.ics'],
 );
+
 assert.strictEqual(filesIn(bs, 7)[0].uid, 7);
 assert.deepStrictEqual(filesIn({ type: 'text/plain' }, 1), []);
 console.log('files ok');

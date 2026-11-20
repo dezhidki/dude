@@ -1,6 +1,7 @@
 // Run: node invite.test.js
 const assert = require('node:assert');
 const { parseInvite, buildReply } = require('./invite');
+
 const outlook = [
   'BEGIN:VCALENDAR',
   'METHOD:REQUEST',
@@ -33,6 +34,7 @@ const outlook = [
   'END:VEVENT',
   'END:VCALENDAR',
 ].join('\r\n');
+
 const inv = parseInvite(outlook);
 assert.strictEqual(inv.method, 'REQUEST');
 assert.strictEqual(inv.title, 'Course planning');
@@ -43,6 +45,7 @@ assert.strictEqual(inv.organizer.email, 'sara@example.org');
 assert.strictEqual(inv.organizer.name, 'Sara Lehtonen');
 assert.strictEqual(inv.attendees[0].status, 'NEEDS-ACTION');
 assert.strictEqual(inv.sequence, 2);
+
 // UTC times and summer time in an IANA zone
 assert.strictEqual(
   new Date(
@@ -50,12 +53,14 @@ assert.strictEqual(
   ).toISOString(),
   '2026-06-01T12:00:00.000Z',
 );
+
 assert.strictEqual(
   new Date(
     parseInvite('BEGIN:VEVENT\nUID:b\nDTSTART;TZID=Europe/Helsinki:20260601T120000\nEND:VEVENT').start,
   ).toISOString(),
   '2026-06-01T09:00:00.000Z',
 );
+
 // all-day
 assert.ok(parseInvite('BEGIN:VEVENT\nUID:c\nDTSTART;VALUE=DATE:20261120\nEND:VEVENT').allDay);
 // cancel

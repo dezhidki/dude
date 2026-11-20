@@ -29,6 +29,7 @@ const WIN_TZ = {
 function unfold(text) {
   return String(text || '').replace(/\r?\n[ \t]/g, '');
 }
+
 function lines(text) {
   return unfold(text)
     .split(/\r?\n/)
@@ -46,6 +47,7 @@ function lines(text) {
       return { name: name.toUpperCase(), params, value };
     });
 }
+
 const text = (v) =>
   String(v || '')
     .replace(/\\n/gi, '\n')
@@ -66,6 +68,7 @@ function zoneOffset(zone, t) {
   const p = Object.fromEntries(f.formatToParts(new Date(t)).map((x) => [x.type, x.value]));
   return (Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - t) / 60e3;
 }
+
 function when(prop, tzOffsets) {
   if (!prop) return null;
   const v = prop.value,

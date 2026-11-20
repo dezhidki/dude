@@ -12,6 +12,7 @@ const { chainIds, group } = require('./threads');
 const { filesIn } = require('./files');
 
 const clients = new Map(); // email -> { client, folders }
+
 const imapClient = async (acct, extra) =>
   new ImapFlow({
     ...PROVIDERS[acct.provider].imap,
@@ -90,12 +91,15 @@ const metaCache = new Map(); // email|folder -> { validity, order: [uid] (newest
 // Each account's folder lists live in one file in the app's data folder, so any folder shows at once,
 // even right after start; the server is then asked only for flags and mail that's new since.
 let cacheDir = null;
+
 const restored = new Set(),
   savedFolders = new Map(),
   saveTimers = new Map();
+
 function setCacheDir(d) {
   cacheDir = d;
 }
+
 const cacheFile = (email) =>
   cacheDir &&
   path.join(
@@ -104,6 +108,7 @@ const cacheFile = (email) =>
       .toLowerCase()
       .replace(/[^a-z0-9@._-]/g, '_')}.json`,
   );
+
 function restore(email) {
   if (restored.has(email) || !cacheDir) return;
   restored.add(email);
@@ -120,6 +125,7 @@ function restore(email) {
     /* no copy yet */
   }
 }
+
 function persist(email) {
   if (!cacheDir) return;
   clearTimeout(saveTimers.get(email));
@@ -149,6 +155,7 @@ function persist(email) {
     }, 2000),
   );
 }
+
 // What a folder looked like last time, without asking the server.
 function listCached(acct, view) {
   restore(acct.email);
@@ -158,6 +165,7 @@ function listCached(acct, view) {
   if (!mc?.order) return [];
   return group(mc.order.map((u) => mc.byUid.get(u)).filter(Boolean), folder);
 }
+
 function dropCache(email) {
   for (const k of [...metaCache.keys()]) if (k.startsWith(`${email}|`)) metaCache.delete(k);
   savedFolders.delete(email);
@@ -166,12 +174,15 @@ function dropCache(email) {
     if (cacheDir) fs.rmSync(cacheFile(email), { force: true });
   } catch {}
 }
+
 const msgCache = new Map(); // email|folder|uid -> parsed message (most recent 500)
+
 function remember(k, v) {
   msgCache.delete(k);
   msgCache.set(k, v);
   if (msgCache.size > 500) msgCache.delete(msgCache.keys().next().value);
 }
+
 const LIST_Q = (gmail) => ({
   uid: true,
   envelope: true,
@@ -182,6 +193,7 @@ const LIST_Q = (gmail) => ({
   headers: ['list-id', 'list-unsubscribe', 'precedence', 'auto-submitted', 'references', 'in-reply-to', 'thread-index'],
   source: { start: 0, maxLength: 12000 },
 });
+
 async function toItem(m) {
   let snippet = '';
   try {
@@ -319,6 +331,7 @@ async function parseMsg(m) {
 // with letters like ä/ö. The reply-chain ids of each folder's recent mail are remembered, so
 // only messages that arrived since the last look are read again.
 const chainCache = new Map(); // email|folder -> { uidNext, byUid: Map(uid -> ids) }
+
 async function folderChains(acct, folder, depth, own) {
   const key = `${acct.email}|${folder}`;
   return (own ? withOwnBox : withBox)(acct, folder, async (c) => {
@@ -347,6 +360,7 @@ async function folderChains(acct, folder, depth, own) {
 
 // Read Sent/Archive reply chains in the background once, so the first conversation opens complete.
 const warmed = new Set();
+
 async function warm(acct) {
   if (warmed.has(acct.email)) return;
   warmed.add(acct.email);
@@ -555,20 +569,32 @@ function toCriteria(q) {
     const d = { d: 1, w: 7, m: 30, y: 365 }[m[2]] * +m[1];
     return new Date(Date.now() - d * 864e5);
   };
+  // A typed day (2025/06/01, 2025-6-1, 06/01/2025) as that calendar day wherever you are: IMAP
+  // compares dates without a time zone, and imapflow writes the UTC day.
+  const day = (v) => {
+    const d = new Date(v.replace(/-/g, '/'));
+    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  };
   for (let tok of toks) {
     const neg = tok.startsWith('-');
     if (neg) tok = tok.slice(1);
-    const i = tok.indexOf(':'),
-      k = i > 0 ? tok.slice(0, i).toLowerCase() : '',
+    const i = tok.indexOf(':');
+    let k = i > 0 ? tok.slice(0, i).toLowerCase() : '',
       v = (i > 0 ? tok.slice(i + 1) : tok).replace(/^"|"$/g, '');
+    if (k === 'domain') {
+      k = 'from';
+      v = `@${v.replace(/^@/, '')}`;
+    }
     if (k === 'in' || k === 'label') {
       folder = v.toLowerCase();
       continue;
     }
     if (k === 'is') {
+      v = v.toLowerCase();
       if (v === 'unread') c.seen = neg;
       else if (v === 'read') c.seen = !neg;
       else if (v === 'starred') c.flagged = !neg;
+      else if (v === 'list') post.list = !neg; // checked on the results
       continue;
     }
     if (k === 'from' || k === 'to' || k === 'subject' || k === 'cc' || k === 'bcc') {
@@ -576,16 +602,12 @@ function toCriteria(q) {
       else c[k] = v;
       continue;
     }
-    if (k === 'domain') {
-      c.from = `@${v.replace(/^@/, '')}`;
-      continue;
-    }
     if (k === 'before') {
-      c.before = new Date(v.replace(/\//g, '-'));
+      c.before = day(v);
       continue;
     }
     if (k === 'after') {
-      c.since = new Date(v.replace(/\//g, '-'));
+      c.since = day(v);
       continue;
     }
     if (k === 'older_than') {
@@ -599,7 +621,7 @@ function toCriteria(q) {
       continue;
     }
     if (k === 'has') {
-      if (/^attachments?$/.test(v)) post.hasAtt = !neg;
+      if (/^attachments?$/i.test(v)) post.hasAtt = !neg;
       continue;
     } // checked on the results
     if (k === 'filename') {
@@ -623,6 +645,7 @@ const fold = (s) =>
   String(s)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
+
 async function search(acct, q) {
   const e = await connect(acct);
   if (e.gmail) return fetchList(acct, 'all', { gmraw: q });
@@ -640,6 +663,7 @@ async function search(acct, q) {
       } catch {}
     }
   if (post.hasAtt !== undefined) results = results.filter((t) => !!t.atts?.length === post.hasAtt);
+  if (post.list !== undefined) results = results.filter((t) => !!t.list === post.list);
   if (post.filename)
     results = results.filter((t) => (t.atts || []).some((a) => fold(a.name).toLowerCase().includes(post.filename)));
   return results.sort((a, b) => b.date - a.date);
@@ -669,6 +693,7 @@ async function saveDraft(acct, msg) {
   if (msg.replaceUid) await deleteDraft(acct, msg.replaceUid).catch(() => {});
   return { uid: res?.uid ? res.uid : null };
 }
+
 async function deleteDraft(acct, uid) {
   const e = await connect(acct);
   if (!e.folders.drafts || !uid) return;
@@ -720,6 +745,7 @@ function forget(email) {
 
 // People you write to (Sent counts most) and hear from, for the To/Cc suggestions.
 const contactCache = new Map();
+
 async function contacts(acct) {
   const hit = contactCache.get(acct.email);
   if (hit && Date.now() - hit.at < 30 * 60e3) return hit.list;
@@ -770,6 +796,7 @@ async function contacts(acct) {
 // so new mail shows within seconds instead of at the next check. It reconnects by itself after
 // drops, sleep or an expired sign-in, with a fresh token.
 const watchers = new Map(); // email -> { client, stopped, live }
+
 function watch(acct, onChange) {
   if (watchers.has(acct.email)) return;
   const w = { stopped: false, live: false };
@@ -807,6 +834,7 @@ function watch(acct, onChange) {
   };
   start();
 }
+
 function unwatch(email) {
   const w = watchers.get(email);
   if (!w) return;
@@ -816,11 +844,13 @@ function unwatch(email) {
     w.client?.logout().catch(() => {});
   } catch {}
 }
+
 // After the computer wakes up the old connection is dead: start again at once.
 function rewatch(acct, onChange) {
   unwatch(acct.email);
   watch(acct, onChange);
 }
+
 const pushLive = (email) => !!watchers.get(email)?.live;
 
 module.exports = {
@@ -846,4 +876,5 @@ module.exports = {
   rsvp,
   search,
   forget,
+  toCriteria, // for mail.test.js
 };

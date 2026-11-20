@@ -10,6 +10,7 @@ const {
   nativeImage,
   powerMonitor,
 } = require('electron');
+
 const path = require('node:path');
 const fs = require('node:fs');
 const oauth = require('./oauth');
@@ -22,9 +23,11 @@ app.commandLine.appendSwitch('disable-http-cache');
 // Where dude keeps your sign-in and settings. Before the rename the app was "Kestrel Mail":
 // its folder is kept, so you stay signed in. DUDE_PROFILE=/some/folder gives a separate test profile.
 const legacy = path.join(app.getPath('appData'), 'Kestrel Mail');
-const profile = process.env.DUDE_PROFILE || process.env.KESTREL_PROFILE;
+const profile = process.env.DUDE_PROFILE;
+
 if (profile) app.setPath('userData', profile);
 else if (fs.existsSync(legacy)) app.setPath('userData', legacy);
+
 app.setAppUserModelId('sh.deni.dude');
 
 // One dude at a time: starting it again brings the running one forward.
@@ -32,12 +35,15 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
   process.exit(0);
 }
+
 app.on('second-instance', () => showWindow());
 
 let win,
   tray,
   quitting = false;
+
 const img = (name) => nativeImage.createFromPath(path.join(__dirname, name));
+
 function showWindow() {
   if (!win) return;
   if (win.isMinimized()) win.restore();
@@ -57,7 +63,7 @@ function createTray() {
         label: 'new mail',
         click: () => {
           showWindow();
-          win.webContents.send('kestrel:do', 'compose');
+          win.webContents.send('dude:do', 'compose');
         },
       },
       { type: 'separator' },
@@ -72,21 +78,24 @@ function createTray() {
   );
   tray.on('click', () => (win.isVisible() && win.isFocused() ? win.hide() : showWindow()));
 }
+
 function setUnread(n) {
   if (!tray) return;
   tray.setImage(img(n ? 'tray-unread.png' : 'tray.png').resize({ width: 22, height: 22 }));
   tray.setToolTip(n ? `dude — ${n} unread` : 'dude');
   app.setBadgeCount(n);
 }
+
 function notify({ title, body, id }) {
   if (!Notification.isSupported()) return;
   const n = new Notification({ title, body, icon: path.join(__dirname, 'icon.png'), silent: false });
   n.on('click', () => {
     showWindow();
-    if (id) win.webContents.send('kestrel:open', id);
+    if (id) win.webContents.send('dude:open', id);
   });
   n.show();
 }
+
 const store = () => path.join(app.getPath('userData'), 'accounts.json');
 mail.setCacheDir(path.join(app.getPath('userData'), 'mailcache'));
 
@@ -100,6 +109,7 @@ function loadAccounts() {
     return [];
   }
 }
+
 function saveAccounts(list) {
   const json = JSON.stringify(list);
   fs.mkdirSync(path.dirname(store()), { recursive: true });
@@ -107,11 +117,14 @@ function saveAccounts(list) {
     mode: 0o600,
   });
 }
+
 let accounts = [];
+
 const active = () => {
   if (!accounts[0]) throw new Error('not signed in');
   return accounts[0];
 };
+
 const persistAfter = async (p) => {
   const r = await p;
   saveAccounts(accounts);
@@ -265,14 +278,17 @@ const LOCAL = new Set([
   'meeting',
   'people',
 ]);
+
 const NO_RESEND = new Set(['send', 'invite', 'saveDraft', 'rsvp']); // never risk sending twice after a dropped line
+
 function askToSignIn(a, e) {
-  win?.webContents.send('kestrel:auth', {
+  win?.webContents.send('dude:auth', {
     email: a.email,
     provider: a.provider,
     reason: String(e?.message || e || '').slice(0, 200),
   });
 }
+
 // Errors are kept in dude.log in the app's data folder (newest last, about 200 KB at most).
 function logError(where, e) {
   try {
@@ -289,6 +305,7 @@ function logError(where, e) {
     );
   } catch {}
 }
+
 async function run(name, args) {
   const h = handlers[name];
   try {
@@ -332,11 +349,13 @@ async function calendarCall(fn) {
 }
 
 // New mail is pushed by the server: tell the window to look now.
-const mailChanged = () => win?.webContents.send('kestrel:mail');
+const mailChanged = () => win?.webContents.send('dude:mail');
+
 function startPush() {
   const a = accounts[0];
   if (a) mail.watch(a, mailChanged);
 }
+
 app.whenReady().then(() =>
   powerMonitor.on('resume', () => {
     const a = accounts[0];
@@ -350,6 +369,7 @@ app.whenReady().then(() =>
 
 // Keep the usual folders fresh in the background (every 5 minutes), so opening them is instant.
 let syncing = false;
+
 async function syncFolders() {
   const a = accounts[0];
   if (!a || syncing) return;
@@ -364,6 +384,7 @@ async function syncFolders() {
     syncing = false;
   }
 }
+
 setTimeout(syncFolders, 20e3);
 setInterval(syncFolders, 5 * 60e3);
 
@@ -420,6 +441,7 @@ function createWindow() {
 app.on('before-quit', () => {
   quitting = true;
 });
+
 app.whenReady().then(() => {
   accounts = loadAccounts();
   createWindow();
@@ -429,4 +451,5 @@ app.whenReady().then(() => {
     tray = null;
   } // desktops without a tray still work, closing then quits
 });
+
 app.on('window-all-closed', () => app.quit());

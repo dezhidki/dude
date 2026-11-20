@@ -1,8 +1,8 @@
-// The UI is plain HTML/CSS/JS: building is copying web/ (tests stay out) to dist/, or to the folder given.
-import { cpSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+// Builds the UI with Vite (see vite.config.js) into dist/, or into the folder given.
+import { resolve } from 'node:path';
+import { build } from 'vite';
 
-const out = process.argv[2] || 'dist';
-rmSync(out, { recursive: true, force: true });
-cpSync(join(import.meta.dirname, 'web'), out, { recursive: true, filter: (src) => !src.endsWith('.test.js') });
-console.log(`built ${out}/`);
+const outDir = resolve(process.argv[2] || 'dist');
+process.chdir(import.meta.dirname); // the bundle's module order follows paths relative to here: same output from any folder
+await build({ configFile: 'vite.config.js', build: { outDir }, logLevel: 'warn' });
+console.log(`built ${outDir}`);

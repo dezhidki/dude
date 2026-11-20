@@ -1,6 +1,7 @@
 // The page talks to the mail engine only through these calls.
 const { contextBridge, ipcRenderer } = require('electron');
 const call = (name, ...args) => ipcRenderer.invoke('mail', name, ...args);
+
 contextBridge.exposeInMainWorld('mail', {
   accounts: () => call('accounts'),
   signIn: (provider, email) => call('signIn', provider, email),
@@ -36,9 +37,9 @@ contextBridge.exposeInMainWorld('mail', {
   attachment: (folder, uid, name, index, mode) => call('attachment', folder, uid, name, index, mode),
   notify: (n) => call('notify', n),
   setUnread: (n) => call('unread', n),
-  onOpen: (cb) => ipcRenderer.on('kestrel:open', (_, id) => cb(id)),
-  onDo: (cb) => ipcRenderer.on('kestrel:do', (_, what) => cb(what)),
-  onAuth: (cb) => ipcRenderer.on('kestrel:auth', (_, info) => cb(info)),
-  onMail: (cb) => ipcRenderer.on('kestrel:mail', () => cb()),
+  onOpen: (cb) => ipcRenderer.on('dude:open', (_, id) => cb(id)),
+  onDo: (cb) => ipcRenderer.on('dude:do', (_, what) => cb(what)),
+  onAuth: (cb) => ipcRenderer.on('dude:auth', (_, info) => cb(info)),
+  onMail: (cb) => ipcRenderer.on('dude:mail', () => cb()),
   pushStatus: () => call('pushStatus'),
 });

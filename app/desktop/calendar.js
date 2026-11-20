@@ -5,11 +5,13 @@ const { freshToken } = require('./oauth');
 
 const EWS = 'https://outlook.office365.com/EWS/Exchange.asmx';
 const GCAL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+
 const x = (s) =>
   String(s == null ? '' : s).replace(
     /[<>&'"]/g,
     (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c],
   );
+
 const unx = (s) =>
   String(s || '')
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
@@ -20,11 +22,14 @@ const unx = (s) =>
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
     .replace(/&amp;/g, '&');
+
 const iso = (t) => new Date(t).toISOString().replace(/\.\d{3}Z$/, 'Z');
 // A refused calendar token: main.js then disconnects only the calendar.
 const refused = (msg) => Object.assign(new Error(msg), { authenticationFailed: true });
+
 const attendeesXml = (guests) =>
   `<t:RequiredAttendees>${guests.map((g) => `<t:Attendee><t:Mailbox><t:EmailAddress>${x(g)}</t:EmailAddress></t:Mailbox></t:Attendee>`).join('')}</t:RequiredAttendees>`;
+
 const tag = (xml, name) => {
   const m = new RegExp(`<t:${name}(?:\\s[^>]*)?>([\\s\\S]*?)</t:${name}>`).exec(xml);
   return m ? unx(m[1]) : '';
@@ -170,6 +175,7 @@ const STATUS = {
   Unknown: 'NEEDS-ACTION',
   Organizer: 'ACCEPTED',
 };
+
 function parseMeeting(xml, id) {
   const it =
     /<t:(MeetingRequest|MeetingCancellation|MeetingMessage|CalendarItem)\b[^>]*>([\s\S]*?)<\/t:\1>/.exec(xml) || [];
@@ -197,6 +203,7 @@ function parseMeeting(xml, id) {
     cancelled: it[1] === 'MeetingCancellation' || tag(body, 'IsCancelled') === 'true',
   };
 }
+
 async function meeting(acct, id) {
   if (acct.provider !== 'microsoft' || !acct.cal) throw new Error('CAL_NOT_CONNECTED');
   const xml = await ews(
@@ -286,6 +293,7 @@ async function gfetch(acct, url, opts = {}) {
   if (!r.ok && r.status !== 410) throw new Error(`calendar: ${j.error?.message || r.status}`);
   return j;
 }
+
 // Guests, organiser and notes of an event (the list view only has times and titles).
 async function detail(acct, id) {
   if (acct.provider === 'google') {
@@ -310,6 +318,7 @@ async function detail(acct, id) {
   if (!m) return null;
   return { notes: tag(xml, 'Body').trim(), organizer: m.organizer, attendees: m.attendees };
 }
+
 // Change an event; guests hear about it from the calendar service.
 async function update(acct, id, ev) {
   const guests = (ev.guests || []).filter((g) => /@/.test(g));
@@ -362,6 +371,7 @@ async function update(acct, id, ev) {
   );
   return { ok: true };
 }
+
 // Delete an event you own (guests get a cancellation).
 async function remove(acct, id) {
   if (acct.provider === 'google') {

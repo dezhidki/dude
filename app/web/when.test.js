@@ -1,11 +1,14 @@
 // Run: node web/when.test.js  (not shipped: build.mjs skips *.test.js)
-const assert = require('node:assert');
-const { parseWhen } = require('./when.js');
+import assert from 'node:assert';
+import { parseWhen } from './when.js';
+
 const now = new Date(2026, 10, 17, 9, 15); // Tue 17 Nov 2026 09:15
+
 const at = (r) => {
   const d = new Date(r.start);
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
+
 assert.strictEqual(at(parseWhen('tomorrow', now)), '11/18 8:00');
 assert.strictEqual(at(parseWhen('8 am', now)), '11/18 8:00'); // already past today
 assert.strictEqual(at(parseWhen('3 pm', now)), '11/17 15:00');

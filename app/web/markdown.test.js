@@ -1,9 +1,11 @@
 // Run: node web/markdown.test.js  (not shipped)
-const assert = require('node:assert');
-const { toHtml, tint } = require('./markdown.js');
+import assert from 'node:assert';
+import { tint, toHtml } from './markdown.js';
+
 const h = toHtml(
   'Hi **Venla**, see *this* and `x<y`.\n> quoted\n- one\n- two\n```js\nconst a = "s"; // c\n```\n[site](https://example.org) https://a.fi/x.',
 );
+
 assert.match(h, /<b>Venla<\/b>/);
 assert.match(h, /<i>this<\/i>/);
 assert.match(h, /<code[^>]*>x&lt;y<\/code>/);

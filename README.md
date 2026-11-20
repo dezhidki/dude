@@ -91,7 +91,7 @@ Search words: `from:` `to:` `cc:` `bcc:` `subject:` `domain:` `"phrase"` `-word`
 Web build runs a mock demo mailbox. No account needed.
 
 ```sh
-(cd app && npm run build)                  # copies app/web to app/dist
+(cd app && npm ci && npm run build)        # builds app/web into app/dist (Vite)
 python3 -m http.server -d app/dist 8000    # or: npx serve app/dist
 ```
 
@@ -100,12 +100,14 @@ Open the page, click **go**, then **try demo**. Real mail needs the desktop app.
 ## Run / build from source
 
 ```sh
+(cd app && npm ci)  # the UI's build tools
 cd app/desktop
 npm ci
 npm start           # builds the UI, starts Electron
 npm run package     # installer for the current OS, into app/desktop/dist
 ```
 
+- Code: `app/web` is the UI ([Solid](https://docs.solidjs.com) 2 components, built with [Vite](https://vite.dev)), `app/desktop` the Electron app and mail engine.
 - Tests: `cd app && npm test` (plain Node, no install needed).
 - Lint + format: `cd app && npm ci && npm run lint` ([Biome](https://biomejs.dev)). `npm run fix` applies the fixes.
 - Separate profile: `DUDE_PROFILE=/some/folder npm start`.

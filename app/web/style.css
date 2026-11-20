@@ -1,10 +1,10 @@
-/* Theme tokens. Light = the original's light palette; carbon = its dark "carbon" theme (measured). */
+/* Theme tokens: light, and carbon (the dark theme). Text colours meet WCAG AA contrast (4.5:1). */
 :root {
   --sans:
     SuperMailSans, "Superhuman Adelle", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue",
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   --serif: SuperMailSerif, Georgia, serif;
-  --mono: "Operator Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace;
   --page: #ffffff;
   --list: #ffffff;
   --pane: #fcfaf7;
@@ -14,45 +14,45 @@
   --line: #edebe5;
   --line-2: #dedbd5;
   --text: #141413;
-  --text-2: #73716d;
-  --text-3: #9f9c99;
-  --text-m: #73716d;
+  --text-2: #57554f;
+  --text-3: #6b6863;
+  --text-m: #57554f;
   --text-h: #141413;
-  --bar: #714cb6;
-  --dot: #714cb6;
-  --brand: #714cb6;
+  --bar: #4d7c0f;
+  --dot: #4d7c0f;
+  --brand: #4d7c0f;
   --pal: #ffffff;
   --pal-on: #f2f0eb;
   --key: #f2f0eb;
   --ev: #dbe8f8;
   --ev-bar: #3b7ddd;
   --now: #e5534b;
-  --r-s: 4px;
-  --r-m: 6px;
+  --r-s: 2px;
+  --r-m: 3px;
   color-scheme: light;
 }
 :root.carbon {
-  --page: #292827;
-  --list: #27292d;
-  --pane: #18191a;
-  --card: #363a40;
-  --hi: #464b53;
-  --hover: #30333a;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-2: rgba(255, 255, 255, 0.14);
-  --text: rgba(255, 255, 255, 0.9);
-  --text-2: rgba(255, 255, 255, 0.5);
-  --text-3: rgba(255, 255, 255, 0.35);
-  --text-m: rgba(255, 255, 255, 0.6);
-  --text-h: rgba(255, 255, 255, 0.8);
-  --bar: #aeb1dd;
-  --dot: #6fa3e0;
-  --brand: #aeb1dd;
-  --pal: #686d77;
-  --pal-on: rgba(255, 255, 255, 0.1);
-  --key: #555b64;
-  --ev: #4f8fd0;
-  --ev-bar: #4f8fd0;
+  --page: #000;
+  --list: #000;
+  --pane: #070707;
+  --card: #0e0e0e;
+  --hi: #171717;
+  --hover: #0b0b0b;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --text: rgba(255, 255, 255, 0.92);
+  --text-2: rgba(255, 255, 255, 0.66);
+  --text-3: rgba(255, 255, 255, 0.52);
+  --text-m: rgba(255, 255, 255, 0.7);
+  --text-h: rgba(255, 255, 255, 0.96);
+  --bar: #c8f135;
+  --dot: #c8f135;
+  --brand: #c8f135;
+  --pal: #0c0c0c;
+  --pal-on: #1b1b1b;
+  --key: #1f1f1f;
+  --ev: #1d2a0b;
+  --ev-bar: #c8f135;
   color-scheme: dark;
 }
 * {
@@ -94,13 +94,12 @@ textarea {
   min-width: 19px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 3px;
   background: var(--key);
   font: 700 13px / 16px var(--sans);
   color: var(--text);
 }
 
-/* ---------- Sign-in (matches the captured start page) ---------- */
+/* ---------- Sign-in ---------- */
 .signin {
   position: relative;
   height: 100%;
@@ -108,17 +107,6 @@ textarea {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #ffffff;
-}
-body.on-signin {
-  font-family: var(--serif);
-  background: #ffffff;
-}
-/* The original's backdrop is shown zoomed out on tablets. */
-@media (min-width: 600px) and (max-width: 900px) {
-  .signin {
-    background: #ffffff linear-gradient(#1f2830, #1f2830);
-  }
 }
 .signin-inner {
   position: relative;
@@ -132,27 +120,29 @@ body.on-signin {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 32px;
-  color: #fff;
+  gap: 12px;
+  height: 40px;
+  color: var(--text-h);
   font: 600 22px / 1 var(--sans);
 }
 .logo-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: #d4c7ff;
-  display: grid;
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  background: var(--brand);
+  display: block;
   place-items: center;
-  color: #141413;
+  color: #000;
+  font: 800 24px / 34px var(--mono);
+  text-align: center;
 }
 .logo-word {
-  font-size: 17px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  font: 800 30px / 1 var(--mono);
 }
 .logo-word::after {
-  content: "Mail";
+  content: none;
   text-transform: none;
   letter-spacing: 0;
   font-weight: 400;
@@ -160,25 +150,28 @@ body.on-signin {
   padding-right: 6px;
 }
 .signin .prompt {
-  font: 400 32px / 40px var(--serif);
-  color: #fff;
+  font: 400 18px / 26px var(--mono);
+  color: var(--text-2);
   text-align: center;
   margin: 24px 0 0;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3);
+  text-shadow: none;
+  margin-top: 18px;
 }
 .btn-main {
-  margin-top: 32px;
+  margin-top: 28px;
   padding: 8px 24px;
   width: 360px;
   max-width: 100%;
   height: 42px;
-  border-radius: 12px;
-  background: #f2f0eb;
-  color: #141413;
-  font: 700 15px / 1 var(--sans);
+  border-radius: 2px;
+  background: var(--brand);
+  color: #000;
+  font: 700 15px / 1 var(--mono);
+  text-transform: lowercase;
 }
 .btn-main:hover {
-  background: #fff;
+  background: var(--brand);
+  filter: brightness(1.08);
 }
 .signin-more {
   font-family: var(--sans);
@@ -191,30 +184,33 @@ body.on-signin {
 }
 .signin-more input {
   height: 42px;
-  border-radius: 12px;
-  border: 0;
+  border: 1px solid var(--line-2);
   padding: 0 10px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #141413;
+  background: var(--card);
+  color: var(--text);
   font-size: 15px;
   outline: none;
+  border-radius: 2px;
+  font-family: var(--mono);
 }
 .signin-more button {
   height: 42px;
-  border-radius: 12px;
-  background: rgba(20, 20, 19, 0.6);
-  color: #fff;
-  font: 600 15px / 1 var(--sans);
-  backdrop-filter: blur(8px);
+  background: transparent;
+  color: var(--text);
+  font: 600 14px / 1 var(--mono);
+  backdrop-filter: none;
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
 }
 .signin-more button:hover {
-  background: rgba(20, 20, 19, 0.8);
+  background: var(--hi);
 }
 .signin-more p {
   margin: 2px 0 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
+  color: var(--text-3);
   text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 /* ---------- Shell ---------- */
@@ -231,27 +227,19 @@ body.on-signin {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 30px;
   gap: 8px;
+  border-right-color: var(--line);
 }
 .rail button {
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
   display: grid;
   place-items: center;
   color: var(--text-2);
-}
-.rail button.on {
-  color: var(--text);
-  background: var(--hi);
 }
 .main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  margin-left: 6px;
 }
 .head {
   position: relative;
@@ -318,21 +306,6 @@ body.on-signin {
 .ibtn:hover {
   color: var(--text);
   background: var(--hover);
-}
-.search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  margin: 0 30px 6px 63px;
-  border-bottom: 1px solid var(--line-2);
-}
-.search input {
-  flex: 1;
-  border: 0;
-  outline: none;
-  background: none;
-  font-size: 15px;
 }
 
 .list {
@@ -431,7 +404,7 @@ body.on-signin {
   gap: 8px;
 }
 .row .date {
-  text-transform: uppercase;
+  text-transform: lowercase;
 }
 .row .acts {
   display: none;
@@ -455,7 +428,7 @@ body.on-signin {
   color: var(--text);
 }
 .row .star {
-  color: #e2a400;
+  color: #9a6c00;
   margin-right: 6px;
 }
 .row .cnt {
@@ -475,22 +448,25 @@ body.on-signin {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  margin: 0 30px 30px 20px;
-  border-radius: 8px;
+  color: var(--text);
+  margin: 0;
+  border-radius: 0;
   overflow: hidden;
   text-align: center;
+  background: none;
 }
 .zero h2 {
   position: relative;
-  font: 400 32px / 40px var(--serif);
+  font: 800 28px / 36px var(--mono);
   margin: 0;
+  color: var(--text-h);
 }
 .zero p {
   position: relative;
   margin: 8px 0 0;
-  font-size: 15px;
-  opacity: 0.85;
+  opacity: 1;
+  font: 14px / 20px var(--mono);
+  color: var(--text-3);
 }
 
 /* ---------- Thread ---------- */
@@ -537,11 +513,6 @@ body.on-signin {
   gap: 2px;
   padding-top: 4px;
 }
-.labels {
-  padding: 0 36px 14px;
-  color: var(--text-3);
-  font-weight: 600;
-}
 .msg {
   border-radius: 4px;
   margin-bottom: 4px;
@@ -583,9 +554,7 @@ body.on-signin {
 }
 .mrow .dt,
 .msg-h .dt {
-  font-size: 13px;
   color: var(--text-2);
-  text-transform: uppercase;
   white-space: nowrap;
 }
 .msg-h {
@@ -651,15 +620,6 @@ body.on-signin {
   font: inherit;
   overflow-wrap: anywhere;
 }
-.body a {
-  color: #3ea2f0;
-}
-.atts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-}
 .atts span {
   padding: 4px 10px;
   border-radius: 4px;
@@ -697,10 +657,10 @@ body.on-signin {
   background: var(--hi);
   padding: 8px 12px 4px;
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.03);
+  box-shadow: none;
   font: 700 15px / 20px var(--sans);
   text-transform: uppercase;
-  color: #54acdc;
+  color: var(--brand);
 }
 .newmsgs button:hover {
   filter: brightness(1.1);
@@ -712,7 +672,7 @@ body.on-signin {
   border-radius: 4px;
   padding: 6px 36px 14px;
   margin-top: 8px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.03);
+  box-shadow: none;
 }
 .thread .msg + .composer {
   box-shadow: inset 3px 0 0 var(--bar);
@@ -754,11 +714,6 @@ body.on-signin {
   font: 700 15px / 24px var(--sans);
   color: var(--text-h);
   padding: 0;
-}
-.csubj::placeholder,
-.crow input::placeholder,
-.composer textarea::placeholder {
-  color: var(--text-3);
 }
 .composer textarea {
   display: block;
@@ -881,9 +836,6 @@ body.on-signin {
   font: 13px / 20px var(--sans);
   color: var(--text);
 }
-.evrow input::placeholder {
-  color: var(--text-3);
-}
 .evparsed {
   margin: -4px 0 4px 28px;
   font-size: 12px;
@@ -929,6 +881,7 @@ body.on-signin {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  border-left-color: var(--line);
 }
 .contact {
   flex: 1;
@@ -960,13 +913,6 @@ body.on-signin {
   font-weight: 700;
   color: var(--text);
   margin-bottom: 8px;
-}
-.contact .sec-h i {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--text-3);
-  display: inline-block;
 }
 .contact .it {
   color: var(--text-2);
@@ -1054,7 +1000,6 @@ body.on-signin {
   font-size: 11px;
   line-height: 14px;
   overflow: hidden;
-  cursor: pointer;
 }
 :root:not(.carbon) .cal-ev {
   color: #143a6b;
@@ -1092,8 +1037,6 @@ body.on-signin {
   max-width: calc(100vw - 24px);
   background: var(--pal);
   color: var(--text);
-  border-radius: 4px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
   overflow: hidden;
 }
 :root:not(.carbon) .cmd {
@@ -1166,8 +1109,6 @@ body.on-signin {
   width: 560px;
   max-width: calc(100vw - 24px);
   background: var(--pal);
-  border-radius: 4px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
   padding: 24px 36px 28px;
 }
 .dlg h2 {
@@ -1211,8 +1152,6 @@ body.on-signin {
   background: var(--pal);
   color: var(--text);
   padding: 10px 16px;
-  border-radius: 4px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 #toast div .key {
   margin-left: 6px;
@@ -1231,9 +1170,6 @@ body.on-signin {
   .rail {
     display: none;
   }
-  .main {
-    margin-left: 0;
-  }
   .head {
     height: 60px;
     padding: 0 12px 0 48px;
@@ -1241,9 +1177,6 @@ body.on-signin {
   .menu-btn {
     left: 12px;
     top: 18px;
-  }
-  .search {
-    margin: 0 12px 6px 16px;
   }
   .sep {
     padding-left: 28px;
@@ -1286,9 +1219,6 @@ body.on-signin {
   .note {
     padding: 24px 28px;
   }
-  .zero {
-    margin: 0 12px 70px;
-  }
   .thread {
     padding: 0 0 160px;
   }
@@ -1307,7 +1237,6 @@ body.on-signin {
     padding: 0;
     margin-left: -6px;
   }
-  .labels,
   .replybar {
     padding-left: 16px;
     padding-right: 16px;
@@ -1343,11 +1272,6 @@ body.on-signin {
   }
   .cal-b {
     margin: 0 16px 0 10px;
-  }
-  .pop {
-    right: 0;
-    bottom: 0;
-    width: 100%;
   }
   .scrim,
   .scrim.dim {
@@ -1519,9 +1443,6 @@ body.on-signin {
   min-height: 200px;
   outline: none;
 }
-.editor textarea::placeholder {
-  color: var(--text-3);
-}
 .editor textarea::selection {
   color: transparent;
   background: rgba(110, 160, 230, 0.35);
@@ -1552,11 +1473,7 @@ body.on-signin {
 
 /* ---------- Drafts inside a conversation and in the list ---------- */
 .dr {
-  color: #e5534b;
   font-weight: 700;
-}
-.draftrow .nm.dr {
-  color: #e5534b;
 }
 
 /* ---------- Side menu (hamburger) ---------- */
@@ -1569,13 +1486,13 @@ body.on-signin {
   position: fixed;
   top: 0;
   bottom: 0;
-  left: 40px;
   width: 300px;
   z-index: 45;
   background: var(--pane);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  box-shadow: none;
   padding: 20px 0;
   overflow-y: auto;
+  border-right: 1px solid var(--line-2);
 }
 .sidemenu.fresh {
   animation: k-slide 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1639,7 +1556,6 @@ body.on-signin {
 }
 @media (max-width: 768px) {
   .sidemenu {
-    left: 0;
     width: min(300px, 86vw);
   }
 }
@@ -1718,7 +1634,6 @@ body.on-signin {
 .setrow button,
 .settings .link {
   font: 700 13px / 16px var(--sans);
-  color: #54acdc;
 }
 .sigprev {
   color: var(--text);
@@ -1745,7 +1660,7 @@ body.on-signin {
   max-width: calc(100vw - 24px);
   padding: 10px 12px 10px 16px;
   border-radius: 6px;
-  background: #e5534b;
+  background: #b3261e;
   color: #fff;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   animation: k-pop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.1);
@@ -1760,47 +1675,9 @@ body.on-signin {
 }
 
 /* ================= dude look: really dark, flat, one sharp accent, no pictures ================= */
-:root {
-  --mono: "JetBrains Mono", "DejaVu Sans Mono", ui-monospace, Menlo, Consolas, monospace;
-  --bar: #4d7c0f;
-  --dot: #4d7c0f;
-  --brand: #4d7c0f;
-  --r-s: 2px;
-  --r-m: 3px;
-}
-:root.carbon {
-  --page: #000;
-  --list: #000;
-  --pane: #070707;
-  --card: #0e0e0e;
-  --hi: #171717;
-  --hover: #0b0b0b;
-  --line: rgba(255, 255, 255, 0.07);
-  --line-2: rgba(255, 255, 255, 0.12);
-  --text: rgba(255, 255, 255, 0.88);
-  --text-2: rgba(255, 255, 255, 0.5);
-  --text-3: rgba(255, 255, 255, 0.3);
-  --text-m: rgba(255, 255, 255, 0.55);
-  --text-h: rgba(255, 255, 255, 0.93);
-  --bar: #c8f135;
-  --dot: #c8f135;
-  --brand: #c8f135;
-  --pal: #0c0c0c;
-  --pal-on: #1b1b1b;
-  --key: #1f1f1f;
-  --ev: #1d2a0b;
-  --ev-bar: #c8f135;
-}
-.pane {
-  border-left-color: var(--line);
-}
-.rail {
-  border-right-color: var(--line);
-}
 .cmd,
 .dlg,
-#toast div,
-.pop {
+#toast div {
   box-shadow: none !important;
   border: 1px solid var(--line-2);
   border-radius: 3px;
@@ -1829,26 +1706,11 @@ body.on-signin {
   border-radius: 2px;
   font-size: 11px;
 }
-.evbtns button.save {
-  border-radius: 2px;
-}
-.newmsgs button {
-  color: var(--brand);
-  border-radius: 2px;
-  box-shadow: none;
-}
 :root.carbon .cal-ev {
   color: #e6ffa8;
 }
 :root.carbon .body iframe.paper {
   filter: brightness(0.92);
-}
-.sidemenu {
-  box-shadow: none;
-  border-right: 1px solid var(--line-2);
-}
-.composer {
-  box-shadow: none;
 }
 
 /* sign-in: plain page, wordmark, one line, one button */
@@ -1857,115 +1719,12 @@ body.on-signin {
   background: var(--page);
   font-family: var(--mono);
 }
-.signin-inner {
-  width: 360px;
-}
-.logo {
-  gap: 12px;
-  height: 40px;
-  color: var(--text-h);
-}
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 4px;
-  background: var(--brand);
-  color: #000;
-  font: 800 24px / 34px var(--mono);
-  text-align: center;
-  display: block;
-}
-.logo-word {
-  font: 800 30px / 1 var(--mono);
-  letter-spacing: -0.02em;
-  text-transform: none;
-}
-.logo-word::after {
-  content: none;
-}
-.signin .prompt {
-  font: 400 18px / 26px var(--mono);
-  color: var(--text-2);
-  text-shadow: none;
-  margin-top: 18px;
-}
-.btn-main {
-  background: var(--brand);
-  color: #000;
-  border-radius: 2px;
-  font: 700 15px / 1 var(--mono);
-  margin-top: 28px;
-  text-transform: lowercase;
-}
-.btn-main:hover {
-  background: var(--brand);
-  filter: brightness(1.08);
-}
-.signin-more button {
-  background: transparent;
-  border: 1px solid var(--line-2);
-  color: var(--text);
-  border-radius: 2px;
-  font: 600 14px / 1 var(--mono);
-  backdrop-filter: none;
-}
-.signin-more button:hover {
-  background: var(--hi);
-}
-.signin-more input {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--line-2);
-  border-radius: 2px;
-  font-family: var(--mono);
-}
-.signin-more p {
-  color: var(--text-3);
-  font-family: var(--mono);
-  font-size: 12px;
-}
 :root:not(.carbon) .logo-mark,
 :root:not(.carbon) .btn-main {
   color: #fff;
 }
 
-/* empty inbox: words, no picture */
-.zero {
-  color: var(--text);
-  margin: 0;
-  border-radius: 0;
-  background: none;
-}
-.zero h2 {
-  font: 800 28px / 36px var(--mono);
-  color: var(--text-h);
-}
-.zero p {
-  font: 14px / 20px var(--mono);
-  color: var(--text-3);
-  opacity: 1;
-}
-.row .date {
-  text-transform: lowercase;
-}
-
 /* ================= contrast pass (WCAG AA: text at least 4.5:1, large text 3:1) ================= */
-:root {
-  --text-2: #57554f;
-  --text-m: #57554f;
-  --text-3: #6b6863;
-}
-:root.carbon {
-  --text: rgba(255, 255, 255, 0.92);
-  --text-h: rgba(255, 255, 255, 0.96);
-  --text-2: rgba(255, 255, 255, 0.66);
-  --text-m: rgba(255, 255, 255, 0.7);
-  --text-3: rgba(255, 255, 255, 0.52);
-  --line-2: rgba(255, 255, 255, 0.16);
-}
-.row .star {
-  color: #9a6c00;
-}
 :root.carbon .row .star {
   color: #f2b600;
 }
@@ -1976,9 +1735,6 @@ body.on-signin {
 :root.carbon .dr,
 :root.carbon .draftrow .nm.dr {
   color: #ff6b61;
-}
-.authbar {
-  background: #b3261e;
 }
 ::placeholder {
   color: var(--text-3);

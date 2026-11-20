@@ -4,12 +4,14 @@ const stamp = (t) =>
     .toISOString()
     .replace(/[-:]/g, '')
     .replace(/\.\d{3}/, '');
+
 const text = (s) =>
   String(s || '')
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
     .replace(/\r?\n/g, '\\n');
+
 // Lines longer than 75 octets are folded with CRLF + space.
 function fold(line) {
   const out = [];
