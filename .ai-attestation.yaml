@@ -10,20 +10,20 @@ repo:
   owner: dezhidki
   name: dude
   url: https://github.com/dezhidki/dude
-generated: "2026-11-19T08:06:45.497Z"
+generated: "2026-11-20T11:21:10.000Z"
 range:
   from: "2026-11-19T09:58:36+02:00"
-  to: "2026-11-19T10:06:45+02:00"
-  commits: 3
+  to: "2026-11-20T13:21:10+02:00"
+  commits: 7
 ai:
-  assisted_commits: 2
-  percentage: 66.7
+  assisted_commits: 6
+  percentage: 85.7
   tools:
     - name: Claude Code
       identifier: claude-code
       first_seen: "2026-11-19"
-      last_seen: "2026-11-19"
-      commit_count: 2
+      last_seen: "2026-11-20"
+      commit_count: 6
   detection_methods:
     - co-author-trailer
 governance:
