@@ -1,0 +1,117 @@
+// UI smoke test: the screens in a real (hidden) window, built with Solid's development checks, driven
+// through a short demo session. It fails on a screen that doesn't show up, an uncaught error, or any
+// console warning or error (Solid reports ignored store writes and other slips as warnings).
+// Run: npm run smoke (CI runs it under xvfb on Linux).
+import fs from 'node:fs';
+import path from 'node:path';
+import { app, BrowserWindow } from 'electron';
+
+const dist = path.resolve(process.argv.at(-1) ?? 'dist-dev');
+
+// [what, js run in the page, a selector that must then be there, ms to wait first]
+const STEPS: [string, string, string?, number?][] = [
+  ['sign-in screen', '0', '[data-a="start"]'],
+  ['go', `__click('[data-a="start"]')`, '[data-a="demo"]'],
+  ['demo mailbox', `__click('[data-a="demo"]')`, '.row', 700],
+  ['next', `__key('j')`, '.row.sel'],
+  ['open', `__key('Enter')`, '.msg', 500],
+  ['reply', `__key('r')`, '[data-c="text"]', 300],
+  ['write', `__type('[data-c="text"]', 'Thursday works.')`],
+  ['send', `__key('Enter', { ctrlKey: true })`, undefined, 3800],
+  ['back to list', `__key('Escape')`, '.row', 300],
+  ['palette', `__key('k', { ctrlKey: true })`, '.cmd input'],
+  ['palette search', `__type('.cmd input', 'star')`, '.cmd li'],
+  ['palette close', `__key('Escape')`],
+  ['search', `__key('/')`, '.sq', 300],
+  ['search words', `__type('.sq', 'from:maya')`],
+  ['search run', `__key('Enter')`, '.row', 500],
+  ['search close', `__key('Escape')`, undefined, 400],
+  ['compose', `__key('c')`, '[data-c="to"]', 300],
+  ['compose leave', `document.activeElement.blur(); __key('Escape')`, undefined, 300],
+  ['day beside mail', `__key('0')`, '.cal-pane', 400],
+  ['week', `__key('2')`, '.wk', 400],
+  ['new event', `__key('b')`, '[data-e="title"]', 300],
+  ['event close', `__key('Escape')`],
+  ['mail again', `__key('1')`, '.row', 300],
+  ['settings', `__key(',', { ctrlKey: true })`, '.thread', 300],
+  ['settings close', `__key('Escape')`, '.row', 300],
+  ['keys', `__key('?')`, '.keys'],
+  ['keys close', `__key('Escape')`],
+];
+
+const HELPERS = `
+window.__key = (key, o = {}) =>
+  (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...o }));
+window.__type = (sel, value) => {
+  const el = document.querySelector(sel);
+  if (!el) throw new Error('no ' + sel);
+  el.focus();
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+};
+window.__click = (sel) => {
+  const el = document.querySelector(sel);
+  if (!el) throw new Error('no ' + sel);
+  el.click();
+};`;
+
+const problems: string[] = [];
+
+// Without Solid's development build nothing would warn and this test would pass whatever happens.
+const bundle = fs.readdirSync(path.join(dist, 'assets')).filter((f) => f.endsWith('.js'));
+if (!bundle.some((f) => fs.readFileSync(path.join(dist, 'assets', f), 'utf8').includes('STORE_WRITE_OUTSIDE_SETTER'))) {
+  console.error(`smoke: ${dist} is not a development build (node build.mjs <dir> --dev)`);
+  process.exit(1);
+}
+let step = 'load';
+setTimeout(() => {
+  console.error(`smoke: stuck at "${step}"`);
+  app.exit(1);
+}, 120e3);
+
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'; // about running unpackaged, not about the app
+
+// not awaited at the top: Electron holds back "ready" until the main script's top-level awaits are done
+async function run() {
+  // a partition without "persist:" lives in memory: nothing is kept from the last run
+  const w = new BrowserWindow({
+    show: false,
+    width: 1400,
+    height: 900,
+    webPreferences: { offscreen: true, partition: `smoke-${Date.now()}` },
+  });
+  w.webContents.on('console-message', (e) => {
+    if (e.level === 'warning' || e.level === 'error') {
+      problems.push(`${step}: console ${e.level}: ${e.message.slice(0, 400)}`);
+    }
+  });
+  w.webContents.on('render-process-gone', (_, d) => problems.push(`${step}: page gone (${d.reason})`));
+  await w.loadFile(path.join(dist, 'index.html'));
+  await w.webContents.executeJavaScript(`${HELPERS}; 0`); // 0: a value that can come back
+  for (const [name, js, expect, wait = 250] of STEPS) {
+    step = name;
+    try {
+      await w.webContents.executeJavaScript(`(() => { ${js}; })()`);
+    } catch (e) {
+      problems.push(`${name}: ${(e as Error).message}`);
+    }
+    await new Promise((r) => setTimeout(r, wait));
+    if (expect && !(await w.webContents.executeJavaScript(`!!document.querySelector(${JSON.stringify(expect)})`))) {
+      problems.push(`${name}: no ${expect} on screen`);
+    }
+  }
+  console.log(
+    problems.length
+      ? `smoke: ${problems.length} problem(s)\n${problems.join('\n')}`
+      : `smoke ok (${STEPS.length} steps)`,
+  );
+  app.exit(problems.length ? 1 : 0);
+}
+
+app
+  .whenReady()
+  .then(run)
+  .catch((e) => {
+    console.error('smoke:', e);
+    app.exit(1);
+  });

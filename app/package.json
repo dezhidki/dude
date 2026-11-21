@@ -1,18 +1,22 @@
 {
   "name": "dude-ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "dude screens (also a demo in any browser).",
   "scripts": {
     "build": "node build.mjs",
     "test": "node --test",
-    "lint": "biome check",
+    "smoke": "node build.mjs dist-dev --dev && desktop/node_modules/.bin/electron --no-sandbox tests/ui/smoke.ts dist-dev",
+    "lint": "biome check --error-on-warnings && npm run types",
+    "types": "tsc -p web && tsc -p desktop && tsc -p tests/web",
     "fix": "biome check --write"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
     "@solidjs/vite-plugin": "^3.0.1",
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
     "vite": "^8.3.8"
   },
   "dependencies": {

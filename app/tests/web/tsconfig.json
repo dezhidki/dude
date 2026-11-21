@@ -1,0 +1,6 @@
+// The screens' tests: the screens' settings plus Node (they run under node --test).
+{
+  "extends": "../../web/tsconfig.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["*.ts"]
+}

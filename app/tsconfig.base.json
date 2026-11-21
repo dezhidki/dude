@@ -1,0 +1,17 @@
+// Shared by web/, desktop/ and tests/: strict, check only (Vite and Node strip the types themselves),
+// and nothing Node can't strip (no enums, namespaces or parameter properties).
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "target": "esnext",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true
+  }
+}

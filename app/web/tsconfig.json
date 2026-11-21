@@ -1,0 +1,13 @@
+// The screens: browser only (no Node globals), Solid's JSX.
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": [],
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web"
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

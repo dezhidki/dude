@@ -18,14 +18,29 @@
       "preset": "recommended",
       // style.css is ordered by screen, not by specificity, and its !important flags are deliberate (print, reduced motion)
       "style": {
-        "noDescendingSpecificity": "off"
+        "noDescendingSpecificity": "off",
+        // every if / for / while body in braces, even one line: no "added a line, it ran unconditionally"
+        "useBlockStatements": "error",
+        "useConst": "error"
+      },
+      "suspicious": {
+        // a local named like an import broke the calendar once (a parameter `on` hid the event helper)
+        "noShadow": "error"
+      },
+      "nursery": {
+        // a promise nobody awaits or catches loses its error; `void` marks the deliberate ones
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error"
       },
       "complexity": {
         "noImportantStyles": "off"
       },
       // a name used but not imported is an error (the modules share nothing else)
       "correctness": {
-        "noUndeclaredVariables": "error"
+        "noUndeclaredVariables": "error",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "error"
       },
       "a11y": {
         // the app has no <form>, so a button can't submit anything: type="button" would be noise
@@ -40,7 +55,7 @@
   "overrides": [
     {
       // the icons sit in buttons that carry the label (title / aria-label), as they always have
-      "includes": ["web/app/icons.jsx"],
+      "includes": ["web/app/icons.tsx"],
       "linter": { "rules": { "a11y": { "noSvgWithoutTitle": "off" } } }
     }
   ],

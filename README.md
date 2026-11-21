@@ -1,4 +1,4 @@
-<p align="center"><img src="app/desktop/icon.png" width="96" alt="dude logo"></p>
+<p align="center"><img src="app/desktop/assets/icon.png" width="96" alt="dude logo"></p>
 
 # dude
 
@@ -107,19 +107,20 @@ npm start           # builds the UI, starts Electron
 npm run package     # installer for the current OS, into app/desktop/dist
 ```
 
-- Code: `app/web` is the UI ([Solid](https://docs.solidjs.com) 2 components, built with [Vite](https://vite.dev)), `app/desktop` the Electron app and mail engine.
-- Tests: `cd app && npm test` (plain Node, no install needed).
-- Lint + format: `cd app && npm ci && npm run lint` ([Biome](https://biomejs.dev)). `npm run fix` applies the fixes.
+- Code: strict [TypeScript](https://www.typescriptlang.org). `app/web` is the UI ([Solid](https://docs.solidjs.com) 2 components, built with [Vite](https://vite.dev)), `app/desktop` the Electron app and mail engine (Electron runs its `.ts` files as they are), `app/web/api.ts` what the two say to each other. Tests in `app/tests`, images in each part's `assets`.
+- Tests: `cd app && npm test` (plain Node 24; the mail engine's tests need `app/desktop` installed).
+- Lint, format and types: `cd app && npm ci && npm run lint` ([Biome](https://biomejs.dev), then `tsc`). `npm run fix` applies Biome's fixes.
+- UI smoke test: `cd app && npm run smoke` (needs `app/desktop` installed). Clicks through the demo in a hidden window and fails on any warning.
 - Separate profile: `DUDE_PROFILE=/some/folder npm start`.
 
 ## Release
 
-- CI: `.github/workflows/build.yml`. Builds Linux, macOS, Windows on every push to `main`. Lint and tests run first.
+- CI: `.github/workflows/build.yml`. Builds Linux, macOS, Windows on every push to `main`. Lint, types, tests and the UI smoke test run first.
 - Push to `main` replaces the `nightly` prerelease.
 - Versioned release: push a tag. Version comes from the tag.
 
 ```sh
-git tag v0.2.0 && git push --tags
+git tag v0.2.1 && git push --tags
 ```
 
 ## Privacy

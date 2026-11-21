@@ -1,0 +1,16 @@
+// The mail engine: Node + Electron's main process (it runs the .ts files directly), no DOM.
+// preload.js stays JavaScript (the sandboxed preload can't strip types) and is checked as it is.
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["esnext"],
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": true,
+    // the UI smoke test (tests/ui) runs in Electron too: its types are the ones installed here
+    "paths": { "electron": ["./node_modules/electron"] }
+  },
+  "include": ["*.ts", "preload.js", "../tests/desktop/*.ts", "../tests/ui/*.ts"]
+}

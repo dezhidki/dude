@@ -33,14 +33,18 @@ jobs:
             app/package-lock.json
             app/desktop/package-lock.json
       - run: npm ci
-      - run: npm ci # the UI build (Vite) and lint (Biome)
+      - run: npm ci # the UI build (Vite), lint (Biome) and types (TypeScript)
         working-directory: app
-      - name: Lint (Biome)
+      - name: Lint and types (Biome, TypeScript)
         if: runner.os == 'Linux' # Windows checks out CRLF, which the formatter would flag
         working-directory: app
         run: npm run lint
       - run: npm test
         working-directory: app
+      - name: UI smoke test (Electron, Solid's development checks)
+        if: runner.os == 'Linux'
+        working-directory: app
+        run: xvfb-run -a npm run smoke
       - name: Version from tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version

@@ -2,22 +2,22 @@
   "appId": "sh.deni.dude",
   "productName": "dude",
   "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
-  "files": ["ui/**", "*.js", "*.png", "package.json", "!*.test.js"],
+  "files": ["ui/**", "*.ts", "preload.js", "assets/**", "package.json"],
   "linux": {
     "target": "AppImage",
     "category": "Office",
     "executableArgs": ["--no-sandbox"],
-    "icon": "icon.png"
+    "icon": "assets/icon.png"
   },
   "mac": {
     "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }],
     "category": "public.app-category.productivity",
-    "icon": "icon.png",
+    "icon": "assets/icon.png",
     "identity": "-",
     "hardenedRuntime": false
   },
   "win": {
     "target": "nsis",
-    "icon": "icon.png"
+    "icon": "assets/icon.png"
   }
 }
