@@ -183,17 +183,6 @@ export function saveTodo() {
   }
 }
 
-/** labels to offer for what's typed in the form: the ones it starts, then it as a new one */
-export function labelSugg(f: TodoForm): string[] {
-  const q = normLabel(f.labelQ),
-    all = labels();
-  if (!q) {
-    return [];
-  }
-  const have = all.filter((l) => l.id.startsWith(q) && !f.labels.includes(l.id)).map((l) => l.id);
-  return all.some((l) => l.id === q) ? have : [...have, q];
-}
-
 export function takeLabel(id: string) {
   const f = S.todoForm;
   if (!f) {
@@ -220,11 +209,11 @@ export function todoFormKey(e: KeyboardEvent): boolean {
   } else if (k === 'Escape') {
     closeTodo();
   } else if (field === 'labelq' && (k === 'Enter' || k === ',')) {
-    const s = labelSugg(f)[0];
-    if (s) {
-      takeLabel(s);
+    const id = normLabel(f.labelQ); // what's typed, existing or new
+    if (id && !f.labels.includes(id)) {
+      takeLabel(id);
     } else {
-      f.labelQ = ''; // already on it
+      f.labelQ = ''; // nothing, or already on it
     }
   } else if (field === 'labelq' && k === 'Backspace' && !f.labelQ && f.labels.length) {
     f.labels = f.labels.slice(0, -1);

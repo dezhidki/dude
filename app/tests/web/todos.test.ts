@@ -6,6 +6,7 @@ import {
   dayKey,
   dayWord,
   keyDay,
+  labelChoices,
   mailRef,
   moveDay,
   normLabel,
@@ -52,6 +53,14 @@ for (let i = 0; i < 300; i++) {
   const k = dayKey(now.getTime() + i * 864e5);
   assert.strictEqual(whenToDay(whenText(k, now), now).day, k);
 }
+// the label field offers what's typed first (Enter takes it), then the labels it starts; never one on the todo
+const lb = (...ids: string[]) => ids.map((id, hue) => ({ id, hue }));
+assert.deepStrictEqual(labelChoices(lb('poster-draft', 'poster'), 'poster', []), ['poster', 'poster-draft']);
+assert.deepStrictEqual(labelChoices(lb('poster'), 'po', []), ['po', 'poster']);
+assert.deepStrictEqual(labelChoices(lb('poster'), ' #Poster ', []), ['poster']);
+assert.deepStrictEqual(labelChoices(lb('poster-draft', 'poster'), 'poster', ['poster']), ['poster-draft']);
+assert.deepStrictEqual(labelChoices(lb('poster'), 'po', ['poster']), ['po']);
+assert.deepStrictEqual(labelChoices(lb('poster'), '  ', []), []);
 assert.strictEqual(normLabel(' #Thesis '), 'thesis');
 assert.strictEqual(normLabel('two  words'), 'two-words');
 assert.deepStrictEqual(addLabel([{ id: 'thesis', hue: 0 }], 'Thesis'), [{ id: 'thesis', hue: 0 }]);

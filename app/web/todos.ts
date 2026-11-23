@@ -84,6 +84,16 @@ export function addLabel(labels: Label[], name: string): Label[] {
   return !id || labels.some((l) => l.id === id) ? labels : [...labels, { id, hue: labels.length % HUES }];
 }
 
+/** labels offered for what's typed: it first (Enter takes it, existing or new), then the labels it starts; none taken */
+export function labelChoices(labels: Label[], q: string, taken: string[]): string[] {
+  const id = normLabel(q);
+  return id
+    ? [id, ...labels.map((l) => l.id).filter((x) => x.startsWith(id))].filter(
+        (x, i, a) => !taken.includes(x) && a.indexOf(x) === i,
+      )
+    : [];
+}
+
 export function normTodo(x: unknown): Todo | null {
   const o = x as Record<string, unknown> | null;
   if (!o || typeof o !== 'object' || typeof o.id !== 'string' || !o.id) {

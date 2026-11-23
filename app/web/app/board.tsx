@@ -3,7 +3,7 @@
 // done ones. Cards drag to another day. A todo opens in the right pane (TodoPane).
 
 import { createMemo, createSignal, For, onSettled } from 'solid-js';
-import { dayKey, HUES, keyDay, type Todo } from '../todos.ts';
+import { dayKey, HUES, keyDay, labelChoices, normLabel, type Todo } from '../todos.ts';
 import { openEvent } from './calendar.ts';
 import { MOD } from './commands.ts';
 import { type CalItem, firstOf, fmtTime, now, on, root, S, type TodoForm } from './core.ts';
@@ -13,7 +13,6 @@ import {
   boardCols,
   evDone,
   formWhen,
-  labelSugg,
   labels,
   moveTodo,
   openTodo,
@@ -285,6 +284,8 @@ function whenRead(f: TodoForm) {
 // it's typed (events.ts), and its keys are todoFormKey's.
 export function TodoPane() {
   const f = () => S.todoForm ?? NONE; // NONE only while the pane goes away
+  const typed = () => normLabel(f().labelQ),
+    choices = () => labelChoices(labels(), f().labelQ, f().labels);
   const remove = (fn: (t: TodoForm) => void) =>
     on((e: MouseEvent) => {
       e.stopPropagation();
@@ -338,15 +339,15 @@ export function TodoPane() {
               aria-label="Add label"
               autocomplete="off"
             />
-            {labelSugg(f()).length ? (
+            {choices().length ? (
               <div class="sugg" role="listbox">
-                <For each={labelSugg(f())}>
-                  {(id, i) => (
-                    // biome-ignore lint/a11y/useFocusableInteractive: focus stays in the field; Enter takes the first
+                <For each={choices()}>
+                  {(id) => (
+                    // biome-ignore lint/a11y/useFocusableInteractive: focus stays in the field; Enter takes what's typed
                     <div
-                      class={['sg', { on: i() === 0 }]}
+                      class={['sg', { on: id === typed() }]}
                       role="option"
-                      aria-selected={i() === 0 ? 'true' : 'false'}
+                      aria-selected={id === typed() ? 'true' : 'false'}
                       onMouseDown={on((e: MouseEvent) => {
                         e.preventDefault(); // the field keeps the focus
                         takeLabel(id);
