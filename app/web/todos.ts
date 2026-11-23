@@ -89,15 +89,22 @@ export function normTodo(x: unknown): Todo | null {
   if (!o || typeof o !== 'object' || typeof o.id !== 'string' || !o.id) {
     return null;
   }
-  const arr = <T>(v: unknown) => (Array.isArray(v) ? (v as T[]) : []);
+  const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+  const obj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : null);
+  const labels = arr(o.labels).flatMap((l) => (typeof l === 'string' ? [normLabel(l)] : []));
   return {
     id: o.id,
     title: typeof o.title === 'string' ? o.title : '',
-    day: typeof o.day === 'string' ? o.day : null,
+    day: typeof o.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.day) ? o.day : null,
     done: o.done === true,
-    labels: arr<string>(o.labels),
-    mails: arr<TodoMail>(o.mails),
-    tasks: arr<TodoTask>(o.tasks),
+    labels: labels.filter((l, i) => l && labels.indexOf(l) === i),
+    mails: arr(o.mails).filter(
+      (m) => typeof obj(m)?.id === 'string' && typeof obj(m)?.folder === 'string',
+    ) as TodoMail[],
+    tasks: arr(o.tasks).flatMap((e) => {
+      const r = obj(e);
+      return r && typeof r.t === 'string' ? [{ t: r.t, done: !!r.done }] : [];
+    }),
     notes: typeof o.notes === 'string' ? o.notes : '',
   };
 }

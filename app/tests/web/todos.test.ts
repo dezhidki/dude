@@ -69,6 +69,22 @@ assert.deepStrictEqual(normTodo({ id: 'a', title: 'x' }), {
   tasks: [],
   notes: '',
 });
+const bad = normTodo({
+  id: 'a',
+  title: 'x',
+  tasks: [null, 'y', { t: 'ok', done: 1 }],
+  labels: [1, ' #Thesis ', 'thesis', ''],
+  mails: [null, { id: 'm' }, { id: 'm2', folder: 'inbox' }],
+  day: 'junk',
+});
+assert.deepStrictEqual(bad?.tasks, [{ t: 'ok', done: true }]);
+assert.deepStrictEqual(bad?.labels, ['thesis']);
+assert.deepStrictEqual(
+  bad?.mails.map((m) => m.id),
+  ['m2'],
+);
+assert.strictEqual(bad?.day, null);
+assert.strictEqual(normTodo({ id: 'a', day: '2026-11-23' })?.day, '2026-11-23');
 assert.strictEqual(normTodo('junk'), null);
 assert.strictEqual(normTodo({ title: 'no id' }), null);
 const cols = ['2026-11-22', '2026-11-23', null];
