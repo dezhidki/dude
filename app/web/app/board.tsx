@@ -6,7 +6,7 @@ import { createMemo, createSignal, For, onSettled } from 'solid-js';
 import { dayKey, HUES, keyDay, labelChoices, normLabel, type Todo } from '../todos.ts';
 import { openEvent } from './calendar.ts';
 import { MOD } from './commands.ts';
-import { type CalItem, firstOf, fmtTime, now, on, root, S, type TodoForm } from './core.ts';
+import { type CalItem, firstOf, fmtTime, nameOf, now, on, root, S, type TodoForm } from './core.ts';
 import { press } from './events.ts';
 import { ic } from './icons.tsx';
 import {
@@ -16,6 +16,7 @@ import {
   labels,
   moveTodo,
   openTodo,
+  openTodoMail,
   takeLabel,
   todos,
   toggleEvDone,
@@ -81,7 +82,17 @@ export function TodoCard(props: { todo: Todo; sel: boolean; draft?: boolean }) {
         <div class="tb-meta">
           <For each={t().labels}>{(l) => <LabelTag id={l} />}</For>
           {t().mails.length ? (
-            <span class="ml" title={`open: ${t().mails[0]?.subject}`}>
+            <span
+              class="ml"
+              title={`open: ${t().mails[0]?.subject}`}
+              onClick={on((e: MouseEvent) => {
+                e.stopPropagation(); // the mail, not the todo
+                const m = props.todo.mails[0];
+                if (m) {
+                  void openTodoMail(m);
+                }
+              })}
+            >
               <ic.mail />
               {`${firstOf(t().mails[0]?.from).toLowerCase()}${t().mails.length > 1 ? ` +${t().mails.length - 1}` : ''}`}
             </span>
@@ -284,6 +295,7 @@ function whenRead(f: TodoForm) {
 // it's typed (events.ts), and its keys are todoFormKey's.
 export function TodoPane() {
   const f = () => S.todoForm ?? NONE; // NONE only while the pane goes away
+  const from = () => (f().fromMail ? f().mails.find((m) => m.id === f().fromMail) : undefined); // made from it
   const typed = () => normLabel(f().labelQ),
     choices = () => labelChoices(labels(), f().labelQ, f().labels);
   const remove = (fn: (t: TodoForm) => void) =>
@@ -296,6 +308,7 @@ export function TodoPane() {
   return (
     <aside class="pane todo-pane">
       <div class={['evform tb-form', { fresh: !!f().fresh }]}>
+        {from() ? <div class="tb-from">{`from mail · ${nameOf(from()?.from)}`}</div> : null}
         <input class="etitle" data-todo="title" value={f().title} placeholder="what" aria-label="Todo" />
         <label class="evrow">
           <span>
@@ -368,33 +381,39 @@ export function TodoPane() {
             ) : null}
           </div>
         </div>
-        {f().mails.length ? (
-          <div class="evrow">
-            <span>
-              <ic.mail />
-            </span>
-            <div class="tb-row-body tb-mails">
-              <For each={f().mails}>
-                {(m) => (
-                  <div class="tb-mail" title={`open: ${m.subject}`}>
-                    <b>{firstOf(m.from)}</b>
-                    <span>{m.subject}</span>
-                    <button
-                      data-rmmail={m.id}
-                      title="take off"
-                      aria-label={`take off ${m.subject}`}
-                      onClick={remove((t) => {
-                        t.mails = t.mails.filter((x) => x.id !== m.id);
-                      })}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-              </For>
-            </div>
+        <div class="evrow">
+          <span>
+            <ic.mail />
+          </span>
+          <div class="tb-row-body tb-mails">
+            <For each={f().mails}>
+              {(m) => (
+                <div class="tb-mail" title={`open: ${m.subject}`} onClick={on(() => openTodoMail(m))}>
+                  <b>{firstOf(m.from)}</b>
+                  <span>{m.subject}</span>
+                  <button
+                    data-rmmail={m.id}
+                    title="take off"
+                    aria-label={`take off ${m.subject}`}
+                    onClick={remove((t) => {
+                      t.mails = t.mails.filter((x) => x.id !== m.id);
+                    })}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </For>
+            <button
+              class="tb-link"
+              data-a="attach-mail"
+              onClick={press('attach-mail')}
+              title="Attach mail (Ctrl+Shift+M)"
+            >
+              attach mail
+            </button>
           </div>
-        ) : null}
+        </div>
         <div class="evrow">
           <span>
             <ic.check />

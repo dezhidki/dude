@@ -43,6 +43,7 @@ import {
   keyOf,
   LS,
   layer,
+  listDate,
   M,
   type Mail1,
   now,
@@ -60,7 +61,7 @@ import { ACTIONS } from './events.ts';
 import { openCmd, openMenu, render, renderLayer } from './render.tsx';
 import { openSettings, SET, setSetting, sigBlock } from './settings.tsx';
 import { closeThread, lastRealIndex, toggleMsg } from './thread.ts';
-import { deleteTodo, goBoard, moveTodo, toggleTodo } from './todo.ts';
+import { attachMail, deleteTodo, goBoard, moveTodo, toggleTodo } from './todo.ts';
 import { addDays } from './week.tsx';
 
 export const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
@@ -69,12 +70,12 @@ const anyThread = () => (S.screen === 'thread' && !!S.open) || inList();
 const onTodo = () => S.screen === 'board' && !!S.todoSel;
 
 export const goto = (view: string, split?: string) => () => {
+  if (S.screen === 'thread') {
+    closeThread(); // first: a mail opened from the board closes back to it
+  }
   if (S.screen === 'calendar' || S.screen === 'board') {
     S.screen = 'list';
     S.eventForm = null;
-  }
-  if (S.screen === 'thread') {
-    closeThread();
   }
   if (split) {
     S.split = split;
@@ -132,7 +133,20 @@ export const COMMANDS: Command[] = [
     run: () => goMail(),
   },
   { t: 'Open Board', k: ['3'], a: ['todo', 'tasks', 'kanban'], when: () => S.screen !== 'board', run: goBoard },
-  { t: 'New Todo', k: ['D'], a: ['add todo', 'task'], run: () => ACTIONS['new-todo']() },
+  { t: 'New Todo', k: ['D'], a: ['add todo', 'task'], when: () => !anyThread(), run: () => ACTIONS['new-todo']() },
+  {
+    t: 'Make Todo from Mail',
+    k: ['D'],
+    a: ['new todo', 'add todo', 'task'],
+    when: anyThread,
+    run: () => ACTIONS.todo(),
+  },
+  {
+    t: 'Attach Mail to Todo',
+    k: ['Ctrl', 'Shift', 'M'],
+    when: () => !!S.todoForm,
+    run: () => openCmd('attach'),
+  },
   { t: 'Mark Todo Done', k: ['E'], when: onTodo, run: () => toggleTodo(S.todoSel as string) },
   {
     t: 'Move Todo to Tomorrow',
@@ -734,6 +748,20 @@ export function paletteItems(q0: string | undefined): Command[] {
         },
       },
     ];
+  }
+  if (o.mode === 'attach') {
+    // ponytail: only the loaded folder's conversations; search the mailbox when that's too few.
+    const ql = fold(q),
+      have = S.todoForm?.mails ?? [];
+    return S.threads
+      .filter(
+        (t) => !have.some((m) => m.id === t.id) && fold(`${t.subject} ${t.from?.name} ${t.from?.address}`).includes(ql),
+      )
+      .map((t) => ({
+        t: t.subject || '(no subject)',
+        lbl: `${firstOf(t.from)} · ${listDate(t.date)}`,
+        run: () => attachMail(t),
+      }));
   }
   if (o.mode === 'remind' || o.mode === 'later') {
     return whenOptions(q).map(([l, at, label]) => ({

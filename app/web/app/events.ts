@@ -60,7 +60,17 @@ import {
 import { openSettings, type Prefs, setSetting } from './settings.tsx';
 import { showNewMessages } from './start.ts';
 import { closeThread, moveFocus, openThread, step, toggleMsg } from './thread.ts';
-import { boardKey, closeTodo, deleteTodo, goBoard, newTodo, quickAdd, saveTodo, todoFormKey } from './todo.ts';
+import {
+  boardKey,
+  closeTodo,
+  deleteTodo,
+  goBoard,
+  newTodo,
+  quickAdd,
+  saveTodo,
+  todoFormKey,
+  todoFromThread,
+} from './todo.ts';
 
 async function signIn(provider: Exclude<Provider, 'demo'>) {
   const email = (S.email || '').trim();
@@ -244,6 +254,16 @@ export const ACTIONS = {
       deleteTodo(S.todoForm.id);
     }
   },
+  // D on a mail: a todo with it (the one open, else the one picked in the list); no mail, a new todo
+  todo: () => {
+    const t = S.screen === 'thread' ? S.open : current();
+    if (t) {
+      todoFromThread(t);
+    } else {
+      newTodo(dayKey(now()));
+    }
+  },
+  'attach-mail': () => openCmd('attach'),
   'event-todo': () => {
     const f = S.eventForm;
     if (f) {
@@ -641,6 +661,9 @@ function onKey(e: KeyboardEvent) {
         return true;
       case 'c':
         startCompose('new');
+        return true;
+      case 'd':
+        ACTIONS.todo();
         return true;
       case '/':
         openSearch();

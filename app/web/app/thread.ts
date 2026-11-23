@@ -259,7 +259,8 @@ export function closeThread(keep?: boolean) {
   if (!keep) {
     stashReply();
   }
-  S.screen = 'list';
+  S.screen = M.threadFrom === 'board' ? 'board' : 'list'; // back to the todo it was opened from
+  M.threadFrom = null;
   S.open = null;
   S.msgs = [];
   if (!keep) {

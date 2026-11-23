@@ -3,6 +3,7 @@
 // calendar's (S.calDay), so the week's buttons and keys work on it too.
 
 import { onSettled, snapshot } from 'solid-js';
+import type { Thread } from '../api.ts';
 import {
   addLabel,
   dayKey,
@@ -14,15 +15,18 @@ import {
   normTodo,
   sortDay,
   type Todo,
+  type TodoMail,
+  todoTitle,
   whenText,
   whenToDay,
 } from '../todos.ts';
 import { undo } from './actions.ts';
 import { calToday, closeEvent, goCal, goMail, weekMove } from './calendar.ts';
 import { leaveCompose, stashReply } from './compose.ts';
-import { B, type CalItem, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
+import { B, type CalItem, type Conv, change, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
 import { ACTIONS } from './events.ts';
-import { render } from './render.tsx';
+import { openCmd, render } from './render.tsx';
+import { closeThread, openThread } from './thread.ts';
 import { addDays, weekDays } from './week.tsx';
 
 const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v : []);
@@ -183,6 +187,43 @@ export function saveTodo() {
   }
 }
 
+// ---------- todos and mail ----------
+
+/** D on a mail: a todo for today, named after it, with the mail on it */
+export function todoFromThread(t: Thread) {
+  newTodo(dayKey(now()), { title: todoTitle(t.subject), mails: [mailRef(snapshot(t))], fromMail: t.id });
+}
+
+/** the mail picked in the palette (Ctrl+Shift+M) onto the open todo; once */
+export function attachMail(t: Thread) {
+  const f = S.todoForm;
+  if (!f) {
+    return;
+  }
+  if (!f.mails.some((m) => m.id === t.id)) {
+    f.mails = [...f.mails, mailRef(snapshot(t))];
+  }
+  toast('mail on todo.');
+}
+
+/** a todo's mail, read; Esc goes back to the board it was opened from. One gone since (done, trashed,
+ * deleted elsewhere) has nothing to show: back to where it was opened. */
+export async function openTodoMail(m: TodoMail) {
+  if (S.screen === 'board') {
+    M.threadFrom = 'board';
+  }
+  await openThread(m as Conv);
+  if (S.screen === 'thread' && S.open?.id === m.id && !S.msgs.length) {
+    change(() => {
+      toast('mail no load.');
+      closeThread();
+    });
+  }
+}
+
+/** the todos with this mail on them */
+export const todosOf = (threadId: string) => todos().filter((t) => t.mails.some((m) => m.id === threadId));
+
 export function takeLabel(id: string) {
   const f = S.todoForm;
   if (!f) {
@@ -206,6 +247,8 @@ export function todoFormKey(e: KeyboardEvent): boolean {
   }
   if ((e.metaKey || e.ctrlKey) && k === 'Enter') {
     saveTodo();
+  } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && k.toLowerCase() === 'm') {
+    openCmd('attach');
   } else if (k === 'Escape') {
     closeTodo();
   } else if (field === 'labelq' && (k === 'Enter' || k === ',')) {
@@ -334,6 +377,7 @@ export function goBoard() {
   }
   if (S.screen === 'thread') {
     stashReply();
+    M.threadFrom = null; // left by another way than Esc
   }
   if (S.screen !== 'calendar') {
     M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };

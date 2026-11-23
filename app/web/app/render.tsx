@@ -6,6 +6,7 @@ import type { JSX } from '@solidjs/web';
 import { createEffect, createMemo, createSignal, For, onSettled, Show } from 'solid-js';
 import type { Answer, Invite as Inv, Person } from '../api.ts';
 import { tint } from '../markdown.ts';
+import { dayWord } from '../todos.ts';
 import { runSearch } from './actions.ts';
 import { Board, TodoPane } from './board.tsx';
 import { answerInvite, ensureCalDay, eventTimes, invOf, meetingOf, readInvites, rsvpOf } from './calendar.ts';
@@ -31,6 +32,7 @@ import {
   type Mail1,
   minus,
   nameOf,
+  now,
   type Overlay,
   on,
   openFile,
@@ -46,6 +48,7 @@ import { ic } from './icons.tsx';
 import { niceName, takeSugg } from './people.ts';
 import { openSettings, Settings, SettingsPane } from './settings.tsx';
 import { openThread, toggleMsg } from './thread.ts';
+import { goBoard, openTodo, todosOf } from './todo.ts';
 import { CalSide, DayPane, Week } from './week.tsx';
 
 /** a line of the folder menu */
@@ -743,6 +746,7 @@ const isMe = (p: Person | null | undefined) => !!p && (p.address || '').toLowerC
 // Data is always reached through S in the expression that shows it (S.msgs[i], not a kept
 // message): reading S is what redraws it when it changes.
 function Thread() {
+  const onTodos = createMemo(() => todosOf(S.open?.id ?? ''));
   return (
     <div class="thread">
       <div class="thread-top">
@@ -778,6 +782,31 @@ function Thread() {
             loading…
           </div>
         )}
+        {onTodos().length ? (
+          <div class="invite todo-of">
+            <For each={onTodos()}>
+              {(t) => (
+                <div class="inv-row">
+                  <span class="inv-q">todo</span>
+                  <span class="inv-a">
+                    <button
+                      class="tb-link"
+                      data-todo-of={t.id}
+                      title="Open on the board"
+                      onClick={on(() => {
+                        goBoard();
+                        openTodo(t.id);
+                      })}
+                    >
+                      {t.title}
+                    </button>
+                    <span class="tb-when">{t.done ? 'done' : dayWord(t.day, new Date(now()))}</span>
+                  </span>
+                </div>
+              )}
+            </For>
+          </div>
+        ) : null}
         {S.newer ? (
           <div class="newmsgs">
             <button data-a="show-new" onClick={press('show-new')} title="Show new messages (Shift+N)">
@@ -800,6 +829,9 @@ function Thread() {
             </button>
             <button data-a="event" onClick={press('event')}>
               event <span class="key">B</span>
+            </button>
+            <button data-a="todo" onClick={press('todo')} title="Make a todo from this mail (D)">
+              todo <span class="key">D</span>
             </button>
           </div>
         ) : null}
@@ -1303,6 +1335,7 @@ const HEADS: Record<string, [keyof typeof ic, string, string]> = {
   remind: ['clock', 'remind when', 'when? 8 am, 3 days, aug 7'],
   later: ['clock', 'send when', 'when? 8 am, 3 days, aug 7'],
   split: ['cmd', 'new split', 'words. like from:github.com'],
+  attach: ['mail', 'attach mail', 'which? maya, poster, grant'],
 };
 
 const cmd = () => (S.overlay?.kind === 'cmd' ? S.overlay : null);

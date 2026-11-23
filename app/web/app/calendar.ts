@@ -425,6 +425,7 @@ export function goCal() {
   }
   if (S.screen === 'thread') {
     stashReply();
+    M.threadFrom = null; // left by another way than Esc
   }
   if (S.screen !== 'board') {
     M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };

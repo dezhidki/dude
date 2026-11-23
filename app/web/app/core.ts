@@ -350,6 +350,7 @@ export function minus<K, V>(c: Map<K, V> | Set<K>, k: K) {
 export interface Mem {
   back: { screen: State['screen']; open?: Conv | null; view?: string; msgs?: Mail1[]; sel?: number } | null;
   calFrom: { screen: State['screen']; open?: Conv | null; msgs?: Mail1[] } | null;
+  threadFrom: 'board' | null;
   draft: Composer | null;
   paneBefore: string | null;
   fileUrl: string | null;
@@ -365,6 +366,7 @@ export interface Mem {
 export const M: Mem = {
   back: null, // where Esc goes from search / compose / settings
   calFrom: null, // where 1 goes back to from the week
+  threadFrom: null, // 'board': the mail open was opened from a todo, and Esc goes back there
   draft: null, // a new mail left behind (C brings it back)
   paneBefore: null,
   fileUrl: null,

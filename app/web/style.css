@@ -2194,6 +2194,7 @@ body.on-signin {
   .tacts,
   .macts,
   .replybar,
+  .todo-of,
   .composer,
   .newmsgs,
   #toast,
@@ -2899,6 +2900,18 @@ body.on-signin {
 .tb-form .evparsed {
   margin-top: -6px;
 }
+.tb-from {
+  margin: -2px 0 10px;
+  font: 12px var(--mono);
+  color: var(--text-3);
+}
+/* a brand-coloured word that acts: "attach mail", a todo's name under its mail */
+.tb-link {
+  font: 700 13px / 16px var(--sans);
+  color: var(--brand);
+  justify-self: start;
+  text-align: left;
+}
 /* labels: chips you can drop, then a bare input */
 .tb-chips {
   display: flex;
@@ -2990,6 +3003,15 @@ body.on-signin {
 .tb-mail button:hover {
   color: var(--text);
 }
+/* under a mail: the todos it's on */
+.invite.todo-of {
+  margin: 6px 36px 0;
+}
+.tb-when {
+  margin-left: 8px;
+  font: 12px var(--mono);
+  color: var(--text-3);
+}
 /* tasks inside a todo */
 .tb-tasks {
   display: grid;
@@ -3062,5 +3084,8 @@ body.on-signin {
     width: auto;
     border: 0;
     box-shadow: none;
+  }
+  .invite.todo-of {
+    margin: 6px 16px 0;
   }
 }
