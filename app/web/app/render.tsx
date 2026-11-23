@@ -614,7 +614,11 @@ const TIPS = [
 function Pane() {
   return (
     <>
-      {S.screen === 'board' ? null : S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf() ? (
+      {S.screen === 'board' ? (
+        S.eventForm ? (
+          <CalSide />
+        ) : null
+      ) : S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf() ? (
         S.screen === 'calendar' ? (
           <CalSide />
         ) : (

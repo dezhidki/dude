@@ -20,6 +20,7 @@ import type {
   Thread,
 } from '../api.ts';
 import { DemoBackend } from '../demo.ts';
+import type { Todo } from '../todos.ts';
 import { render, renderLayer } from './render.tsx';
 
 // ---------- the shapes of what's on screen ----------
@@ -164,6 +165,10 @@ export interface State {
   /** the board's focused column (a day key, null for someday) and the todo picked in it */
   boardDay?: string | null;
   todoSel?: string | null;
+  /** the board's quick add, open under a day (null: someday), and its text */
+  boardAdd?: { day: string | null; text: string } | null;
+  /** the todo that just arrived (drawn sliding in) */
+  todoFresh?: string | null;
   search: { q: string } | null;
   overlay: Overlay | null;
   sugg?: Sugg | null;
@@ -173,11 +178,12 @@ export interface State {
   enter?: string;
 }
 
-/** a step Z takes back: a triage action, a send still waiting, or a reminder */
+/** a step Z takes back: a triage action, a send still waiting, a reminder, or the todos before a change */
 export type Undo =
   | { action: Action | undefined; threads: Conv[]; reload: boolean }
   | { send: ReturnType<typeof setTimeout>; draft: Composer; unshow: () => void }
-  | { snooze: string[] };
+  | { snooze: string[] }
+  | { todos: Todo[] };
 
 // The mail engine: the desktop's (over IPC, which copies what it's given: snapshot() turns the store's
 // objects back into plain ones) or the demo's. commands.ts and events.ts switch it.

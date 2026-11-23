@@ -132,6 +132,11 @@ export async function undo() {
     toast('remind gone.');
     return load(S.view, true);
   }
+  if ('todos' in u) {
+    LS.set('todos', u.todos);
+    toast('undone.');
+    return render();
+  }
   if ('send' in u) {
     clearTimeout(u.send);
     u.unshow?.();

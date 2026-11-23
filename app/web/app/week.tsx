@@ -74,7 +74,7 @@ export function dayEvents(t: number): CalItem[] {
       x.end > t &&
       !x.cancelled &&
       (declined || x.response !== 'Decline') &&
-      !(f?.id && !f.readOnly && x.id === f.id),
+      !(f?.id && !f.readOnly && x.id === f.id && S.screen !== 'board'), // the week draws it where it's going
   );
 }
 

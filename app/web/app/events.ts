@@ -58,7 +58,7 @@ import {
 import { openSettings, type Prefs, setSetting } from './settings.tsx';
 import { showNewMessages } from './start.ts';
 import { closeThread, moveFocus, openThread, step, toggleMsg } from './thread.ts';
-import { goBoard, leaveBoard } from './todo.ts';
+import { boardKey, goBoard, quickAdd } from './todo.ts';
 
 async function signIn(provider: Exclude<Provider, 'demo'>) {
   const email = (S.email || '').trim();
@@ -259,6 +259,8 @@ function onInput(e: Event) {
     if (el.dataset.e === 'when' || el.dataset.e === 'title') {
       refreshCal();
     }
+  } else if (el.dataset.todo === 'quick' && S.boardAdd) {
+    S.boardAdd.text = el.value;
   } else if (el.dataset.a === 'cq' && S.overlay?.kind === 'cmd') {
     S.overlay.q = el.value;
     S.overlay.i = 0;
@@ -393,6 +395,23 @@ function onKey(e: KeyboardEvent) {
     }
     return;
   }
+  // the board's quick add: Enter adds and stays, Shift+Enter adds to open it, Esc closes
+  if (tgt.dataset?.todo === 'quick' && S.boardAdd) {
+    const a = S.boardAdd,
+      title = a.text.trim();
+    if (k === 'Enter' && !mod) {
+      e.preventDefault();
+      if (title) {
+        a.text = '';
+        (tgt as HTMLInputElement).value = ''; // the field isn't bound to the text (typing lives there)
+        quickAdd(a.day, title, e.shiftKey);
+      }
+    } else if (k === 'Escape') {
+      e.preventDefault();
+      S.boardAdd = null;
+    }
+    return;
+  }
   if (S.eventForm) {
     if (mod && k === 'Enter') {
       e.preventDefault();
@@ -485,12 +504,10 @@ function onKey(e: KeyboardEvent) {
     return;
   }
   if (S.screen === 'board') {
-    const fn = ({ 1: () => leaveBoard('list'), 2: () => leaveBoard('calendar') } as Record<string, () => unknown>)[k];
-    if (fn) {
+    if (boardKey(e)) {
       e.preventDefault();
-      fn();
     }
-    return;
+    return; // the rest are the mail's (they'd act on a mail you can't see) or the browser's
   }
   if (S.screen === 'calendar') {
     const fn = (

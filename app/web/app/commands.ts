@@ -2,6 +2,7 @@
 
 import { onSettled } from 'solid-js';
 import type { Action, Answer, Folder, Thread } from '../api.ts';
+import { dayKey } from '../todos.ts';
 import { parseWhen } from '../when.ts';
 import { act, openSearch, pick, switchSplit, targets, toggle, undo } from './actions.ts';
 import {
@@ -59,11 +60,13 @@ import { ACTIONS } from './events.ts';
 import { openCmd, openMenu, render, renderLayer } from './render.tsx';
 import { openSettings, SET, setSetting, sigBlock } from './settings.tsx';
 import { closeThread, lastRealIndex, toggleMsg } from './thread.ts';
-import { goBoard } from './todo.ts';
+import { deleteTodo, goBoard, moveTodo, toggleTodo } from './todo.ts';
+import { addDays } from './week.tsx';
 
 export const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
 const inList = () => S.screen === 'list' && !!current();
 const anyThread = () => (S.screen === 'thread' && !!S.open) || inList();
+const onTodo = () => S.screen === 'board' && !!S.todoSel;
 
 export const goto = (view: string, split?: string) => () => {
   if (S.screen === 'calendar' || S.screen === 'board') {
@@ -129,6 +132,14 @@ export const COMMANDS: Command[] = [
     run: () => goMail(),
   },
   { t: 'Open Board', k: ['3'], a: ['todo', 'tasks', 'kanban'], when: () => S.screen !== 'board', run: goBoard },
+  { t: 'Mark Todo Done', k: ['E'], when: onTodo, run: () => toggleTodo(S.todoSel as string) },
+  {
+    t: 'Move Todo to Tomorrow',
+    when: onTodo,
+    run: () => moveTodo(S.todoSel as string, dayKey(addDays(dayStart(now()), 1))),
+  },
+  { t: 'Move Todo to Someday', when: onTodo, run: () => moveTodo(S.todoSel as string, null) },
+  { t: 'Delete Todo', k: ['#'], when: onTodo, run: () => deleteTodo(S.todoSel as string) },
   { t: 'Today', k: ['T'], a: ['calendar today'], when: () => S.screen === 'calendar', run: () => calToday() },
   { t: 'Next Week', k: ['='], when: () => S.screen === 'calendar', run: () => weekMove(1) },
   { t: 'Previous Week', k: ['-'], when: () => S.screen === 'calendar', run: () => weekMove(-1) },
