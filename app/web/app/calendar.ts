@@ -56,7 +56,9 @@ async function calStatus() {
 
 // Days are fetched a range at a time (the week, or the day beside the mail) and kept 5 minutes.
 export function ensureCalDay(force?: boolean) {
-  return S.screen === 'calendar' ? ensureCalRange(weekStartOf(S.calDay), 7, force) : ensureCalRange(S.calDay, 1, force);
+  return S.screen === 'calendar' || S.screen === 'board'
+    ? ensureCalRange(weekStartOf(S.calDay), 7, force)
+    : ensureCalRange(S.calDay, 1, force);
 }
 
 async function ensureCalRange(from: number, n: number, force?: boolean) {
@@ -108,7 +110,7 @@ async function ensureCalRange(from: number, n: number, force?: boolean) {
 }
 
 function redrawCal() {
-  if (S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf()) {
+  if (S.screen === 'calendar' || S.screen === 'board' || S.pane === 'calendar' || S.eventForm || invOf()) {
     refreshCal();
   }
 }
@@ -410,7 +412,8 @@ export async function answerEvent(ans: Answer) {
   }
 }
 
-// Mail and calendar: 1 and 2, like the two buttons on the left.
+// Mail, calendar and board (todo.ts): 1, 2 and 3, like the buttons on the left. From the board,
+// 1 still goes back to the mail you came from.
 export function goCal() {
   if (S.screen === 'calendar') {
     return;
@@ -421,7 +424,9 @@ export function goCal() {
   if (S.screen === 'thread') {
     stashReply();
   }
-  M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };
+  if (S.screen !== 'board') {
+    M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };
+  }
   S.composer = null;
   S.eventForm = null;
   S.mmMonth = null;
@@ -431,7 +436,7 @@ export function goCal() {
 }
 
 export function goMail() {
-  if (S.screen !== 'calendar') {
+  if (S.screen !== 'calendar' && S.screen !== 'board') {
     return;
   }
   const b = M.calFrom || { screen: 'list' };

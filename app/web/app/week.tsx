@@ -33,10 +33,10 @@ export const weekStartOf = (t: number) => {
   return d.getTime();
 };
 
-const isAllDay = (x: CalItem) => !!x.allDay || x.end - x.start >= DAY;
+export const isAllDay = (x: CalItem) => !!x.allDay || x.end - x.start >= DAY;
 const fmtRange = (a: number, b: number) => `${fullDate(a)} – ${fmtTime(b)}`;
 
-function weekDays() {
+export function weekDays() {
   const ws = weekStartOf(S.calDay),
     all = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
   return LS.get('cal:weekends', true)
@@ -48,7 +48,7 @@ function weekDays() {
 }
 
 // What's on a day: your calendar, events kept here, and an invitation you're reading.
-function dayEvents(t: number): CalItem[] {
+export function dayEvents(t: number): CalItem[] {
   const e = dayEnd(t),
     f = S.eventForm,
     declined = LS.get('cal:declined', false);
@@ -89,6 +89,17 @@ const Chip = (props: { x: CalItem }) => (
   </span>
 );
 
+// How an event is drawn: an invitation being read, kept here, waiting for your answer, declined.
+export function evCls(x: CalItem) {
+  const pend = x.isMeeting && !x.isOrganizer && /NoResponse|Unknown|Tentative/.test(x.response || '');
+  return {
+    inv: x.invite,
+    local: !x.invite && !x.server,
+    pending: !x.invite && x.server && pend,
+    declined: x.response === 'Decline',
+  };
+}
+
 // The events of a day as blocks in their hours; ones at the same time share the width.
 function blocks(t: number, list: CalItem[]) {
   const timed = list.filter((x) => !isAllDay(x)).sort((a, b) => a.start - b.start || b.end - a.end);
@@ -108,14 +119,7 @@ function blocks(t: number, list: CalItem[]) {
         .filter((o) => o.start < x.end && o.end > x.start)
         .reduce((m, o) => Math.max(m, (o._lane as number) + 1), 1),
       w = 100 / n;
-    const pend = x.isMeeting && !x.isOrganizer && /NoResponse|Unknown|Tentative/.test(x.response || '');
-    const cls = {
-      inv: x.invite,
-      local: !x.invite && !x.server,
-      pending: !x.invite && x.server && pend,
-      declined: x.response === 'Decline',
-      short: ((x.end - x.start) / 3600e3) * HPX < 30,
-    };
+    const cls = { ...evCls(x), short: ((x.end - x.start) / 3600e3) * HPX < 30 };
     return {
       x,
       cls,

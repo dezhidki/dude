@@ -58,6 +58,7 @@ import {
 import { openSettings, type Prefs, setSetting } from './settings.tsx';
 import { showNewMessages } from './start.ts';
 import { closeThread, moveFocus, openThread, step, toggleMsg } from './thread.ts';
+import { goBoard, leaveBoard } from './todo.ts';
 
 async function signIn(provider: Exclude<Provider, 'demo'>) {
   const email = (S.email || '').trim();
@@ -220,6 +221,7 @@ export const ACTIONS = {
   },
   'go-cal': () => goCal(),
   'go-mail': () => goMail(),
+  'go-board': () => goBoard(),
   'cal-today': () => calToday(),
   'wk-prev': () => weekMove(-1),
   'wk-next': () => weekMove(1),
@@ -482,6 +484,14 @@ function onKey(e: KeyboardEvent) {
     }
     return;
   }
+  if (S.screen === 'board') {
+    const fn = ({ 1: () => leaveBoard('list'), 2: () => leaveBoard('calendar') } as Record<string, () => unknown>)[k];
+    if (fn) {
+      e.preventDefault();
+      fn();
+    }
+    return;
+  }
   if (S.screen === 'calendar') {
     const fn = (
       {
@@ -495,6 +505,7 @@ function onKey(e: KeyboardEvent) {
         B: () => eventDialog(),
         Escape: goMail,
         1: goMail,
+        3: goBoard,
         c: () => startCompose('new'),
         '?': () => ACTIONS.keys(),
       } as Record<string, () => unknown>
@@ -605,6 +616,9 @@ function onKey(e: KeyboardEvent) {
         return true;
       case '2':
         goCal();
+        return true;
+      case '3':
+        goBoard();
         return true;
       case 'b':
       case 'B':

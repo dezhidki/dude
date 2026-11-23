@@ -237,7 +237,8 @@ export function leaveCompose(discard?: boolean) {
   S.composer = null;
   const b = M.back || { screen: 'list' };
   M.back = null;
-  S.screen = b.screen === 'thread' && b.open ? 'thread' : b.screen === 'calendar' ? 'calendar' : 'list';
+  S.screen =
+    b.screen === 'thread' && b.open ? 'thread' : b.screen === 'calendar' || b.screen === 'board' ? b.screen : 'list';
   if (S.screen === 'thread') {
     S.open = b.open as Conv;
     S.msgs = b.msgs as Mail1[];

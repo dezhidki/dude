@@ -59,13 +59,14 @@ import { ACTIONS } from './events.ts';
 import { openCmd, openMenu, render, renderLayer } from './render.tsx';
 import { openSettings, SET, setSetting, sigBlock } from './settings.tsx';
 import { closeThread, lastRealIndex, toggleMsg } from './thread.ts';
+import { goBoard } from './todo.ts';
 
 export const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
 const inList = () => S.screen === 'list' && !!current();
 const anyThread = () => (S.screen === 'thread' && !!S.open) || inList();
 
 export const goto = (view: string, split?: string) => () => {
-  if (S.screen === 'calendar') {
+  if (S.screen === 'calendar' || S.screen === 'board') {
     S.screen = 'list';
     S.eventForm = null;
   }
@@ -124,9 +125,10 @@ export const COMMANDS: Command[] = [
     t: 'Back to Mail',
     k: ['1'],
     a: ['inbox', 'mail', 'close calendar'],
-    when: () => S.screen === 'calendar',
+    when: () => S.screen === 'calendar' || S.screen === 'board',
     run: () => goMail(),
   },
+  { t: 'Open Board', k: ['3'], a: ['todo', 'tasks', 'kanban'], when: () => S.screen !== 'board', run: goBoard },
   { t: 'Today', k: ['T'], a: ['calendar today'], when: () => S.screen === 'calendar', run: () => calToday() },
   { t: 'Next Week', k: ['='], when: () => S.screen === 'calendar', run: () => weekMove(1) },
   { t: 'Previous Week', k: ['-'], when: () => S.screen === 'calendar', run: () => weekMove(-1) },

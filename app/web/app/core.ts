@@ -133,7 +133,7 @@ export interface CalState {
 }
 
 export interface State {
-  screen: 'signin' | 'list' | 'thread' | 'compose' | 'search' | 'settings' | 'calendar';
+  screen: 'signin' | 'list' | 'thread' | 'compose' | 'search' | 'settings' | 'calendar' | 'board';
   lastScreen?: string;
   more: boolean;
   email?: string;
@@ -161,6 +161,9 @@ export interface State {
   cal: CalState;
   eventForm?: EventForm | null;
   drag?: { day: number; start: number; end: number } | null;
+  /** the board's focused column (a day key, null for someday) and the todo picked in it */
+  boardDay?: string | null;
+  todoSel?: string | null;
   search: { q: string } | null;
   overlay: Overlay | null;
   sugg?: Sugg | null;

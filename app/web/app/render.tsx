@@ -7,6 +7,7 @@ import { createEffect, createMemo, createSignal, For, onSettled, Show } from 'so
 import type { Answer, Invite as Inv, Person } from '../api.ts';
 import { tint } from '../markdown.ts';
 import { runSearch } from './actions.ts';
+import { Board } from './board.tsx';
 import { answerInvite, ensureCalDay, eventTimes, invOf, meetingOf, readInvites, rsvpOf } from './calendar.ts';
 import { type Command, goto, MOD, paletteItems } from './commands.ts';
 import { meAddr, resumeDraft, scheduleDraftSave, scheduled } from './compose.ts';
@@ -171,7 +172,7 @@ function Shell() {
       <div class="shell">
         <nav class="rail" aria-label="Apps">
           <button
-            class={{ on: S.screen !== 'calendar' }}
+            class={{ on: S.screen !== 'calendar' && S.screen !== 'board' }}
             data-a="go-mail"
             onClick={press('go-mail')}
             title="Mail (1)"
@@ -188,11 +189,20 @@ function Shell() {
           >
             <ic.cal />
           </button>
+          <button
+            class={{ on: S.screen === 'board' }}
+            data-a="go-board"
+            onClick={press('go-board')}
+            title="Todo board (3)"
+            aria-label="Todo board"
+          >
+            <ic.check />
+          </button>
         </nav>
         {/* a new screen (another conversation, folder or split) is new elements, and slides in */}
         <Show when={S.lastScreen} keyed>
           {(_screen) => (
-            <div class={['main', S.enter, { 'main-cal': S.screen === 'calendar' }]}>
+            <div class={['main', S.enter, { 'main-cal': S.screen === 'calendar' || S.screen === 'board' }]}>
               {S.screen === 'thread' ? (
                 <Thread />
               ) : S.screen === 'compose' ? (
@@ -203,6 +213,8 @@ function Shell() {
                 <Settings />
               ) : S.screen === 'calendar' ? (
                 <Week />
+              ) : S.screen === 'board' ? (
+                <Board />
               ) : (
                 <List />
               )}
@@ -233,6 +245,9 @@ function Shell() {
         </button>
         <button data-a="cal" onClick={press('cal')}>
           Calendar
+        </button>
+        <button data-a="go-board" onClick={press('go-board')}>
+          Board
         </button>
         <button data-a="cmd" onClick={press('cmd')}>
           More
@@ -298,7 +313,7 @@ export function render() {
     setRendered((n) => n + 1);
   });
   document.body.classList.remove('on-signin');
-  if (S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf()) {
+  if (S.screen === 'calendar' || S.screen === 'board' || S.pane === 'calendar' || S.eventForm || invOf()) {
     void ensureCalDay();
   }
   onSettled(calScrollSetup); // once the calendar is drawn
@@ -599,7 +614,7 @@ const TIPS = [
 function Pane() {
   return (
     <>
-      {S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf() ? (
+      {S.screen === 'board' ? null : S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf() ? (
         S.screen === 'calendar' ? (
           <CalSide />
         ) : (
