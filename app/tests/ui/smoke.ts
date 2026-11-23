@@ -45,6 +45,18 @@ const STEPS: [string, string, string?, number?][] = [
   ['quick type', `__type('[data-todo="quick"]', 'Buy paper')`],
   ['quick enter', `__key('Enter')`, '.tb-card.fresh'],
   ['quick close', `__key('Escape')`],
+  ['new todo', `__key('d')`, '[data-todo="title"]', 300],
+  ['todo title', `__type('[data-todo="title"]', 'Print poster')`],
+  // someday, not a weekday: on Fridays and Saturdays "fri" is next week, off the board
+  ['todo when', `__type('[data-todo="when"]', 'someday')`, '.tb-col.someday .tb-card.draft'],
+  ['todo label', `__type('[data-todo="labelq"]', 'Poster')`],
+  ['todo label add', `__key('Enter')`, '.tb-chip'],
+  ['todo task', `__type('[data-todo="taskq"]', 'check margins')`],
+  ['todo task add', `__key('Enter')`, '.tb-task'],
+  // the new card, not the quick add's: someday's fresh card with its task
+  ['todo save', `__key('Enter', { ctrlKey: true })`, '.tb-col.someday .tb-card.fresh .pg', 300],
+  ['todo open', `__key('Enter')`, '[data-todo="title"]', 300],
+  ['todo close', `document.activeElement.blur(); __key('Escape')`],
   ['settings', `__key(',', { ctrlKey: true })`, '.thread', 300],
   ['settings close', `__key('Escape')`, '.row', 300],
   ['keys', `__key('?')`, '.keys'],

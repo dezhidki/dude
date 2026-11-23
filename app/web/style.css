@@ -821,7 +821,7 @@ textarea {
   min-height: 32px;
   color: var(--text-3);
 }
-.evrow span {
+.evrow > span {
   width: 16px;
   display: grid;
   place-items: center;
@@ -2530,7 +2530,8 @@ body.on-signin {
   border-top: 1px solid var(--line);
   padding-top: 8px;
 }
-.evbtns button[data-a="delete-event"] {
+.evbtns button[data-a="delete-event"],
+.evbtns button[data-a="delete-todo"] {
   color: var(--now);
 }
 @media (max-width: 768px) {
@@ -2874,4 +2875,192 @@ body.on-signin {
   padding: 0 0 0 12px;
   font: 11px var(--mono);
   color: var(--text-3);
+}
+
+/* ---------- the todo open in the right pane: the event form's rows, plus chips, mail and tasks ---------- */
+.todo-pane {
+  overflow: hidden;
+}
+.todo-pane .tb-form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.tb-form .evrow {
+  align-items: flex-start;
+}
+.tb-form .evrow > span:first-child {
+  height: 32px;
+}
+.tb-row-body {
+  flex: 1;
+  min-width: 0;
+}
+.tb-form .evparsed {
+  margin-top: -6px;
+}
+/* labels: chips you can drop, then a bare input */
+.tb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 0;
+  position: relative;
+}
+.tb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 3px 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  font: 12px var(--mono);
+  color: var(--text);
+}
+.tb-chip button {
+  color: var(--text-2);
+  padding: 0 3px;
+  font-size: 11px;
+}
+.tb-chip button:hover {
+  color: var(--text);
+}
+.tb-chips input,
+.tb-taskin {
+  flex: 1;
+  min-width: 72px;
+  height: 24px;
+  border: 0;
+  outline: none;
+  background: none;
+  font: 13px / 20px var(--sans);
+  color: var(--text);
+}
+.tb-chips input:focus-visible,
+.tb-taskin:focus-visible,
+.tb-notes:focus-visible {
+  outline: none;
+}
+.tb-chips .sugg {
+  left: 0;
+  max-width: 240px;
+}
+/* attached mail: sender + subject on --card */
+.tb-mails {
+  display: grid;
+  gap: 4px;
+  padding: 4px 0 6px;
+}
+.tb-mail {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 4px 5px 9px;
+  border-radius: 4px;
+  background: var(--card);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  min-width: 0;
+}
+.tb-mail:hover {
+  background: var(--hi);
+}
+.tb-mail b {
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.tb-mail span {
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.tb-mail button {
+  color: var(--text-2);
+  padding: 0 4px;
+  font-size: 11px;
+}
+.tb-mail button:hover {
+  color: var(--text);
+}
+/* tasks inside a todo */
+.tb-tasks {
+  display: grid;
+  gap: 2px;
+  padding: 6px 0 4px;
+}
+.tb-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font: 13px / 20px var(--sans);
+  color: var(--text);
+}
+.tb-task .tb-ring {
+  margin-top: 3px;
+}
+.tb-task span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tb-task.done span {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+.tb-task > button:last-child {
+  color: var(--text-3);
+  font-size: 11px;
+  padding: 0 4px;
+  opacity: 0;
+}
+.tb-task:hover > button:last-child,
+.tb-task > button:last-child:focus-visible {
+  opacity: 1;
+}
+.tb-notes {
+  width: 100%;
+  min-height: 64px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: none;
+  padding: 6px 0;
+  font: 13px / 20px var(--sans);
+  color: var(--text);
+}
+/* under 1200px (where mail hides its contact pane) the form lays over the board instead of squeezing it;
+   the board can still scroll its last days out from under it */
+@media (max-width: 1200px) {
+  .pane.todo-pane {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 25;
+    border-left-color: var(--line-2);
+  }
+  :root:not(.carbon) .pane.todo-pane {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.18);
+  }
+  .tb.editing .tb-cols {
+    padding-right: 398px;
+    scroll-padding-right: 398px;
+  }
+}
+/* phones: the form takes the screen above the tab bar, like the calendar pane */
+@media (max-width: 768px) {
+  .pane.todo-pane {
+    inset: 0 0 56px;
+    width: auto;
+    border: 0;
+    box-shadow: none;
+  }
 }

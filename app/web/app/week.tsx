@@ -544,6 +544,9 @@ const EvBtns = () => (
         <button data-a="cancel-event" onClick={press('cancel-event')}>
           close
         </button>
+        <button data-a="event-todo" onClick={press('event-todo')} title="Make a todo of it">
+          todo
+        </button>
         <span>Esc</span>
       </div>
     ) : (
@@ -553,6 +556,9 @@ const EvBtns = () => (
         </button>
         <button data-a="cancel-event" onClick={press('cancel-event')}>
           nope
+        </button>
+        <button data-a="event-todo" onClick={press('event-todo')} title="Make a todo of it">
+          todo
         </button>
         {S.eventForm?.id ? (
           <button data-a="delete-event" onClick={press('delete-event')} title="Delete event">

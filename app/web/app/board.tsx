@@ -1,15 +1,27 @@
 // ---------- the todo board: the week as columns, one per day plus someday ----------
 // Each day holds its events (as the calendar draws them), then its open todos and "+ todo", then the
-// done ones. Cards drag to another day.
+// done ones. Cards drag to another day. A todo opens in the right pane (TodoPane).
 
 import { createMemo, createSignal, For, onSettled } from 'solid-js';
 import { dayKey, HUES, keyDay, type Todo } from '../todos.ts';
 import { openEvent } from './calendar.ts';
 import { MOD } from './commands.ts';
-import { type CalItem, firstOf, fmtTime, now, on, root, S } from './core.ts';
+import { type CalItem, firstOf, fmtTime, now, on, root, S, type TodoForm } from './core.ts';
 import { press } from './events.ts';
 import { ic } from './icons.tsx';
-import { boardCols, evDone, labels, moveTodo, todos, toggleEvDone, toggleTodo } from './todo.ts';
+import {
+  boardCols,
+  evDone,
+  formWhen,
+  labelSugg,
+  labels,
+  moveTodo,
+  openTodo,
+  takeLabel,
+  todos,
+  toggleEvDone,
+  toggleTodo,
+} from './todo.ts';
 import { addDays, dayEvents, evCls, isAllDay, weekStartOf } from './week.tsx';
 
 const DRAG = 'application/x-dude-todo'; // what a dragged card carries: its id
@@ -58,10 +70,7 @@ export function TodoCard(props: { todo: Todo; sel: boolean; draft?: boolean }) {
         setDragging(true);
       }}
       onDragEnd={() => setDragging(false)}
-      onClick={on(() => {
-        S.todoSel = props.todo.id;
-        S.boardDay = props.todo.day;
-      })}
+      onClick={on(() => openTodo(props.todo.id))}
     >
       {props.draft ? (
         <span />
@@ -135,6 +144,12 @@ function Day(props: { k: string | null; today: string; todos: Todo[] }) {
     const d = new Date(keyDay(props.k));
     return `${d.toLocaleDateString([], { weekday: 'short' })} ${d.getDate()}`;
   };
+  // the todo open in the pane, drawn dashed where its "when" puts it (when that's another day)
+  const ghost = () => {
+    const f = S.todoForm,
+      w = f && formWhen(f);
+    return f && w?.ok && w.day !== f.orig && w.day === props.k ? f : null;
+  };
   const [over, setOver] = createSignal(false); // a card is being dragged over this day
   return (
     <section
@@ -145,7 +160,7 @@ function Day(props: { k: string | null; today: string; todos: Todo[] }) {
           past: props.k !== null && props.k < props.today,
           someday: props.k === null,
           focus: props.k === S.boardDay,
-          drop: over(),
+          drop: over() || !!ghost(),
         },
       ]}
       onDragOver={(e) => {
@@ -180,7 +195,10 @@ function Day(props: { k: string | null; today: string; todos: Todo[] }) {
         <For each={open()} keyed={(t) => t.id}>
           {(t) => <TodoCard todo={t()} sel={t().id === S.todoSel} />}
         </For>
-        {open().length || evs().length || adding() ? null : (
+        {ghost() ? (
+          <TodoCard todo={{ ...(ghost() as TodoForm), id: 'draft', day: props.k, done: false }} sel={false} draft />
+        ) : null}
+        {open().length || evs().length || adding() || ghost() ? null : (
           <div class="tb-empty">{props.k === props.today ? 'nothing today.' : 'nothing.'}</div>
         )}
         {adding() ? (
@@ -222,7 +240,7 @@ export function Board() {
     return `${md(a)} – ${a.getMonth() === b.getMonth() ? b.getDate() : md(b)}`;
   };
   return (
-    <div class="tb">
+    <div class={['tb', { editing: !!S.todoForm }]}>
       <header class="tb-h">
         <button class="cal-btn" data-a="cal-today" onClick={press('cal-today')} title="This week (T)">
           today
@@ -235,7 +253,7 @@ export function Board() {
         </button>
         <h1>{title()}</h1>
         <span class="grow" />
-        <button class="ibtn" title="New todo (D)">
+        <button class="ibtn" data-a="new-todo" onClick={press('new-todo')} title="New todo (D)">
           +
         </button>
         <button class="ibtn" data-a="cmd" onClick={press('cmd')} title={`Command (${MOD}+K)`}>
@@ -246,5 +264,195 @@ export function Board() {
         <For each={boardCols()}>{(k) => <Day k={k} today={today()} todos={all().filter((t) => t.day === k)} />}</For>
       </div>
     </div>
+  );
+}
+
+const NONE: TodoForm = { title: '', when: '', labels: [], mails: [], tasks: [], notes: '', labelQ: '', taskQ: '' };
+
+// what "when" reads as: the day, someday, or what to type
+function whenRead(f: TodoForm) {
+  const w = formWhen(f);
+  if (!w.ok) {
+    return 'when? “fri”, “tomorrow”, “nov 30”';
+  }
+  return w.day === null
+    ? 'someday ¯\\_(ツ)_/¯'
+    : new Date(keyDay(w.day)).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+// The todo open in the right pane, laid out like the event form: what, when (read back under it),
+// labels, mail, tasks, notes; then save · nope · delete. The fields' text is kept in S.todoForm as
+// it's typed (events.ts), and its keys are todoFormKey's.
+export function TodoPane() {
+  const f = () => S.todoForm ?? NONE; // NONE only while the pane goes away
+  const remove = (fn: (t: TodoForm) => void) =>
+    on((e: MouseEvent) => {
+      e.stopPropagation();
+      if (S.todoForm) {
+        fn(S.todoForm);
+      }
+    });
+  return (
+    <aside class="pane todo-pane">
+      <div class={['evform tb-form', { fresh: !!f().fresh }]}>
+        <input class="etitle" data-todo="title" value={f().title} placeholder="what" aria-label="Todo" />
+        <label class="evrow">
+          <span>
+            <ic.clock />
+          </span>
+          <input
+            data-todo="when"
+            value={f().when}
+            placeholder="when? today, fri, next week, someday"
+            aria-label="When"
+            autocomplete="off"
+          />
+        </label>
+        <div class="evparsed">{whenRead(f())}</div>
+        <div class="evrow">
+          <span>
+            <ic.cmd />
+          </span>
+          <div class="tb-row-body tb-chips">
+            <For each={f().labels}>
+              {(l) => (
+                <span class="tb-chip">
+                  <LabelTag id={l} />
+                  <button
+                    data-rmlabel={l}
+                    title="remove"
+                    aria-label={`remove ${l}`}
+                    onClick={remove((t) => {
+                      t.labels = t.labels.filter((x) => x !== l);
+                    })}
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+            </For>
+            <input
+              data-todo="labelq"
+              value={f().labelQ}
+              placeholder={f().labels.length ? '' : 'labels'}
+              aria-label="Add label"
+              autocomplete="off"
+            />
+            {labelSugg(f()).length ? (
+              <div class="sugg" role="listbox">
+                <For each={labelSugg(f())}>
+                  {(id, i) => (
+                    // biome-ignore lint/a11y/useFocusableInteractive: focus stays in the field; Enter takes the first
+                    <div
+                      class={['sg', { on: i() === 0 }]}
+                      role="option"
+                      aria-selected={i() === 0 ? 'true' : 'false'}
+                      onMouseDown={on((e: MouseEvent) => {
+                        e.preventDefault(); // the field keeps the focus
+                        takeLabel(id);
+                      })}
+                    >
+                      {labels().some((l) => l.id === id) ? (
+                        <LabelTag id={id} />
+                      ) : (
+                        <>
+                          <b>{id}</b>
+                          <span>new label</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </For>
+              </div>
+            ) : null}
+          </div>
+        </div>
+        {f().mails.length ? (
+          <div class="evrow">
+            <span>
+              <ic.mail />
+            </span>
+            <div class="tb-row-body tb-mails">
+              <For each={f().mails}>
+                {(m) => (
+                  <div class="tb-mail" title={`open: ${m.subject}`}>
+                    <b>{firstOf(m.from)}</b>
+                    <span>{m.subject}</span>
+                    <button
+                      data-rmmail={m.id}
+                      title="take off"
+                      aria-label={`take off ${m.subject}`}
+                      onClick={remove((t) => {
+                        t.mails = t.mails.filter((x) => x.id !== m.id);
+                      })}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+        ) : null}
+        <div class="evrow">
+          <span>
+            <ic.check />
+          </span>
+          <div class="tb-row-body tb-tasks">
+            <For each={f().tasks}>
+              {(x, i) => (
+                <div class={['tb-task', { done: x.done }]}>
+                  <Ring
+                    on={x.done}
+                    title={x.done ? 'Not done' : 'Done'}
+                    onClick={() => {
+                      x.done = !x.done;
+                    }}
+                  />
+                  <span>{x.t}</span>
+                  <button
+                    title="remove"
+                    aria-label={`remove ${x.t}`}
+                    onClick={remove((t) => {
+                      t.tasks = t.tasks.filter((_, j) => j !== i());
+                    })}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </For>
+            <input
+              class="tb-taskin"
+              data-todo="taskq"
+              value={f().taskQ}
+              placeholder="add task"
+              aria-label="Add task"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <label class="evrow">
+          <span>
+            <ic.lines />
+          </span>
+          <textarea class="tb-notes" data-todo="notes" value={f().notes} placeholder="notes" aria-label="Notes" />
+        </label>
+      </div>
+      <div class="evbtns">
+        <button class="save" data-a="save-todo" onClick={press('save-todo')}>
+          save
+        </button>
+        <button data-a="close-todo" onClick={press('close-todo')}>
+          nope
+        </button>
+        {f().id ? (
+          <button data-a="delete-todo" onClick={press('delete-todo')} title="Delete todo">
+            delete
+          </button>
+        ) : null}
+        <span>{`${MOD}+Enter · Esc`}</span>
+      </div>
+    </aside>
   );
 }

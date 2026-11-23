@@ -20,7 +20,7 @@ import type {
   Thread,
 } from '../api.ts';
 import { DemoBackend } from '../demo.ts';
-import type { Todo } from '../todos.ts';
+import type { Todo, TodoMail, TodoTask } from '../todos.ts';
 import { render, renderLayer } from './render.tsx';
 
 // ---------- the shapes of what's on screen ----------
@@ -111,6 +111,22 @@ export interface EventForm {
   attendees?: Guest[];
 }
 
+/** a todo open in the right pane: what's typed, and the day it had (orig) when it was opened */
+export interface TodoForm {
+  id?: string;
+  orig?: string | null;
+  title: string;
+  when: string;
+  labels: string[];
+  mails: TodoMail[];
+  tasks: TodoTask[];
+  notes: string;
+  labelQ: string;
+  taskQ: string;
+  fromMail?: string;
+  fresh?: boolean;
+}
+
 export type Overlay =
   | { kind: 'cmd'; mode: string; q: string; i: number; arg?: unknown }
   | { kind: 'file'; url: string; name: string; pdf: boolean; folder: string; uid: number; index: number }
@@ -169,6 +185,7 @@ export interface State {
   boardAdd?: { day: string | null; text: string } | null;
   /** the todo that just arrived (drawn sliding in) */
   todoFresh?: string | null;
+  todoForm?: TodoForm | null;
   search: { q: string } | null;
   overlay: Overlay | null;
   sugg?: Sugg | null;

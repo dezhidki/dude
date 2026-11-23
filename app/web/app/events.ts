@@ -3,6 +3,7 @@
 import { onSettled } from 'solid-js';
 import type { Answer, Provider } from '../api.ts';
 import { DemoBackend } from '../demo.ts';
+import { dayKey } from '../todos.ts';
 import { act, closeSearch, openSearch, pick, runSearch, switchSplit, toggle, undo } from './actions.ts';
 import {
   answerEvent,
@@ -12,6 +13,7 @@ import {
   dayMove,
   deleteEvent,
   eventDialog,
+  eventTimes,
   goCal,
   goMail,
   saveEvent,
@@ -39,7 +41,7 @@ import {
   sendComposer,
   startCompose,
 } from './compose.ts';
-import { B, change, dayStart, errText, LS, M, openFile, root, S, setBackend, toast } from './core.ts';
+import { B, change, dayStart, errText, LS, M, now, openFile, root, S, setBackend, toast } from './core.ts';
 import { current, load } from './data.ts';
 import { closeSugg, suggest, takeSugg } from './people.ts';
 import {
@@ -58,7 +60,7 @@ import {
 import { openSettings, type Prefs, setSetting } from './settings.tsx';
 import { showNewMessages } from './start.ts';
 import { closeThread, moveFocus, openThread, step, toggleMsg } from './thread.ts';
-import { boardKey, goBoard, quickAdd } from './todo.ts';
+import { boardKey, closeTodo, deleteTodo, goBoard, newTodo, quickAdd, saveTodo, todoFormKey } from './todo.ts';
 
 async function signIn(provider: Exclude<Provider, 'demo'>) {
   const email = (S.email || '').trim();
@@ -233,6 +235,21 @@ export const ACTIONS = {
     renderLayer();
   },
   'save-event': () => saveEvent(),
+  // a todo in the pane: D and the board's + open one on the focused day (null: someday), else today
+  'new-todo': () => newTodo(S.boardDay === undefined ? dayKey(now()) : S.boardDay),
+  'save-todo': () => saveTodo(),
+  'close-todo': () => closeTodo(),
+  'delete-todo': () => {
+    if (S.todoForm?.id) {
+      deleteTodo(S.todoForm.id);
+    }
+  },
+  'event-todo': () => {
+    const f = S.eventForm;
+    if (f) {
+      newTodo(dayKey(eventTimes(f).start), { title: f.title });
+    }
+  },
 } satisfies Record<string, () => unknown>;
 
 function onInput(e: Event) {
@@ -261,6 +278,9 @@ function onInput(e: Event) {
     }
   } else if (el.dataset.todo === 'quick' && S.boardAdd) {
     S.boardAdd.text = el.value;
+  } else if (el.dataset.todo && S.todoForm) {
+    const k = ({ labelq: 'labelQ', taskq: 'taskQ' } as Record<string, string>)[el.dataset.todo] ?? el.dataset.todo;
+    S.todoForm[k as 'title' | 'when' | 'labelQ' | 'taskQ' | 'notes'] = el.value;
   } else if (el.dataset.a === 'cq' && S.overlay?.kind === 'cmd') {
     S.overlay.q = el.value;
     S.overlay.i = 0;
@@ -425,6 +445,10 @@ function onKey(e: KeyboardEvent) {
       e.preventDefault();
       void answerEvent(({ y: 'yes', m: 'maybe', n: 'no' } as Record<string, Answer>)[k] as Answer);
     }
+    return;
+  }
+  if (todoFormKey(e)) {
+    e.preventDefault();
     return;
   }
   if (S.composer && (typing(tgt) || S.screen === 'compose')) {

@@ -132,6 +132,7 @@ export const COMMANDS: Command[] = [
     run: () => goMail(),
   },
   { t: 'Open Board', k: ['3'], a: ['todo', 'tasks', 'kanban'], when: () => S.screen !== 'board', run: goBoard },
+  { t: 'New Todo', k: ['D'], a: ['add todo', 'task'], run: () => ACTIONS['new-todo']() },
   { t: 'Mark Todo Done', k: ['E'], when: onTodo, run: () => toggleTodo(S.todoSel as string) },
   {
     t: 'Move Todo to Tomorrow',

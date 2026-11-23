@@ -2,11 +2,25 @@
 // Todos are kept here (settings key "todos"), like events kept here. The board's week is the
 // calendar's (S.calDay), so the week's buttons and keys work on it too.
 
-import { addLabel, dayKey, dayWord, type Label, mailRef, moveDay, normTodo, sortDay, type Todo } from '../todos.ts';
+import { onSettled, snapshot } from 'solid-js';
+import {
+  addLabel,
+  dayKey,
+  dayWord,
+  type Label,
+  mailRef,
+  moveDay,
+  normLabel,
+  normTodo,
+  sortDay,
+  type Todo,
+  whenText,
+  whenToDay,
+} from '../todos.ts';
 import { undo } from './actions.ts';
-import { calToday, goCal, goMail, weekMove } from './calendar.ts';
+import { calToday, closeEvent, goCal, goMail, weekMove } from './calendar.ts';
 import { leaveCompose, stashReply } from './compose.ts';
-import { B, type CalItem, dayStart, LS, M, now, S, toast } from './core.ts';
+import { B, type CalItem, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
 import { ACTIONS } from './events.ts';
 import { render } from './render.tsx';
 import { addDays, weekDays } from './week.tsx';
@@ -48,6 +62,10 @@ export function moveTodo(id: string, day: string | null) {
   setTodos([...todos().filter((x) => x.id !== id), { ...t, day }]);
   S.boardDay = day;
   S.todoSel = id;
+  if (S.todoForm?.id === id) {
+    S.todoForm.orig = day; // the open form goes with it
+    S.todoForm.when = whenText(day, new Date(now()));
+  }
   toast([`moved to ${dayWord(day, new Date(now()))}. `, 'Z', ' undo']);
 }
 
@@ -56,10 +74,13 @@ export function deleteTodo(id: string) {
     return;
   }
   setTodos(todos().filter((x) => x.id !== id));
+  if (S.todoForm?.id === id) {
+    S.todoForm = null;
+  }
   toast(['todo gone. ', 'Z', ' undo']);
 }
 
-/** "+ todo" under a day: Enter adds and stays open; Shift+Enter (open) adds and closes it, to open the todo */
+/** "+ todo" under a day: Enter adds and stays open; Shift+Enter (open) adds and opens the todo */
 export function quickAdd(day: string | null, title: string, open: boolean) {
   const id = `t${Date.now()}`;
   setTodos([...todos(), { id, title, day, done: false, labels: [], mails: [], tasks: [], notes: '' }]);
@@ -68,7 +89,152 @@ export function quickAdd(day: string | null, title: string, open: boolean) {
   S.boardDay = day;
   if (open) {
     S.boardAdd = null;
+    openTodo(id);
   }
+}
+
+// ---------- the todo open in the right pane (board.tsx's TodoPane), like the event form ----------
+
+/** the day the form's "when" puts the todo on; an old todo keeps its day while "when" is as it was */
+export const formWhen = (f: TodoForm) => whenToDay(f.when, new Date(now()), f.orig);
+
+function openForm(f: TodoForm) {
+  if (S.eventForm) {
+    closeEvent(); // one form in the pane at a time
+  }
+  S.todoForm = f;
+  onSettled(() => {
+    root.querySelector<HTMLInputElement>('[data-todo="title"]')?.focus();
+  });
+}
+
+export function openTodo(id: string) {
+  const t = todos().find((x) => x.id === id);
+  if (!t) {
+    return;
+  }
+  S.todoSel = id;
+  S.boardDay = t.day;
+  const { done: _done, day, ...rest } = t;
+  openForm({ ...rest, orig: day, when: whenText(day, new Date(now())), labelQ: '', taskQ: '', fresh: true });
+}
+
+/** a new todo for that day (null: someday); one for a day gone by is for today */
+export function newTodo(day: string | null, extra: Partial<TodoForm> = {}) {
+  const today = dayKey(now()),
+    d = day !== null && day < today ? today : day;
+  openForm({
+    title: '',
+    when: whenText(d, new Date(now())),
+    labels: [],
+    mails: [],
+    tasks: [],
+    notes: '',
+    labelQ: '',
+    taskQ: '',
+    fresh: true,
+    ...extra,
+  });
+}
+
+export function closeTodo() {
+  S.todoForm = null;
+}
+
+export function saveTodo() {
+  const f = S.todoForm;
+  if (!f) {
+    return;
+  }
+  const w = formWhen(f);
+  if (!f.title.trim()) {
+    toast('todo need name.');
+    root.querySelector<HTMLInputElement>('[data-todo="title"]')?.focus();
+    return;
+  }
+  if (!w.ok) {
+    toast('when? like “fri” or “someday”');
+    return;
+  }
+  const d = snapshot(f),
+    id = d.id ?? `t${Date.now()}`,
+    old = todos().find((x) => x.id === id),
+    t: Todo = {
+      id,
+      title: d.title.trim(),
+      day: w.day,
+      done: !!old?.done,
+      labels: d.labels,
+      mails: d.mails,
+      tasks: d.tasks,
+      notes: d.notes,
+    };
+  // the same day keeps its place; another day gets it at the end, as a move does
+  setTodos(old?.day === t.day ? todos().map((x) => (x.id === id ? t : x)) : [...todos().filter((x) => x.id !== id), t]);
+  S.todoForm = null;
+  S.todoFresh = id;
+  S.todoSel = id;
+  S.boardDay = t.day;
+  const word = dayWord(t.day, new Date(now()));
+  if (old) {
+    toast(t.day !== old.day ? `saved. moved to ${word}.` : 'saved.');
+  } else {
+    toast(S.screen === 'board' ? `todo on ${word}.` : [`todo on ${word}. `, '3', ' board']);
+  }
+}
+
+/** labels to offer for what's typed in the form: the ones it starts, then it as a new one */
+export function labelSugg(f: TodoForm): string[] {
+  const q = normLabel(f.labelQ),
+    all = labels();
+  if (!q) {
+    return [];
+  }
+  const have = all.filter((l) => l.id.startsWith(q) && !f.labels.includes(l.id)).map((l) => l.id);
+  return all.some((l) => l.id === q) ? have : [...have, q];
+}
+
+export function takeLabel(id: string) {
+  const f = S.todoForm;
+  if (!f) {
+    return;
+  }
+  LS.set('todo:labels', addLabel(labels(), id));
+  if (!f.labels.includes(id)) {
+    f.labels = [...f.labels, id];
+  }
+  f.labelQ = '';
+}
+
+// The form's keys, asked before the typing check: true when the key was one of them.
+export function todoFormKey(e: KeyboardEvent): boolean {
+  const f = S.todoForm,
+    el = e.target as HTMLElement,
+    k = e.key,
+    field = el.dataset?.todo;
+  if (!f || (!field && el.matches?.('input, textarea'))) {
+    return false; // typing somewhere else (a reply, search): its own keys
+  }
+  if ((e.metaKey || e.ctrlKey) && k === 'Enter') {
+    saveTodo();
+  } else if (k === 'Escape') {
+    closeTodo();
+  } else if (field === 'labelq' && (k === 'Enter' || k === ',')) {
+    const s = labelSugg(f)[0];
+    if (s) {
+      takeLabel(s);
+    } else {
+      f.labelQ = ''; // already on it
+    }
+  } else if (field === 'labelq' && k === 'Backspace' && !f.labelQ && f.labels.length) {
+    f.labels = f.labels.slice(0, -1);
+  } else if (field === 'taskq' && k === 'Enter' && f.taskQ.trim()) {
+    f.tasks = [...f.tasks, { t: f.taskQ.trim(), done: false }];
+    f.taskQ = '';
+  } else {
+    return false;
+  }
+  return true;
 }
 
 // Events ticked off on the board, as "day|event id" (settings key "todo:evdone").
@@ -114,6 +280,15 @@ export function boardKey(e: KeyboardEvent): boolean {
     case 'ArrowUp':
     case 'k':
       pick(-1);
+      return true;
+    case 'Enter':
+      if (!sel) {
+        return false; // a focused button's own
+      }
+      openTodo(sel.id);
+      return true;
+    case 'd':
+      ACTIONS['new-todo']();
       return true;
     case 'e':
     case 'x':

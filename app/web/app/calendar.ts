@@ -147,6 +147,7 @@ export function eventDialog(at: { start?: number; end?: number } = {}) {
       });
     });
   }
+  S.todoForm = null; // one form in the pane at a time
   S.eventForm = {
     title: t ? t.subject.replace(/^((re|fwd?|vs|aw|sv):\s*)+/i, '') : '',
     guests: [...guests].join(', '),
@@ -309,6 +310,7 @@ export async function openEvent(id: string) {
     return;
   }
   const readOnly = !!(x.server && x.isMeeting && !x.isOrganizer);
+  S.todoForm = null;
   S.eventForm = {
     id: String(x.id),
     server: !!x.server,

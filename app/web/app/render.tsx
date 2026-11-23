@@ -7,7 +7,7 @@ import { createEffect, createMemo, createSignal, For, onSettled, Show } from 'so
 import type { Answer, Invite as Inv, Person } from '../api.ts';
 import { tint } from '../markdown.ts';
 import { runSearch } from './actions.ts';
-import { Board } from './board.tsx';
+import { Board, TodoPane } from './board.tsx';
 import { answerInvite, ensureCalDay, eventTimes, invOf, meetingOf, readInvites, rsvpOf } from './calendar.ts';
 import { type Command, goto, MOD, paletteItems } from './commands.ts';
 import { meAddr, resumeDraft, scheduleDraftSave, scheduled } from './compose.ts';
@@ -610,11 +610,13 @@ const TIPS = [
   ['-word', 'without that word'],
 ];
 
-// ---------- the pane on the right: the day, search tips, the person you're reading, … ----------
+// ---------- the pane on the right: the todo open, the day, search tips, the person you're reading, … ----------
 function Pane() {
   return (
     <>
-      {S.screen === 'board' ? (
+      {S.todoForm ? (
+        <TodoPane />
+      ) : S.screen === 'board' ? (
         S.eventForm ? (
           <CalSide />
         ) : null
