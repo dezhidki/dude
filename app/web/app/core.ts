@@ -66,6 +66,8 @@ export interface Composer {
   references?: string;
   messageId?: string;
   quoteOf?: Msg;
+  /** the quoted mail is unfolded under the writing box */
+  showQuote?: boolean;
   files?: OutFile[];
   showCc?: boolean;
   showBcc?: boolean;

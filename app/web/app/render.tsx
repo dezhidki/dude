@@ -11,7 +11,7 @@ import { runSearch } from './actions.ts';
 import { Board, TodoPane } from './board.tsx';
 import { answerInvite, ensureCalDay, eventTimes, invOf, meetingOf, readInvites, rsvpOf } from './calendar.ts';
 import { type Command, goto, MOD, paletteItems } from './commands.ts';
-import { meAddr, resumeDraft, scheduleDraftSave, scheduled } from './compose.ts';
+import { meAddr, quoted, resumeDraft, scheduleDraftSave, scheduled, startCompose } from './compose.ts';
 import {
   B,
   type Conv,
@@ -883,6 +883,14 @@ function Msg(props: { i: number }) {
   );
 }
 
+// ↩ ⤺ ↪ on a message answer that message: it takes the focus, so the reply quotes it
+const answer = (i: () => number, mode: 'reply' | 'replyall' | 'forward') =>
+  on((e: MouseEvent) => {
+    e.stopPropagation();
+    S.focus = i();
+    startCompose(mode);
+  });
+
 function OpenMsg(props: { i: number; focus: boolean }) {
   const m = () => S.msgs[props.i] || {};
   const to = () => [...(m().to || []), ...(m().cc || [])].map((p) => p.name || p.address).join(', ');
@@ -895,13 +903,13 @@ function OpenMsg(props: { i: number; focus: boolean }) {
           {to() ? <span class="tolist">{`to ${to()}`}</span> : null}
         </span>
         <span class="macts">
-          <button class="ibtn" data-a="reply" onClick={press('reply')} title="Reply (R)">
+          <button class="ibtn" data-a="reply" onClick={answer(() => props.i, 'reply')} title="Reply (R)">
             ↩
           </button>
-          <button class="ibtn" data-a="replyall" onClick={press('replyall')} title="Reply all (Enter)">
+          <button class="ibtn" data-a="replyall" onClick={answer(() => props.i, 'replyall')} title="Reply all (Enter)">
             ⤺
           </button>
-          <button class="ibtn" data-a="forward" onClick={press('forward')} title="Forward (F)">
+          <button class="ibtn" data-a="forward" onClick={answer(() => props.i, 'forward')} title="Forward (F)">
             ↪
           </button>
         </span>
@@ -1172,6 +1180,24 @@ function Composer() {
           value={c().text ?? ''}
         />
       </div>
+      {c().quoteOf ? (
+        <>
+          <button
+            class="dots"
+            data-a="cquote"
+            title={c().showQuote ? 'Hide quoted text' : 'Show quoted text'}
+            onClick={on(() => {
+              const d = S.composer;
+              if (d) {
+                d.showQuote = !d.showQuote;
+              }
+            })}
+          >
+            …
+          </button>
+          {c().showQuote ? <pre class="cquote">{quoted(S.composer as Draft).replace(/^\n+/, '')}</pre> : null}
+        </>
+      ) : null}
       {(c().files || []).length ? (
         <div class="cfiles">
           <For each={c().files}>

@@ -1472,6 +1472,14 @@ textarea {
 .composer .editor {
   margin: 0;
 }
+/* the mail a reply or forward carries, unfolded under the writing box */
+.cquote {
+  margin: 4px 0 8px;
+  white-space: pre-wrap;
+  font: 16px / 24px var(--sans);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
 
 /* ---------- Drafts inside a conversation and in the list ---------- */
 .dr {

@@ -260,7 +260,7 @@ export function focusComposer(f: string) {
   });
 }
 
-function quoted(c: Composer) {
+export function quoted(c: Composer) {
   const m = c.quoteOf;
   if (!m) {
     return '';

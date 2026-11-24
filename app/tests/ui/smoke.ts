@@ -228,6 +228,24 @@ const STEPS: [string, string, string?, number?][] = [
     'board starts monday',
     `if (!/^Mon/.test(document.querySelector('.tb-col:first-child .tb-dh').textContent.trim())) throw new Error('board week does not start on monday')`,
   ],
+  // a reply shows the mail it answers under the writing box, folded like quoted text in a message
+  ['quote list', `__key('1'); __key('g'); __key('i')`, '.row .cnt', 400],
+  ['quote thread', `document.querySelector('.row .cnt').closest('.row').click()`, '.msg.mrow[data-m="0"]', 600],
+  ['quote older', `__click('.msg.mrow[data-m="0"]')`, '.msg.open[data-m="0"]', 300],
+  ['quote older reply', `__click('.msg.open[data-m="0"] [data-a="reply"]')`, '.composer .dots', 300],
+  ['quote unfold', `__click('.composer .dots')`, '.cquote', 200],
+  [
+    'quote is older',
+    `const b = document.querySelector('.msg.open[data-m="0"] .body').textContent.trim().slice(0, 20); if (!b || !document.querySelector('.cquote').textContent.includes(b)) throw new Error('reply quotes the wrong mail')`,
+  ],
+  ['quote discard', `__click('[data-a="discard"]')`, undefined, 300],
+  ['forward quote', `__key('f')`, '.composer .dots', 300],
+  ['forward unfold', `__click('.composer .dots')`, '.cquote', 200],
+  [
+    'forward is forward',
+    `if (!/Forwarded message/.test(document.querySelector('.cquote').textContent)) throw new Error('forward shows no quote')`,
+  ],
+  ['forward discard', `__click('[data-a="discard"]')`, undefined, 300],
 ];
 
 const HELPERS = `
