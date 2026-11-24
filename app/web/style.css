@@ -1162,7 +1162,8 @@ textarea {
 
 /* ---------- Narrow windows ---------- */
 @media (max-width: 1200px) {
-  .pane.contact-pane {
+  .pane.contact-pane,
+  .pane.board-side {
     display: none;
   }
 }

@@ -39,7 +39,7 @@ Builds are unsigned. First run:
 - **Send later**: kept locally. App must be open when due. No attachments.
 - **Typed times** for remind, send later, events, jump to date: `8 am`, `2h`, `3 days`, `mon 9:30`, `aug 7`, `next week`, `this weekend`, `tomorrow 2 pm 30 min`.
 - **Calendar**: day pane beside mail, week view, create/edit/delete events, guests get real invites. Google: Calendar API, no extra step. Microsoft 365: run **Connect Calendar** once (Exchange Web Services). Not connected: event kept locally, invite sent as iCalendar mail.
-- **Todo board**: the week as columns, one per day plus someday. Todos have labels, tasks, notes and attached mail. Make one from a mail with `D`. Drag a card to move it. Filter by label.
+- **Todo board**: week as columns, one per day, plus someday. Todos carry labels, tasks, notes and mail. `D` on a mail makes one. Drag a card to move it. Filter by label. Settings: weekends, declined events, week start, for week and board.
 - **Invites**: RSVP yes/maybe/no from the mail. Answered in your calendar when connected, else by iCalendar reply mail.
 - **Files**: PDF and image viewer inside the app. Open or save to Downloads.
 - **Desktop**: tray icon with unread count, new-mail notifications (important / all / off), close hides to tray, one instance only.
@@ -87,7 +87,7 @@ Search words: `from:` `to:` `cc:` `bcc:` `subject:` `domain:` `"phrase"` `-word`
 | `T` | today (week view) |
 | `Y` / `M` / `N` | answer an open invite |
 | `3` | todo board |
-| `D` | new todo. From a mail: a todo with that mail |
+| `D` | new todo. On a mail: todo with that mail |
 
 ## Try it in a browser
 

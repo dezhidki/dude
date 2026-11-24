@@ -102,7 +102,7 @@ export function TodoCard(props: { todo: Todo; sel: boolean; draft?: boolean }) {
           {t().tasks.length ? (
             <span
               class={['pg', { all: ticked() === t().tasks.length }]}
-              title={`${ticked()} of ${t().tasks.length} tasks done`}
+              title={`${ticked()} of ${t().tasks.length} done`}
             >
               <ic.check />
               {`${ticked()}/${t().tasks.length}`}
@@ -221,7 +221,7 @@ function Day(props: { k: string | null; today: string; todos: Todo[] }) {
         ) : (
           <button
             class="tb-add"
-            title="Add a todo here"
+            title="Add todo"
             onClick={on(() => {
               S.boardAdd = { day: props.k, text: '' };
               S.boardDay = props.k;
@@ -415,8 +415,8 @@ export function TodoPane() {
                   <span>{m.subject}</span>
                   <button
                     data-rmmail={m.id}
-                    title="take off"
-                    aria-label={`take off ${m.subject}`}
+                    title="remove"
+                    aria-label={`remove ${m.subject}`}
                     onClick={remove((t) => {
                       t.mails = t.mails.filter((x) => x.id !== m.id);
                     })}

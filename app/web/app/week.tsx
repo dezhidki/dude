@@ -2,7 +2,7 @@
 
 import { For } from 'solid-js';
 import type { Answer } from '../api.ts';
-import { answerEvent, calKey, events, eventTimes, invOf, openEvent, setCalOpt, startDrag } from './calendar.ts';
+import { answerEvent, calKey, events, eventTimes, invOf, openEvent, startDrag } from './calendar.ts';
 import { MOD } from './commands.ts';
 import { type CalItem, DAY, dayStart, type EventForm, fmtTime, fullDate, LS, linkify, M, now, on, S } from './core.ts';
 import { press } from './events.ts';
@@ -300,17 +300,6 @@ export function CalSide() {
       d.setDate(first().getDate() + i);
       return d;
     });
-  const opt = (k: string, label: string, isOn: () => boolean) => (
-    <label class="cal-opt">
-      <input
-        type="checkbox"
-        data-calopt={k}
-        checked={isOn()}
-        onChange={on((e) => setCalOpt(k, e.currentTarget.checked))}
-      />
-      {` ${label}`}
-    </label>
-  );
   return (
     <>
       {S.eventForm ? (
@@ -320,7 +309,7 @@ export function CalSide() {
           <EvBtns />
         </aside>
       ) : (
-        <aside class="pane cal-pane cal-side">
+        <aside class={['pane cal-pane cal-side', { 'board-side': S.screen === 'board' }]}>
           <div class="mm">
             <div class="mm-h">
               <b>{m0().toLocaleDateString([], { month: 'long', year: 'numeric' })}</b>
@@ -377,9 +366,6 @@ export function CalSide() {
                 )}
               </span>
             </div>
-            {opt('weekends', 'weekends', () => LS.get('cal:weekends', true))}
-            {opt('declined', 'declined events', () => LS.get('cal:declined', false))}
-            {opt('monday', 'week starts monday', () => LS.get('cal:monday', false))}
           </div>
           <div class="grow" />
           <div class="pane-foot">
@@ -544,7 +530,7 @@ const EvBtns = () => (
         <button data-a="cancel-event" onClick={press('cancel-event')}>
           close
         </button>
-        <button data-a="event-todo" onClick={press('event-todo')} title="Make a todo of it">
+        <button data-a="event-todo" onClick={press('event-todo')} title="Make todo">
           todo
         </button>
         <span>Esc</span>
@@ -557,7 +543,7 @@ const EvBtns = () => (
         <button data-a="cancel-event" onClick={press('cancel-event')}>
           nope
         </button>
-        <button data-a="event-todo" onClick={press('event-todo')} title="Make a todo of it">
+        <button data-a="event-todo" onClick={press('event-todo')} title="Make todo">
           todo
         </button>
         {S.eventForm?.id ? (

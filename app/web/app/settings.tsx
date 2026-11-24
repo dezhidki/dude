@@ -2,6 +2,7 @@
 
 import { For } from 'solid-js';
 import { tint, toHtml } from '../markdown.ts';
+import { setCalOpt } from './calendar.ts';
 import { leaveCompose } from './compose.ts';
 import { B, carbon, LS, M, on, S, setTheme } from './core.ts';
 import { customSplits, removeSplit } from './data.ts';
@@ -176,6 +177,44 @@ export const Settings = () => (
             ['light', 'light'],
           ]}
           cur={carbon() ? 'carbon' : 'light'}
+        />
+      </section>
+      <section>
+        <h3>weekends</h3>
+        <p class="hint">week and board.</p>
+        <Seg
+          attr="weekends"
+          pick={(v) => setCalOpt('weekends', v === 'show')}
+          opts={[
+            ['show', 'show'],
+            ['hide', 'hide'],
+          ]}
+          cur={LS.get('cal:weekends', true) ? 'show' : 'hide'}
+        />
+      </section>
+      <section>
+        <h3>declined events</h3>
+        <p class="hint">meetings you declined.</p>
+        <Seg
+          attr="declined"
+          pick={(v) => setCalOpt('declined', v === 'show')}
+          opts={[
+            ['show', 'show'],
+            ['hide', 'hide'],
+          ]}
+          cur={LS.get('cal:declined', false) ? 'show' : 'hide'}
+        />
+      </section>
+      <section>
+        <h3>week starts</h3>
+        <Seg
+          attr="monday"
+          pick={(v) => setCalOpt('monday', v === 'mon')}
+          opts={[
+            ['sun', 'sunday'],
+            ['mon', 'monday'],
+          ]}
+          cur={LS.get('cal:monday', false) ? 'mon' : 'sun'}
         />
       </section>
       <section>

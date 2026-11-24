@@ -620,9 +620,7 @@ function Pane() {
       {S.todoForm ? (
         <TodoPane />
       ) : S.screen === 'board' ? (
-        S.eventForm ? (
-          <CalSide />
-        ) : null
+        <CalSide />
       ) : S.screen === 'calendar' || S.pane === 'calendar' || S.eventForm || invOf() ? (
         S.screen === 'calendar' ? (
           <CalSide />
@@ -792,7 +790,7 @@ function Thread() {
                     <button
                       class="tb-link"
                       data-todo-of={t.id}
-                      title="Open on the board"
+                      title="Open on board"
                       onClick={on(() => {
                         goBoard();
                         openTodo(t.id);
@@ -830,7 +828,7 @@ function Thread() {
             <button data-a="event" onClick={press('event')}>
               event <span class="key">B</span>
             </button>
-            <button data-a="todo" onClick={press('todo')} title="Make a todo from this mail (D)">
+            <button data-a="todo" onClick={press('todo')} title="Make todo (D)">
               todo <span class="key">D</span>
             </button>
           </div>

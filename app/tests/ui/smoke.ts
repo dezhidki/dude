@@ -208,6 +208,26 @@ const STEPS: [string, string, string?, number?][] = [
   // D on the week: a new todo for the day in view
   ['week todo', `__key('2'); __key('d')`, '[data-todo="title"]', 400],
   ['week todo close', `document.activeElement.blur(); __key('Escape')`],
+  // the board keeps the calendar's side pane (month, account) when nothing is open
+  ['board side', `__key('3')`, '.pane.board-side .mm-g', 400],
+  // weekends / declined / week start live in settings now, shared by the week and the board
+  ['week options gone', `__key('2')`, '.wk', 400],
+  [
+    'week no checkboxes',
+    `if (document.querySelector('.cal-opt')) throw new Error('week options still in the side pane')`,
+  ],
+  ['settings week', `__key(',', { ctrlKey: true })`, '[data-weekends="show"]', 300],
+  ['settings weekends', `__click('[data-weekends="show"]')`, '[data-weekends="show"].on'],
+  ['settings monday', `__click('[data-monday="mon"]')`, '[data-monday="mon"].on'],
+  [
+    'settings saved',
+    `if (localStorage.getItem('dude:cal:weekends') !== 'true' || localStorage.getItem('dude:cal:monday') !== 'true') throw new Error('week options not saved')`,
+  ],
+  ['board follows', `__key('Escape'); __key('3')`, '.tb-col:first-child .tb-dh', 400],
+  [
+    'board starts monday',
+    `if (!/^Mon/.test(document.querySelector('.tb-col:first-child .tb-dh').textContent.trim())) throw new Error('board week does not start on monday')`,
+  ],
 ];
 
 const HELPERS = `
