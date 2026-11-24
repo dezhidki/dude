@@ -11,12 +11,14 @@ import { press } from './events.ts';
 import { ic } from './icons.tsx';
 import {
   boardCols,
+  boardFilter,
   evDone,
   formWhen,
   labels,
   moveTodo,
   openTodo,
   openTodoMail,
+  shown,
   takeLabel,
   todos,
   toggleEvDone,
@@ -249,6 +251,7 @@ export function Board() {
     const md = (d: Date) => `${d.toLocaleDateString([], { month: 'short' })} ${d.getDate()}`;
     return `${md(a)} – ${a.getMonth() === b.getMonth() ? b.getDate() : md(b)}`;
   };
+  const used = () => labels().filter((l) => all().some((t) => t.labels.includes(l.id)));
   return (
     <div class={['tb', { editing: !!S.todoForm }]}>
       <header class="tb-h">
@@ -263,6 +266,22 @@ export function Board() {
         </button>
         <h1>{title()}</h1>
         <span class="grow" />
+        <div class="tb-filters">
+          <For each={used()}>
+            {(l) => (
+              <button
+                class={['tb-filter', { on: boardFilter() === l.id }]}
+                title={boardFilter() === l.id ? 'Show all' : `Only ${l.id}`}
+                aria-pressed={boardFilter() === l.id ? 'true' : 'false'}
+                onClick={on(() => {
+                  S.boardFilter = boardFilter() === l.id ? null : l.id;
+                })}
+              >
+                <LabelTag id={l.id} />
+              </button>
+            )}
+          </For>
+        </div>
         <button class="ibtn" data-a="new-todo" onClick={press('new-todo')} title="New todo (D)">
           +
         </button>
@@ -271,7 +290,9 @@ export function Board() {
         </button>
       </header>
       <div class="tb-cols">
-        <For each={boardCols()}>{(k) => <Day k={k} today={today()} todos={all().filter((t) => t.day === k)} />}</For>
+        <For each={boardCols()}>
+          {(k) => <Day k={k} today={today()} todos={all().filter((t) => t.day === k && shown(t))} />}
+        </For>
       </div>
     </div>
   );

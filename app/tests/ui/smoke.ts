@@ -38,6 +38,8 @@ const STEPS: [string, string, string?, number?][] = [
   ['board events', '0', '.tb-ev'],
   ['board leaves', `__key('1')`, '.row', 300],
   ['board again', `__key('3')`, '.tb-card.sel', 400],
+  ['board filter', `__click('.tb-filter')`, '.tb-filter.on'],
+  ['board filter off', `__click('.tb-filter.on')`, '.tb-card.sel'],
   ['todo done', `__key('e')`, '.tb-card.done.sel'],
   ['todo undo', `__key('z')`, undefined, 300],
   ['todo move', `__key('ArrowRight', { shiftKey: true })`, '.tb-col.focus:not(.today) .tb-card.sel'],
@@ -81,6 +83,12 @@ const STEPS: [string, string, string?, number?][] = [
   ['settings close', `__key('Escape')`, '.row', 300],
   ['keys', `__key('?')`, '.keys'],
   ['keys close', `__key('Escape')`],
+  ['keys board', `__key('?')`, '.keys h5'],
+  [
+    'keys has board',
+    `if (![...document.querySelectorAll('.keys h5')].some((h) => h.textContent === 'Board')) throw new Error('no Board keys')`,
+  ],
+  ['keys board close', `__key('Escape')`],
   // a todo's mail is read as a conversation whatever the list shows: on Drafts too, not opened as a draft
   ['drafts list', `__key('g'); __key('d')`, undefined, 500],
   ['drafts board', `__key('3')`, '.tb-card', 400],

@@ -1441,6 +1441,7 @@ const keyGroups = (): [string, [string, string][]][] => [
       ['Bcc', `${MOD} Shift B`],
       ['Attach', `${MOD} Shift A`],
       ['Snippet', ';'],
+      ['Make todo', 'D'],
     ],
   ],
   [
@@ -1454,6 +1455,20 @@ const keyGroups = (): [string, [string, string][]][] => [
       ['Reminders', 'G H'],
       ['All mail', 'G A'],
       ['Trash', 'G #'],
+    ],
+  ],
+  [
+    'Board',
+    [
+      ['Open board', '3'],
+      ['Days / todos', '← → ↑ ↓'],
+      ['Open todo', 'Enter'],
+      ['Done', 'E'],
+      ['New todo', 'D'],
+      ['Move a day', 'Shift ← →'],
+      ['Delete', '#'],
+      ['This week', 'T'],
+      ['Save', `${MOD} Enter`],
     ],
   ],
   [

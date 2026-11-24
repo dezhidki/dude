@@ -39,6 +39,7 @@ Builds are unsigned. First run:
 - **Send later**: kept locally. App must be open when due. No attachments.
 - **Typed times** for remind, send later, events, jump to date: `8 am`, `2h`, `3 days`, `mon 9:30`, `aug 7`, `next week`, `this weekend`, `tomorrow 2 pm 30 min`.
 - **Calendar**: day pane beside mail, week view, create/edit/delete events, guests get real invites. Google: Calendar API, no extra step. Microsoft 365: run **Connect Calendar** once (Exchange Web Services). Not connected: event kept locally, invite sent as iCalendar mail.
+- **Todo board**: the week as columns, one per day plus someday. Todos have labels, tasks, notes and attached mail. Make one from a mail with `D`. Drag a card to move it. Filter by label.
 - **Invites**: RSVP yes/maybe/no from the mail. Answered in your calendar when connected, else by iCalendar reply mail.
 - **Files**: PDF and image viewer inside the app. Open or save to Downloads.
 - **Desktop**: tray icon with unread count, new-mail notifications (important / all / off), close hides to tray, one instance only.
@@ -85,6 +86,8 @@ Search words: `from:` `to:` `cc:` `bcc:` `subject:` `domain:` `"phrase"` `-word`
 | `-` / `=` | previous / next day. Week view: previous / next week, also `←` `→` |
 | `T` | today (week view) |
 | `Y` / `M` / `N` | answer an open invite |
+| `3` | todo board |
+| `D` | new todo. From a mail: a todo with that mail |
 
 ## Try it in a browser
 
@@ -127,7 +130,7 @@ git tag v0.2.1 && git push --tags
 
 - No dude server. App talks only to Google or Microsoft: sign-in, IMAP, SMTP, calendar.
 - Tokens: encrypted with the OS keychain (Electron `safeStorage`). No keychain available? Stored unencrypted in a file only your user can read (mode `0600`).
-- Folder-list cache, reminders, snippets, settings, `dude.log`: local, in the profile folder.
+- Folder-list cache, reminders, snippets, todos, settings, `dude.log`: local, in the profile folder.
 - HTML mail renders in a sandboxed frame. Remote images in it do load.
 
 ## License

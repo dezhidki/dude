@@ -35,6 +35,12 @@ export function todos(): Todo[] {
   return list(LS.get('todos', [])).flatMap((x) => normTodo(x) ?? []);
 }
 
+/** the label filter, while some todo still wears that label */
+export function boardFilter(): string | null {
+  const f = S.boardFilter;
+  return f && todos().some((t) => t.labels.includes(f)) ? f : null;
+}
+
 export function labels(): Label[] {
   return list<Label>(LS.get('todo:labels', []));
 }
@@ -277,7 +283,7 @@ export function toggleEvDone(day: string, ev: CalItem) {
 export function boardKey(e: KeyboardEvent): boolean {
   const cols = boardCols(),
     sel = todos().find((t) => t.id === S.todoSel && cols.includes(t.day)); // only a todo on screen
-  const inDay = () => sortDay(todos().filter((t) => t.day === S.boardDay));
+  const inDay = () => sortDay(todos().filter((t) => t.day === S.boardDay && shown(t)));
   const pick = (d: -1 | 1) => {
     const l = inDay();
     if (l.length) {
@@ -357,6 +363,9 @@ export function boardKey(e: KeyboardEvent): boolean {
 }
 
 /** the board's columns: the week's days (weekends as the calendar shows them), then someday */
+/** a todo the label filter lets through */
+export const shown = (t: Todo) => !boardFilter() || t.labels.includes(boardFilter() as string);
+
 export function boardCols(): (string | null)[] {
   return [...weekDays().map(dayKey), null];
 }
@@ -386,6 +395,15 @@ export function goBoard() {
     S.todoSel = todos().find((t) => t.day === today && !t.done)?.id ?? null;
   }
   render();
+  // narrow windows open on today, not on a past Sunday (only when it scrolls, and today is shown)
+  onSettled(() => {
+    const cols = root.querySelector<HTMLElement>('.tb-cols'),
+      el = cols?.querySelector<HTMLElement>('.tb-col.today');
+    if (cols && el && cols.scrollWidth + cols.scrollHeight > cols.clientWidth + cols.clientHeight) {
+      cols.scrollLeft = el.offsetLeft - cols.offsetLeft;
+      cols.scrollTop = el.offsetTop - cols.offsetTop;
+    }
+  });
 }
 
 export function leaveBoard(to: 'list' | 'calendar') {

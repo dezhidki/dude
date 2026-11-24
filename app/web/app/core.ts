@@ -181,6 +181,8 @@ export interface State {
   /** the board's focused column (a day key, null for someday) and the todo picked in it */
   boardDay?: string | null;
   todoSel?: string | null;
+  /** the label the board shows only (null: all) */
+  boardFilter?: string | null;
   /** the board's quick add, open under a day (null: someday), and its text */
   boardAdd?: { day: string | null; text: string } | null;
   /** the todo that just arrived (drawn sliding in) */

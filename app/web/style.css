@@ -2878,6 +2878,89 @@ body.on-signin {
   color: var(--text-3);
 }
 
+/* label filters: one line that scrolls */
+.tb-filters {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tb-filter {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-m);
+  font: 12px var(--mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.tb-filter:hover {
+  color: var(--text);
+  border-color: var(--text-3);
+}
+.tb-filter.on {
+  color: var(--text);
+  border-color: var(--brand);
+  background: var(--hi);
+}
+.tb-cols {
+  scroll-snap-type: x proximity;
+}
+.tb-col {
+  scroll-snap-align: start;
+}
+@media (max-width: 768px) {
+  .tb-h {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px 12px 8px;
+  }
+  .tb-h h1 {
+    font: 400 17px / 24px var(--sans);
+    margin-left: 4px;
+  }
+  .tb-filters {
+    order: 9;
+    flex-basis: 100%;
+  }
+  .tb-cols,
+  .tb.editing .tb-cols {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: none;
+    padding: 0 0 56px;
+  }
+  .tb-col {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    min-height: 0;
+  }
+  .tb-col:first-child {
+    border-top: 0;
+  }
+  .tb-dh {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--list);
+    padding: 10px 16px 8px;
+  }
+  .tb-col.today .tb-dh {
+    background: color-mix(in srgb, var(--brand) 4%, var(--list));
+  }
+  .tb-col.someday .tb-dh {
+    background: var(--pane);
+  }
+  .tb-stack {
+    overflow: visible;
+    padding: 0 12px 14px;
+  }
+}
+
 /* ---------- the todo open in the right pane: the event form's rows, plus chips, mail and tasks ---------- */
 .todo-pane {
   overflow: hidden;
@@ -3079,6 +3162,10 @@ body.on-signin {
 }
 /* phones: the form takes the screen above the tab bar, like the calendar pane */
 @media (max-width: 768px) {
+  .tb.editing .tb-cols {
+    padding-right: 0;
+    scroll-padding-right: 0;
+  }
   .pane.todo-pane {
     inset: 0 0 56px;
     width: auto;
