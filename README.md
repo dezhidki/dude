@@ -123,7 +123,7 @@ npm run package     # installer for the current OS, into app/desktop/dist
 - Versioned release: push a tag. Version comes from the tag.
 
 ```sh
-git tag v0.2.1 && git push --tags
+git tag v0.3.0 && git push --tags
 ```
 
 ## Privacy
