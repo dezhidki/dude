@@ -23,10 +23,10 @@ import {
 import { undo } from './actions.ts';
 import { calToday, closeEvent, goCal, goMail, weekMove } from './calendar.ts';
 import { leaveCompose, stashReply } from './compose.ts';
-import { B, type CalItem, type Conv, change, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
+import { B, type CalItem, type Conv, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
 import { ACTIONS } from './events.ts';
 import { openCmd, render } from './render.tsx';
-import { closeThread, openThread } from './thread.ts';
+import { openThread } from './thread.ts';
 import { addDays, weekDays } from './week.tsx';
 
 const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v : []);
@@ -206,19 +206,13 @@ export function attachMail(t: Thread) {
   toast('mail on todo.');
 }
 
-/** a todo's mail, read; Esc goes back to the board it was opened from. One gone since (done, trashed,
- * deleted elsewhere) has nothing to show: back to where it was opened. */
+/** a todo's mail, read as a conversation (whatever the list shows); Esc goes back to the board it was
+ * opened from. One gone since (done, trashed, deleted elsewhere): openThread says "no open: …". */
 export async function openTodoMail(m: TodoMail) {
   if (S.screen === 'board') {
     M.threadFrom = 'board';
   }
-  await openThread(m as Conv);
-  if (S.screen === 'thread' && S.open?.id === m.id && !S.msgs.length) {
-    change(() => {
-      toast('mail no load.');
-      closeThread();
-    });
-  }
+  await openThread(m as Conv, true);
 }
 
 /** the todos with this mail on them */

@@ -106,4 +106,8 @@ assert.deepStrictEqual(
 );
 assert.strictEqual(todoTitle('Re: Fwd: Poster layout'), 'Poster layout');
 assert.strictEqual('atts' in mailRef({ ...thread, atts: [] }), false);
+// a Scheduled row's mail is kept as a plain reference: opening it never unschedules the send
+const row = mailRef({ ...thread, sched: { at: 1, msg: { to: 'a@x.example' } }, _leaving: true } as Thread);
+assert.strictEqual('sched' in row, false);
+assert.strictEqual('_leaving' in row, false);
 console.log('todos ok');

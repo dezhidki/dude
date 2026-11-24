@@ -7,7 +7,8 @@ import { addrList, B, type Conv, change, keyOf, LS, M, type Mail1, minus, plus, 
 import { current, prefetch, visible } from './data.ts';
 import { render } from './render.tsx';
 
-export async function openThread(t0: Conv | undefined) {
+/** plain: read it as a conversation whatever the list shows (a todo's mail), not as a draft or a scheduled send */
+export async function openThread(t0: Conv | undefined, plain = false) {
   if (!t0) {
     return;
   }
@@ -17,10 +18,10 @@ export async function openThread(t0: Conv | undefined) {
     if (S.screen === 'thread') {
       stashReply();
     }
-    if (t.sched) {
+    if (t.sched && !plain) {
       return openScheduled(t);
     }
-    if (S.view === 'drafts') {
+    if (S.view === 'drafts' && !plain) {
       return openServerDraft(t);
     }
     S.open = t;

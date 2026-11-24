@@ -129,7 +129,14 @@ export function todoTitle(subject: string): string {
   return subject.replace(/^(\s*(re|fwd?)\s*:\s*)+/i, '').trim();
 }
 
+/** a mail as a todo keeps it: not a list row's own marks (a scheduled send, a row on its way out) */
 export function mailRef(t: Thread): TodoMail {
-  const { atts: _atts, prevFolder: _prev, ...rest } = t;
+  const {
+    atts: _atts,
+    prevFolder: _prev,
+    sched: _sched,
+    _leaving: _gone,
+    ...rest
+  } = t as Thread & { sched?: unknown; _leaving?: boolean };
   return rest;
 }

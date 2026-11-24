@@ -81,6 +81,11 @@ const STEPS: [string, string, string?, number?][] = [
   ['settings close', `__key('Escape')`, '.row', 300],
   ['keys', `__key('?')`, '.keys'],
   ['keys close', `__key('Escape')`],
+  // a todo's mail is read as a conversation whatever the list shows: on Drafts too, not opened as a draft
+  ['drafts list', `__key('g'); __key('d')`, undefined, 500],
+  ['drafts board', `__key('3')`, '.tb-card', 400],
+  ['todo mail from drafts', `__click('.tb-card:not([data-todo-id="stale"]) .ml')`, '.msg', 600],
+  ['todo mail back', `__key('Escape')`, '.tb', 300],
 ];
 
 const HELPERS = `
