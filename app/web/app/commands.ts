@@ -61,13 +61,15 @@ import { ACTIONS } from './events.ts';
 import { openCmd, openMenu, render, renderLayer } from './render.tsx';
 import { openSettings, SET, setSetting, sigBlock } from './settings.tsx';
 import { closeThread, lastRealIndex, toggleMsg } from './thread.ts';
-import { attachMail, deleteTodo, goBoard, moveTodo, shown, todos, toggleTodo } from './todo.ts';
+import { attachMail, boardCols, deleteTodo, goBoard, moveTodo, shown, todos, toggleTodo } from './todo.ts';
 import { addDays } from './week.tsx';
 
 export const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
 const inList = () => S.screen === 'list' && !!current();
 const anyThread = () => (S.screen === 'thread' && !!S.open) || inList();
-const onTodo = () => S.screen === 'board' && todos().some((t) => t.id === S.todoSel && shown(t));
+// a todo on screen: on the week shown, and through the filter
+const onTodo = () =>
+  S.screen === 'board' && todos().some((t) => t.id === S.todoSel && boardCols().includes(t.day) && shown(t));
 
 export const goto = (view: string, split?: string) => () => {
   if (S.screen === 'thread') {

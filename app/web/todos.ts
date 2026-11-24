@@ -84,6 +84,11 @@ export function addLabel(labels: Label[], name: string): Label[] {
   return !id || labels.some((l) => l.id === id) ? labels : [...labels, { id, hue: labels.length % HUES }];
 }
 
+/** the labels kept, without hand-edited junk: each has a name and a hue */
+export function normLabels(x: unknown): Label[] {
+  return (Array.isArray(x) ? x : []).filter((l) => typeof l?.id === 'string' && typeof l.hue === 'number');
+}
+
 /** labels offered for what's typed: it first (Enter takes it, existing or new), then the labels it starts; none taken */
 export function labelChoices(labels: Label[], q: string, taken: string[]): string[] {
   const id = normLabel(q);

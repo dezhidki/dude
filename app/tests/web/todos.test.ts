@@ -10,6 +10,7 @@ import {
   mailRef,
   moveDay,
   normLabel,
+  normLabels,
   normTodo,
   sortDay,
   todoTitle,
@@ -68,6 +69,11 @@ assert.deepStrictEqual(addLabel([{ id: 'thesis', hue: 0 }], 'code'), [
   { id: 'thesis', hue: 0 },
   { id: 'code', hue: 1 },
 ]);
+// hand-edited labels: only ones with a name and a hue
+assert.deepStrictEqual(normLabels([null, 'thesis', { id: 1, hue: 0 }, { id: 'x' }, { id: 'ok', hue: 2 }]), [
+  { id: 'ok', hue: 2 },
+]);
+assert.deepStrictEqual(normLabels({ id: 'ok', hue: 2 }), []);
 assert.deepStrictEqual(normTodo({ id: 'a', title: 'x' }), {
   id: 'a',
   title: 'x',

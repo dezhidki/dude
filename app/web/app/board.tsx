@@ -244,6 +244,7 @@ function Day(props: { k: string | null; today: string; todos: Todo[] }) {
 
 export function Board() {
   const all = createMemo(() => todos());
+  const filter = createMemo(() => boardFilter());
   const today = () => dayKey(now());
   const title = () => {
     const a = new Date(weekStartOf(S.calDay)),
@@ -270,9 +271,9 @@ export function Board() {
           <For each={used()}>
             {(l) => (
               <button
-                class={['tb-filter', { on: boardFilter() === l.id }]}
-                title={boardFilter() === l.id ? 'Show all' : `Only ${l.id}`}
-                aria-pressed={boardFilter() === l.id ? 'true' : 'false'}
+                class={['tb-filter', { on: filter() === l.id }]}
+                title={filter() === l.id ? 'Show all' : `Only ${l.id}`}
+                aria-pressed={filter() === l.id ? 'true' : 'false'}
                 onClick={on(() => {
                   S.boardFilter = boardFilter() === l.id ? null : l.id;
                 })}
@@ -291,7 +292,7 @@ export function Board() {
       </header>
       <div class="tb-cols">
         <For each={boardCols()}>
-          {(k) => <Day k={k} today={today()} todos={all().filter((t) => t.day === k && shown(t))} />}
+          {(k) => <Day k={k} today={today()} todos={all().filter((t) => t.day === k && shown(t, filter()))} />}
         </For>
       </div>
     </div>

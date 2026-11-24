@@ -15,6 +15,9 @@ export async function openThread(t0: Conv | undefined, plain = false) {
   let t: Conv = t0;
   let early: Mail1[] | undefined, wasUnread: boolean | undefined;
   const opening = change(() => {
+    if (!plain) {
+      leaveTodoMail(); // another mail: Esc goes back to the list
+    }
     if (S.screen === 'thread') {
       stashReply();
     }
@@ -256,12 +259,21 @@ function openScheduled(t: Conv) {
   toast('unscheduled. send now or later.');
 }
 
+/** a todo's mail is left: the todo open on the board comes back; true when the mail was opened from the board */
+export function leaveTodoMail() {
+  const from = M.threadFrom;
+  M.threadFrom = null;
+  if (from?.form && !S.todoForm) {
+    S.todoForm = from.form;
+  }
+  return !!from;
+}
+
 export function closeThread(keep?: boolean) {
   if (!keep) {
     stashReply();
   }
-  S.screen = M.threadFrom === 'board' ? 'board' : 'list'; // back to the todo it was opened from
-  M.threadFrom = null;
+  S.screen = leaveTodoMail() ? 'board' : 'list'; // back to the todo it was opened from
   S.open = null;
   S.msgs = [];
   if (!keep) {

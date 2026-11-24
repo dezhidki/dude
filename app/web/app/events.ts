@@ -471,6 +471,9 @@ function onKey(e: KeyboardEvent) {
     e.preventDefault();
     return;
   }
+  if (S.todoForm && tgt.closest?.('.todo-pane')) {
+    return; // the rest are its field's or button's (Enter on "save" clicks it), as in the event form
+  }
   if (S.composer && (typing(tgt) || S.screen === 'compose')) {
     const kl = k.toLowerCase();
     if (mod && k === 'Enter') {
@@ -564,6 +567,7 @@ function onKey(e: KeyboardEvent) {
         T: calToday,
         b: () => eventDialog(),
         B: () => eventDialog(),
+        d: () => newTodo(dayKey(S.calDay)), // for the day in view (one gone by: today)
         Escape: goMail,
         1: goMail,
         3: goBoard,

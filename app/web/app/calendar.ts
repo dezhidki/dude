@@ -29,6 +29,7 @@ import {
 } from './core.ts';
 import { refreshCal, render } from './render.tsx';
 import { SET } from './settings.tsx';
+import { leaveTodoMail } from './thread.ts';
 import { addDays, dayEnd, HPX, weekStartOf } from './week.tsx';
 
 export const calKey = (t: number) => new Date(t).toDateString();
@@ -425,8 +426,8 @@ export function goCal() {
   }
   if (S.screen === 'thread') {
     stashReply();
-    M.threadFrom = null; // left by another way than Esc
   }
+  leaveTodoMail(); // left by another way than Esc (or the mail was left before)
   if (S.screen !== 'board') {
     M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };
   }

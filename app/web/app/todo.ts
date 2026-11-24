@@ -12,6 +12,7 @@ import {
   mailRef,
   moveDay,
   normLabel,
+  normLabels,
   normTodo,
   sortDay,
   type Todo,
@@ -26,8 +27,8 @@ import { leaveCompose, stashReply } from './compose.ts';
 import { B, type CalItem, type Conv, dayStart, LS, M, now, root, S, type TodoForm, toast } from './core.ts';
 import { ACTIONS } from './events.ts';
 import { openCmd, render } from './render.tsx';
-import { openThread } from './thread.ts';
-import { addDays, weekDays } from './week.tsx';
+import { leaveTodoMail, openThread } from './thread.ts';
+import { addDays, weekDays, weekStartOf } from './week.tsx';
 
 const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v : []);
 
@@ -42,13 +43,14 @@ export function boardFilter(): string | null {
 }
 
 export function labels(): Label[] {
-  return list<Label>(LS.get('todo:labels', []));
+  return normLabels(LS.get('todo:labels', []));
 }
 
 /** keeps the todos; Z brings back the ones before, unless not undoable. A change ends the last one's arrival. */
 export function setTodos(next: Todo[], undoable = true) {
   if (undoable) {
     M.undo.push({ todos: todos() });
+    M.undo.splice(0, M.undo.length - 50); // the last 50 steps: the tray app runs for days
   }
   S.todoFresh = null;
   LS.set('todos', next);
@@ -144,11 +146,12 @@ export function openTodo(id: string) {
 /** a new todo for that day (null: someday); one for a day gone by is for today */
 export function newTodo(day: string | null, extra: Partial<TodoForm> = {}) {
   const today = dayKey(now()),
-    d = day !== null && day < today ? today : day;
+    d = day !== null && day < today ? today : day,
+    f = S.screen === 'board' ? boardFilter() : null; // the filter only where it's seen
   openForm({
     title: '',
     when: whenText(d, new Date(now())),
-    labels: boardFilter() ? [boardFilter() as string] : [],
+    labels: f ? [f] : [],
     mails: [],
     tasks: [],
     notes: '',
@@ -228,10 +231,12 @@ export function attachMail(t: Thread) {
 }
 
 /** a todo's mail, read as a conversation (whatever the list shows); Esc goes back to the board it was
- * opened from. One gone since (done, trashed, deleted elsewhere): openThread says "no open: …". */
+ * opened from, with the todo open there (put away meanwhile: on a narrow window it would cover the mail).
+ * One gone since (done, trashed, deleted elsewhere): openThread says "no open: …". */
 export async function openTodoMail(m: TodoMail) {
   if (S.screen === 'board') {
-    M.threadFrom = 'board';
+    M.threadFrom = { form: S.todoForm ? snapshot(S.todoForm) : null };
+    S.todoForm = null;
   }
   await openThread(m as Conv, true);
 }
@@ -297,8 +302,9 @@ export function toggleEvDone(day: string, ev: CalItem) {
 // The board's keys, asked first when nothing is being typed: true when the key was one of them.
 export function boardKey(e: KeyboardEvent): boolean {
   const cols = boardCols(),
-    sel = todos().find((t) => t.id === S.todoSel && cols.includes(t.day) && shown(t)); // only a todo on screen
-  const inDay = () => sortDay(todos().filter((t) => t.day === S.boardDay && shown(t)));
+    f = boardFilter(),
+    sel = todos().find((t) => t.id === S.todoSel && cols.includes(t.day) && shown(t, f)); // only a todo on screen
+  const inDay = () => sortDay(todos().filter((t) => t.day === S.boardDay && shown(t, f)));
   const pick = (d: -1 | 1) => {
     const l = inDay();
     if (l.length) {
@@ -377,12 +383,18 @@ export function boardKey(e: KeyboardEvent): boolean {
   return false;
 }
 
-/** the board's columns: the week's days (weekends as the calendar shows them), then someday */
-/** a todo the label filter lets through */
-export const shown = (t: Todo) => !boardFilter() || t.labels.includes(boardFilter() as string);
+/** a todo the label filter lets through (f: the filter, read once for many todos) */
+export const shown = (t: Todo, f = boardFilter()) => !f || t.labels.includes(f);
 
+/** the board's columns: the week's days (weekends as the calendar shows them, or while a todo is on one), then someday */
 export function boardCols(): (string | null)[] {
-  return [...weekDays().map(dayKey), null];
+  const ws = weekStartOf(S.calDay),
+    days = weekDays().map(dayKey),
+    used = new Set(todos().map((t) => t.day));
+  return [
+    ...Array.from({ length: 7 }, (_, i) => dayKey(addDays(ws, i))).filter((k) => days.includes(k) || used.has(k)),
+    null,
+  ];
 }
 
 // The board is the third screen beside mail and the week: 3 (goCal / goMail in calendar.ts know it).
@@ -395,8 +407,8 @@ export function goBoard() {
   }
   if (S.screen === 'thread') {
     stashReply();
-    M.threadFrom = null; // left by another way than Esc
   }
+  leaveTodoMail(); // left by another way than Esc (or the mail was left before)
   if (S.screen !== 'calendar') {
     M.calFrom = { screen: S.screen === 'thread' ? 'thread' : 'list', open: S.open, msgs: S.msgs };
   }

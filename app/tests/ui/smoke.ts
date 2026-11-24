@@ -115,11 +115,109 @@ const STEPS: [string, string, string?, number?][] = [
   ['drafts board', `__key('3')`, '.tb-card', 400],
   ['todo mail from drafts', `__click('.tb-card:not([data-todo-id="stale"]) .ml')`, '.msg', 600],
   ['todo mail back', `__key('Escape')`, '.tb', 300],
+  // a todo's mail opened from its form: the form steps aside (on a narrow window it would cover the
+  // mail), and one Esc brings back the board with the form and what was typed in it
+  ['form mail open', `__click('.tb-card:not([data-todo-id="stale"]):has(.ml)')`, '[data-todo="notes"]', 300],
+  ['form mail note', `__type('[data-todo="notes"]', 'kept note')`],
+  ['form mail', `__click('.tb-mail')`, '.msg', 600],
+  ['form mail aside', `if (document.querySelector('.todo-pane')) throw new Error('the form covers the mail')`],
+  ['form mail back', `__key('Escape')`, '.tb', 300],
+  [
+    'form mail kept',
+    `if (document.querySelector('[data-todo="notes"]')?.value !== 'kept note') throw new Error('form or edits lost')`,
+  ],
+  // Enter on the form's focused save button is the button's: it saves, the board doesn't reopen the todo
+  ['save button', `document.querySelector('[data-a="save-todo"]').focus(); __enter()`, undefined, 300],
+  [
+    'save button saved',
+    `if (document.querySelector('.todo-pane') || !localStorage.getItem('dude:todos').includes('kept note')) throw new Error('Enter on save did not save')`,
+  ],
+  // … and on a mail it saves too, not a reply-all
+  ['mail inbox', `__key('1'); __key('g'); __key('i')`, '.row', 600],
+  [
+    'mail inbox open',
+    `window.__n = JSON.parse(localStorage.getItem('dude:todos')).length; __key('Enter')`,
+    '.msg',
+    500,
+  ],
+  ['mail todo', `__key('d')`, '.tb-mail', 300],
+  ['mail save button', `document.querySelector('[data-a="save-todo"]').focus(); __enter()`, undefined, 300],
+  [
+    'mail save button saved',
+    `if (document.querySelector('[data-c="text"]') || document.querySelector('.todo-pane') || JSON.parse(localStorage.getItem('dude:todos')).length !== window.__n + 1) throw new Error('Enter on save: no save, or a reply')`,
+  ],
+  // a todo made from a mail doesn't take the board's label filter (not shown on the mail screen)
+  ['mail back', `__key('Escape'); __key('3')`, '.tb', 400],
+  ['mail filter', `__click('.tb-filter')`, '.tb-filter.on'],
+  ['mail filter list', `__key('1')`, '.row', 300],
+  ['mail filter todo', `__key('d')`, '.tb-mail', 300],
+  ['mail filter none', `if (document.querySelector('.todo-pane .tb-chip')) throw new Error('took the board filter')`],
+  ['mail filter close', `document.activeElement.blur(); __key('Escape'); __key('3')`, '.tb-filter.on', 400],
+  ['mail filter off', `__click('.tb-filter.on')`, '.tb-filter:not(.on)'],
+  // a search hit opened from a todo's mail: Esc goes back to the results, not to the board
+  ['hit mail', `__click('.tb-card:not([data-todo-id="stale"]) .ml')`, '.msg', 600],
+  ['hit search', `__key('/')`, '.sq', 300],
+  ['hit words', `__type('.sq', 'maya')`],
+  ['hit run', `__key('Enter')`, '.row', 700],
+  ['hit open', `document.activeElement.blur(); __key('Enter')`, '.msg', 700],
+  ['hit back', `__key('Escape')`, '.row', 400],
+  ['hit not board', `if (document.querySelector('.tb')) throw new Error('Esc from a search hit went to the board')`],
+  ['hit close', `__key('Escape'); __key('3')`, '.tb', 400],
+  // under a filter, a redraw reads the todos a few times, not once per card
+  ['many filter', `__click('.tb-filter')`, '.tb-filter.on'],
+  [
+    'many todos',
+    `const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'), l = JSON.parse(localStorage.getItem('dude:todos')); for (let i = 0; i < 40; i++) l.push({ id: 'many' + i, title: 'many ' + i, day: k }); localStorage.setItem('dude:todos', JSON.stringify(l)); __click('.tb-col.today .tb-add')`,
+    '[data-todo="quick"]',
+  ],
+  ['many type', `__type('[data-todo="quick"]', 'Today one')`],
+  ['many add', `__key('Enter'); __key('Escape')`, '.tb-col.today .tb-card.sel'],
+  [
+    'many reads',
+    `let n = 0; const g = Storage.prototype.getItem; Storage.prototype.getItem = function (k) { n += k === 'dude:todos'; return g.call(this, k); }; try { __key('e'); } finally { Storage.prototype.getItem = g; } if (n > 20) throw new Error(n + ' reads of the todos for one key')`,
+  ],
+  ['many filter off', `__click('.tb-filter.on')`, '.tb-filter:not(.on)'],
+  // Z keeps the last 50 steps, not every copy of the todos since the app started
+  [
+    'undo cap',
+    `for (let i = 0; i < 59; i++) __key('e'); for (let i = 0; i < 51; i++) __key('z'); if (!document.querySelector('#toast > div:last-child')?.textContent.includes('nothing undo')) throw new Error('Z went back past 50 steps')`,
+    undefined,
+    300,
+  ],
+  // the palette doesn't offer a todo off the week shown
+  ['off week', `__key('=')`, undefined, 300],
+  ['off week palette', `__key('k', { ctrlKey: true })`, '.cmd input'],
+  ['off week type', `__type('.cmd input', 'delete todo')`],
+  [
+    'off week no delete',
+    `if ([...document.querySelectorAll('.cmd li')].some((l) => l.textContent.includes('Delete Todo'))) throw new Error('Delete Todo offered off the week')`,
+  ],
+  ['off week close', `__key('Escape'); __key('t')`, '.tb-card.sel', 300],
+  // with weekends hidden, a todo on a weekend day still has its column
+  ['weekends palette', `__key('k', { ctrlKey: true })`, '.cmd input'],
+  ['weekends type', `__type('.cmd input', 'hide weekends')`, '.cmd li'],
+  ['weekends hide', `__key('Enter')`, undefined, 300],
+  ['weekend todo', `__key('d')`, '[data-todo="title"]', 300],
+  ['weekend title', `__type('[data-todo="title"]', 'Weekend thing')`],
+  ['weekend when', `__type('[data-todo="when"]', [0, 6].includes(new Date().getDay()) ? 'today' : 'sat')`],
+  ['weekend save', `__key('Enter', { ctrlKey: true })`, '.tb-card.fresh', 300],
+  [
+    'weekend shown',
+    `if (localStorage.getItem('dude:cal:weekends') !== 'false' || ![...document.querySelectorAll('.tb-col:not(.someday) .tb-card .t')].some((t) => t.textContent === 'Weekend thing')) throw new Error('a weekend todo is on no column')`,
+  ],
+  // D on the week: a new todo for the day in view
+  ['week todo', `__key('2'); __key('d')`, '[data-todo="title"]', 400],
+  ['week todo close', `document.activeElement.blur(); __key('Escape')`],
 ];
 
 const HELPERS = `
 window.__key = (key, o = {}) =>
   (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...o }));
+// Enter as the browser does it: on a button, its click, unless the keydown was taken
+window.__enter = () => {
+  const el = document.activeElement || document.body;
+  if (el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })) && el.tagName === 'BUTTON') el.click();
+};
 window.__type = (sel, value) => {
   const el = document.querySelector(sel);
   if (!el) throw new Error('no ' + sel);
