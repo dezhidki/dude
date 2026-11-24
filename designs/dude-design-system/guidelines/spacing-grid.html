@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x300" subtitle="Rail 40 · list gutter 63 · reading column 712 · pane 398" name="Window grid" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Window grid</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="card.css">
+<style>
+.g{display:grid;grid-template-columns:40px 1fr 160px;height:250px;border:1px solid var(--line-2);font:11px/14px var(--mono);color:var(--text-3)}
+.g>div{position:relative}
+.rl{border-right:1px solid var(--line)}
+.pn{background:var(--pane);border-left:1px solid var(--line);padding:10px}
+.hd{height:52px;border-bottom:1px dashed var(--line-2);display:flex;align-items:center;padding-left:44px;gap:8px}
+.rw{height:22px;margin:4px 0 0;display:flex;align-items:center;padding-left:44px;gap:10px}
+.rw.sel{background:var(--hi);box-shadow:inset 3px 0 0 var(--bar)}
+.rw i{display:block;height:6px;background:var(--line-2);border-radius:2px}
+.dim{position:absolute;color:var(--brand);font-weight:700}
+</style></head><body>
+<div class="g"><div class="rl"><span class="dim" style="top:110px;left:4px">40</span></div>
+<div><div class="hd">head 76 <span style="color:var(--text)">Important • Other</span></div>
+<div class="rw"><i style="width:80px"></i><i style="width:160px"></i></div>
+<div class="rw sel"><i style="width:80px"></i><i style="width:200px"></i></div>
+<div class="rw"><i style="width:80px"></i><i style="width:140px"></i></div>
+<span class="dim" style="top:128px;left:6px">63 →</span><span class="dim" style="top:190px;left:44px">row 36 · sender 260 · right gutter 30</span>
+<span class="dim" style="top:210px;left:44px">thread column max 712, inset 36</span></div>
+<div class="pn">pane 398<br>title 80 · foot 62<br>inset 36<br><br>hidden &lt; 1200<br>rail + pane gone &lt; 768</div></div>
+</body></html>

@@ -1,0 +1,2617 @@
+{
+  "namespace": "DudeDesignSystem_3fa3b0",
+  "components": [
+    {
+      "name": "DayCalendar",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "events",
+          "type": "Ev[]"
+        },
+        {
+          "name": "allDay",
+          "type": "string[]"
+        },
+        {
+          "name": "now",
+          "type": "number"
+        },
+        {
+          "name": "tz",
+          "type": "string"
+        },
+        {
+          "name": "isToday",
+          "type": "boolean"
+        },
+        {
+          "name": "scrollTo",
+          "type": "number"
+        },
+        {
+          "name": "note",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "onPrev",
+          "type": "() => void"
+        },
+        {
+          "name": "onNext",
+          "type": "() => void"
+        },
+        {
+          "name": "onWeek",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "EventBlock",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "EventChip",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "CalNote",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "WeekView",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "days",
+          "type": "{ label: string"
+        },
+        {
+          "name": "today",
+          "type": "boolean"
+        },
+        {
+          "name": "events",
+          "type": "Ev[]"
+        },
+        {
+          "name": "allDay",
+          "type": "string[] }[]"
+        },
+        {
+          "name": "tz",
+          "type": "string"
+        },
+        {
+          "name": "now",
+          "type": "number"
+        },
+        {
+          "name": "scrollTo",
+          "type": "number"
+        },
+        {
+          "name": "onToday",
+          "type": "() => void"
+        },
+        {
+          "name": "onPrev",
+          "type": "() => void"
+        },
+        {
+          "name": "onNext",
+          "type": "() => void"
+        },
+        {
+          "name": "onAdd",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "MiniMonth",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "year",
+          "type": "number"
+        },
+        {
+          "name": "month",
+          "type": "number"
+        },
+        {
+          "name": "today",
+          "type": "number"
+        },
+        {
+          "name": "weekOf",
+          "type": "number"
+        },
+        {
+          "name": "mondayFirst",
+          "type": "boolean"
+        },
+        {
+          "name": "onPick",
+          "type": "(d: Date) => void"
+        }
+      ]
+    },
+    {
+      "name": "CalendarOptions",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "options",
+          "type": "{ label: string"
+        },
+        {
+          "name": "on",
+          "type": "boolean }[]"
+        },
+        {
+          "name": "onToggle",
+          "type": "(label: string, on: boolean) => void"
+        }
+      ]
+    },
+    {
+      "name": "EventForm",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "guests",
+          "type": "string"
+        },
+        {
+          "name": "when",
+          "type": "string"
+        },
+        {
+          "name": "parsed",
+          "type": "string"
+        },
+        {
+          "name": "where",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        },
+        {
+          "name": "fresh",
+          "type": "boolean"
+        },
+        {
+          "name": "onChange",
+          "type": "(patch: Record<string, string>) => void"
+        }
+      ]
+    },
+    {
+      "name": "EventView",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "when",
+          "type": "string"
+        },
+        {
+          "name": "where",
+          "type": "string"
+        },
+        {
+          "name": "who",
+          "type": "string"
+        },
+        {
+          "name": "answer",
+          "values": [
+            "yes",
+            "maybe",
+            "no"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        },
+        {
+          "name": "onAnswer",
+          "type": "(a: 'yes' | 'maybe' | 'no') => void"
+        }
+      ]
+    },
+    {
+      "name": "EventButtons",
+      "sourcePath": "components/calendar/Calendar.jsx",
+      "props": [
+        {
+          "name": "view",
+          "type": "boolean"
+        },
+        {
+          "name": "canDelete",
+          "type": "boolean"
+        },
+        {
+          "name": "onSave",
+          "type": "() => void"
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void"
+        },
+        {
+          "name": "onDelete",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "variant",
+          "values": [
+            "main",
+            "secondary",
+            "soft",
+            "outline",
+            "toolbar",
+            "quiet",
+            "caps",
+            "save",
+            "link",
+            "banner",
+            "alert"
+          ]
+        },
+        {
+          "name": "primary",
+          "type": "boolean"
+        },
+        {
+          "name": "danger",
+          "type": "boolean"
+        },
+        {
+          "name": "icon",
+          "type": "IconButtonProps['icon']"
+        },
+        {
+          "name": "keyHint",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Key",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Keys",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "keys",
+          "type": "string[]"
+        }
+      ]
+    },
+    {
+      "name": "IconButton",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "icon",
+          "values": [
+            "clip",
+            "mail",
+            "cal",
+            "menu",
+            "pen",
+            "search",
+            "check",
+            "clock",
+            "cmd",
+            "trash",
+            "person",
+            "pin",
+            "lines",
+            "download",
+            "back",
+            "up",
+            "down",
+            "left",
+            "right"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "on",
+          "type": "boolean"
+        },
+        {
+          "name": "size",
+          "values": [
+            "sm",
+            "xs"
+          ]
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "ChoiceButton",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "on",
+          "type": "boolean"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Segmented",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "options",
+          "type": "{ value: string | number | boolean"
+        },
+        {
+          "name": "label",
+          "type": "string }[]"
+        },
+        {
+          "name": "value",
+          "type": "string | number | boolean"
+        },
+        {
+          "name": "onChange",
+          "type": "(v: string | number | boolean) => void"
+        }
+      ]
+    },
+    {
+      "name": "Field",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "tall",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "Checkbox",
+      "sourcePath": "components/controls/Controls.jsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "checked",
+          "type": "boolean"
+        },
+        {
+          "name": "onChange",
+          "type": "(checked: boolean) => void"
+        }
+      ]
+    },
+    {
+      "name": "BarInput",
+      "sourcePath": "components/controls/Controls.jsx"
+    },
+    {
+      "name": "ICON_NAMES",
+      "sourcePath": "components/controls/Icon.jsx",
+      "kind": "constant"
+    },
+    {
+      "name": "Icon",
+      "sourcePath": "components/controls/Icon.jsx",
+      "props": [
+        {
+          "name": "name",
+          "values": [
+            "clip",
+            "mail",
+            "cal",
+            "menu",
+            "pen",
+            "search",
+            "check",
+            "clock",
+            "cmd",
+            "trash",
+            "person",
+            "pin",
+            "lines",
+            "download",
+            "back",
+            "up",
+            "down",
+            "left",
+            "right"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "ListRow",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "from",
+          "type": "string"
+        },
+        {
+          "name": "subject",
+          "type": "string"
+        },
+        {
+          "name": "snippet",
+          "type": "string"
+        },
+        {
+          "name": "date",
+          "type": "string"
+        },
+        {
+          "name": "unread",
+          "type": "boolean"
+        },
+        {
+          "name": "selected",
+          "type": "boolean"
+        },
+        {
+          "name": "picked",
+          "type": "boolean"
+        },
+        {
+          "name": "starred",
+          "type": "boolean"
+        },
+        {
+          "name": "count",
+          "type": "number"
+        },
+        {
+          "name": "draft",
+          "type": "boolean"
+        },
+        {
+          "name": "files",
+          "type": "string[]"
+        },
+        {
+          "name": "leaving",
+          "type": "boolean"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        },
+        {
+          "name": "onDone",
+          "type": "() => void"
+        },
+        {
+          "name": "onRemind",
+          "type": "() => void"
+        },
+        {
+          "name": "onCmd",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "SplitTabs",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "splits",
+          "type": "{ id: string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "n",
+          "type": "number }[]"
+        },
+        {
+          "name": "active",
+          "type": "string"
+        },
+        {
+          "name": "onChange",
+          "type": "(id: string) => void"
+        }
+      ]
+    },
+    {
+      "name": "ListSeparator",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "ListNote",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "FileType",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "AttachmentChip",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ZeroState",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "line",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "MessageRow",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "snippet",
+          "type": "string"
+        },
+        {
+          "name": "date",
+          "type": "string"
+        },
+        {
+          "name": "focus",
+          "type": "boolean"
+        },
+        {
+          "name": "draft",
+          "type": "boolean"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Message",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "from",
+          "type": "string"
+        },
+        {
+          "name": "to",
+          "type": "string"
+        },
+        {
+          "name": "date",
+          "type": "string"
+        },
+        {
+          "name": "focus",
+          "type": "boolean"
+        },
+        {
+          "name": "paper",
+          "type": "boolean"
+        },
+        {
+          "name": "html",
+          "type": "boolean"
+        },
+        {
+          "name": "quoted",
+          "type": "string"
+        },
+        {
+          "name": "invite",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "attachments",
+          "type": "{ name: string"
+        },
+        {
+          "name": "size",
+          "type": "number }[]"
+        },
+        {
+          "name": "onReply",
+          "type": "() => void"
+        },
+        {
+          "name": "onReplyAll",
+          "type": "() => void"
+        },
+        {
+          "name": "onForward",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Attachment",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "number"
+        },
+        {
+          "name": "onOpen",
+          "type": "() => void"
+        },
+        {
+          "name": "onSave",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "ReplyBar",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "onReplyAll",
+          "type": "() => void"
+        },
+        {
+          "name": "onReply",
+          "type": "() => void"
+        },
+        {
+          "name": "onForward",
+          "type": "() => void"
+        },
+        {
+          "name": "onEvent",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "NewMail",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "count",
+          "type": "number"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Editor",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "value",
+          "type": "string"
+        },
+        {
+          "name": "onChange",
+          "type": "(v: string) => void"
+        },
+        {
+          "name": "placeholder",
+          "type": "string"
+        },
+        {
+          "name": "short",
+          "type": "boolean"
+        },
+        {
+          "name": "boxed",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "Composer",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "to",
+          "type": "string"
+        },
+        {
+          "name": "cc",
+          "type": "string"
+        },
+        {
+          "name": "subject",
+          "type": "string"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "mode",
+          "values": [
+            "new",
+            "reply"
+          ]
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "files",
+          "type": "{ name: string"
+        },
+        {
+          "name": "size",
+          "type": "number }[]"
+        },
+        {
+          "name": "suggestions",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "onChange",
+          "type": "(patch: Record<string, string>) => void"
+        },
+        {
+          "name": "onSend",
+          "type": "() => void"
+        },
+        {
+          "name": "onLater",
+          "type": "() => void"
+        },
+        {
+          "name": "onDiscard",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "FileChip",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "number"
+        },
+        {
+          "name": "onRemove",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Invite",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "answer",
+          "values": [
+            "yes",
+            "maybe",
+            "no"
+          ]
+        },
+        {
+          "name": "when",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "where",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "who",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "cancelled",
+          "type": "boolean"
+        },
+        {
+          "name": "onAnswer",
+          "type": "(a: 'yes' | 'maybe' | 'no') => void"
+        }
+      ]
+    },
+    {
+      "name": "Suggestions",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "people",
+          "type": "{ name?: string"
+        },
+        {
+          "name": "address",
+          "type": "string }[]"
+        },
+        {
+          "name": "active",
+          "type": "number"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "ContactCard",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "address",
+          "type": "string"
+        },
+        {
+          "name": "mail",
+          "type": "string[]"
+        }
+      ]
+    },
+    {
+      "name": "SearchTips",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "tips",
+          "type": "[string, string][]"
+        }
+      ]
+    },
+    {
+      "name": "RecentSearch",
+      "sourcePath": "components/mail/Mail.jsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "onClick",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "CommandPalette",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "icon",
+          "values": [
+            "cmd",
+            "check",
+            "cal",
+            "pen",
+            "clock"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "placeholder",
+          "type": "string"
+        },
+        {
+          "name": "query",
+          "type": "string"
+        },
+        {
+          "name": "items",
+          "type": "{ t: string"
+        },
+        {
+          "name": "keys",
+          "type": "string[]"
+        },
+        {
+          "name": "when",
+          "type": "string }[]"
+        },
+        {
+          "name": "active",
+          "type": "number"
+        },
+        {
+          "name": "ask",
+          "type": "boolean"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "onQuery",
+          "type": "(q: string) => void"
+        },
+        {
+          "name": "onPick",
+          "type": "(item: { t: string }, i: number) => void"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "Dialog",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "width",
+          "type": "number"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "KeysList",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "groups",
+          "type": "[string, [string, string][]][]"
+        }
+      ]
+    },
+    {
+      "name": "Toast",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "msg",
+          "type": "string | [string, string, string]"
+        }
+      ]
+    },
+    {
+      "name": "ToastStack",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "toasts",
+          "type": "(string | [string, string, string])[]"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "SideMenu",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "items",
+          "type": "{ label: string"
+        },
+        {
+          "name": "n",
+          "type": "number"
+        },
+        {
+          "name": "keys",
+          "type": "string[] }[]"
+        },
+        {
+          "name": "folders",
+          "type": "string[]"
+        },
+        {
+          "name": "active",
+          "type": "number"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "onPick",
+          "type": "(item: { label: string }, i: number) => void"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "AuthBar",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "onLogin",
+          "type": "() => void"
+        }
+      ]
+    },
+    {
+      "name": "FileViewer",
+      "sourcePath": "components/overlays/Overlays.jsx",
+      "props": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "src",
+          "type": "string"
+        },
+        {
+          "name": "pdf",
+          "type": "boolean"
+        },
+        {
+          "name": "inline",
+          "type": "boolean"
+        },
+        {
+          "name": "onSave",
+          "type": "() => void"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "AppShell",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "rail",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "pane",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "enter",
+          "values": [
+            "enter-fade",
+            "enter-in"
+          ]
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Logo",
+      "sourcePath": "components/shell/Shell.jsx"
+    },
+    {
+      "name": "Rail",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "active",
+          "values": [
+            "mail",
+            "cal"
+          ]
+        },
+        {
+          "name": "onChange",
+          "type": "(v: 'mail' | 'cal') => void"
+        }
+      ]
+    },
+    {
+      "name": "ListHeader",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "onMenu",
+          "type": "() => void"
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "ThreadView",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "onBack",
+          "type": "() => void"
+        },
+        {
+          "name": "actions",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "Pane",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "contact",
+          "type": "boolean"
+        },
+        {
+          "name": "foot",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "footAction",
+          "type": "React.ReactNode"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "SettingsSection",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "hint",
+          "type": "string"
+        },
+        {
+          "name": "children",
+          "type": "React.ReactNode"
+        }
+      ]
+    },
+    {
+      "name": "TabBar",
+      "sourcePath": "components/shell/Shell.jsx",
+      "props": [
+        {
+          "name": "items",
+          "type": "string[]"
+        },
+        {
+          "name": "onPick",
+          "type": "(item: string) => void"
+        }
+      ]
+    }
+  ],
+  "startingPoints": [
+    {
+      "name": "DayCalendar",
+      "path": "components/calendar/Calendar.jsx",
+      "previewPath": "components/calendar/calendar.card.html",
+      "kind": "component",
+      "section": "Calendar",
+      "subtitle": "Day pane, week, month, event form",
+      "viewport": "900x760"
+    },
+    {
+      "name": "Button",
+      "path": "components/controls/Controls.jsx",
+      "previewPath": "components/controls/controls.card.html",
+      "kind": "component",
+      "section": "Controls",
+      "subtitle": "Every button variant dude ships",
+      "viewport": "700x520"
+    },
+    {
+      "name": "ListRow",
+      "path": "components/mail/Mail.jsx",
+      "previewPath": "components/mail/mail.card.html",
+      "kind": "component",
+      "section": "Mail",
+      "subtitle": "List rows, messages, composer, attachments, invite",
+      "viewport": "900x900"
+    },
+    {
+      "name": "CommandPalette",
+      "path": "components/overlays/Overlays.jsx",
+      "previewPath": "components/overlays/overlays.card.html",
+      "kind": "component",
+      "section": "Overlays",
+      "subtitle": "Palette, keys dialog, toasts, side menu, alert",
+      "viewport": "900x760"
+    },
+    {
+      "name": "AppShell",
+      "path": "components/shell/Shell.jsx",
+      "previewPath": "components/shell/shell.card.html",
+      "kind": "component",
+      "section": "Shell",
+      "subtitle": "Empty dude window: rail, list header, pane",
+      "viewport": "1100x520"
+    }
+  ],
+  "cards": [
+    {
+      "path": "guidelines/brand-bar.html",
+      "group": "Brand",
+      "viewport": "700x230",
+      "subtitle": "A 3px accent edge marks whatever has focus",
+      "name": "The bar"
+    },
+    {
+      "path": "guidelines/brand-glyphs.html",
+      "group": "Brand",
+      "viewport": "700x120",
+      "subtitle": "Unicode does the rest: no icon for what a character says",
+      "name": "Glyph icons"
+    },
+    {
+      "path": "guidelines/brand-icons.html",
+      "group": "Brand",
+      "viewport": "700x200",
+      "subtitle": "19 hand-drawn strokes, 1.3–1.5px, currentColor, never scaled",
+      "name": "Icons"
+    },
+    {
+      "path": "guidelines/brand-keycaps.html",
+      "group": "Brand",
+      "viewport": "700x150",
+      "subtitle": "Shortcuts are shown everywhere a command is",
+      "name": "Keycaps"
+    },
+    {
+      "path": "guidelines/brand-logo.html",
+      "group": "Brand",
+      "viewport": "700x200",
+      "subtitle": "Mono d on the accent square; the app icon is lime on near-black",
+      "name": "Logo"
+    },
+    {
+      "path": "guidelines/brand-voice.html",
+      "group": "Brand",
+      "viewport": "700x260",
+      "subtitle": "Caveman-terse, lowercase, a full stop on everything",
+      "name": "Voice"
+    },
+    {
+      "path": "guidelines/colors-accent.html",
+      "group": "Colors",
+      "viewport": "700x170",
+      "subtitle": "One accent: olive in light, acid lime in carbon",
+      "name": "Accent"
+    },
+    {
+      "path": "guidelines/colors-calendar.html",
+      "group": "Colors",
+      "viewport": "700x170",
+      "subtitle": "Event fill, edge, text and the now-line",
+      "name": "Calendar colours"
+    },
+    {
+      "path": "guidelines/colors-filetypes.html",
+      "group": "Colors",
+      "viewport": "700x130",
+      "subtitle": "Attachment extension colours",
+      "name": "File types"
+    },
+    {
+      "path": "guidelines/colors-status.html",
+      "group": "Colors",
+      "viewport": "700x170",
+      "subtitle": "Star, draft red, the alert bar, links, code, selection",
+      "name": "Status"
+    },
+    {
+      "path": "guidelines/colors-surfaces-carbon.html",
+      "group": "Colors",
+      "viewport": "700x150",
+      "subtitle": "True black, stepped in 7–27 levels",
+      "name": "Surfaces · carbon"
+    },
+    {
+      "path": "guidelines/colors-surfaces-light.html",
+      "group": "Colors",
+      "viewport": "700x150",
+      "subtitle": "Warm off-whites, back to front",
+      "name": "Surfaces · light"
+    },
+    {
+      "path": "guidelines/colors-text.html",
+      "group": "Colors",
+      "viewport": "700x170",
+      "subtitle": "Four greys of ink; carbon uses white at 92/66/52%",
+      "name": "Text"
+    },
+    {
+      "path": "components/calendar/calendar.card.html",
+      "group": "Components",
+      "viewport": "900x760",
+      "subtitle": "",
+      "name": "Calendar"
+    },
+    {
+      "path": "components/controls/controls.card.html",
+      "group": "Components",
+      "viewport": "700x620",
+      "subtitle": "",
+      "name": "Controls"
+    },
+    {
+      "path": "components/mail/mail.card.html",
+      "group": "Components",
+      "viewport": "900x900",
+      "subtitle": "",
+      "name": "Mail"
+    },
+    {
+      "path": "components/overlays/overlays.card.html",
+      "group": "Components",
+      "viewport": "900x760",
+      "subtitle": "",
+      "name": "Overlays"
+    },
+    {
+      "path": "components/shell/shell.card.html",
+      "group": "Components",
+      "viewport": "1280x600",
+      "subtitle": "",
+      "name": "Shell"
+    },
+    {
+      "path": "ui_kits/mail/index.html",
+      "group": "dude app",
+      "viewport": "1280x760",
+      "subtitle": "Click-through: inbox, thread, reply, compose, search, settings, week, palette",
+      "name": "Mail · UI kit"
+    },
+    {
+      "path": "guidelines/spacing-depth.html",
+      "group": "Spacing",
+      "viewport": "700x190",
+      "subtitle": "Flat. Hairlines separate; shadows only where light needs lift",
+      "name": "Depth"
+    },
+    {
+      "path": "guidelines/spacing-grid.html",
+      "group": "Spacing",
+      "viewport": "700x300",
+      "subtitle": "Rail 40 · list gutter 63 · reading column 712 · pane 398",
+      "name": "Window grid"
+    },
+    {
+      "path": "guidelines/spacing-heights.html",
+      "group": "Spacing",
+      "viewport": "700x210",
+      "subtitle": "The fixed heights everything snaps to",
+      "name": "Heights"
+    },
+    {
+      "path": "guidelines/spacing-motion.html",
+      "group": "Spacing",
+      "viewport": "700x170",
+      "subtitle": "Click a tile to replay. 0.06–0.18s; none on reduced motion",
+      "name": "Motion"
+    },
+    {
+      "path": "guidelines/spacing-radii.html",
+      "group": "Spacing",
+      "viewport": "700x150",
+      "subtitle": "Nearly square. 2, 3, 4px; 6px only for the alert",
+      "name": "Radii"
+    },
+    {
+      "path": "guidelines/type-case.html",
+      "group": "Type",
+      "viewport": "700x170",
+      "subtitle": "Where case changes, and why",
+      "name": "Caps and lowercase"
+    },
+    {
+      "path": "guidelines/type-mono.html",
+      "group": "Type",
+      "viewport": "700x330",
+      "subtitle": "dude's own voice: brand, dates, keys, palette, empty states",
+      "name": "Mono scale"
+    },
+    {
+      "path": "guidelines/type-sans.html",
+      "group": "Type",
+      "viewport": "700x330",
+      "subtitle": "Reading and UI. System sans, 13/20 base",
+      "name": "Sans scale"
+    }
+  ],
+  "globalCssPaths": [
+    "tokens/colors.css",
+    "tokens/type.css",
+    "tokens/layout.css",
+    "tokens/base.css",
+    "components/controls/controls.css",
+    "components/shell/shell.css",
+    "components/mail/mail.css",
+    "components/overlays/overlays.css",
+    "components/calendar/calendar.css",
+    "styles.css"
+  ],
+  "tokens": [
+    {
+      "name": "--page",
+      "value": "#ffffff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--list",
+      "value": "#ffffff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pane",
+      "value": "#fcfaf7",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--card",
+      "value": "#f7f6f2",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--hi",
+      "value": "#f2f0eb",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--hover",
+      "value": "#f7f6f2",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pal",
+      "value": "#ffffff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pal-on",
+      "value": "#f2f0eb",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--key",
+      "value": "#f2f0eb",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--line",
+      "value": "#edebe5",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--line-2",
+      "value": "#dedbd5",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text",
+      "value": "#141413",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-2",
+      "value": "#57554f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-3",
+      "value": "#6b6863",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-m",
+      "value": "#57554f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-h",
+      "value": "#141413",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--brand",
+      "value": "#4d7c0f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--bar",
+      "value": "#4d7c0f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--dot",
+      "value": "#4d7c0f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--on-brand",
+      "value": "#ffffff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev",
+      "value": "#dbe8f8",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev-bar",
+      "value": "#3b7ddd",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev-text",
+      "value": "#143a6b",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--now",
+      "value": "#e5534b",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--star",
+      "value": "#9a6c00",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--danger",
+      "value": "#b3261e",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--alert",
+      "value": "#b3261e",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--link",
+      "value": "#1a5fa8",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--code",
+      "value": "#98c379",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--selection",
+      "value": "rgba(110, 160, 230, 0.35)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-pdf",
+      "value": "#b42318",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-doc",
+      "value": "#1f5fae",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-sheet",
+      "value": "#1a7f37",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-slide",
+      "value": "#a14e00",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-img",
+      "value": "#7a3fbf",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--scrim",
+      "value": "rgba(0, 0, 0, 0.25)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--viewer",
+      "value": "rgba(0, 0, 0, 0.92)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--scroll-thumb",
+      "value": "rgba(127, 127, 127, 0.35)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--paper",
+      "value": "#ffffff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--surface-page",
+      "value": "var(--page)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--surface-pane",
+      "value": "var(--pane)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--surface-card",
+      "value": "var(--card)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--surface-selected",
+      "value": "var(--hi)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--surface-overlay",
+      "value": "var(--pal)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--border-subtle",
+      "value": "var(--line)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--border",
+      "value": "var(--line-2)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-body",
+      "value": "var(--text)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-muted",
+      "value": "var(--text-2)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-faint",
+      "value": "var(--text-3)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-strong",
+      "value": "var(--text-h)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--accent",
+      "value": "var(--brand)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--page",
+      "value": "#000",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--list",
+      "value": "#000",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pane",
+      "value": "#070707",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--card",
+      "value": "#0e0e0e",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--hi",
+      "value": "#171717",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--hover",
+      "value": "#0b0b0b",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pal",
+      "value": "#0c0c0c",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--pal-on",
+      "value": "#1b1b1b",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--key",
+      "value": "#1f1f1f",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--line",
+      "value": "rgba(255, 255, 255, 0.07)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--line-2",
+      "value": "rgba(255, 255, 255, 0.16)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text",
+      "value": "rgba(255, 255, 255, 0.92)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-2",
+      "value": "rgba(255, 255, 255, 0.66)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-3",
+      "value": "rgba(255, 255, 255, 0.52)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-m",
+      "value": "rgba(255, 255, 255, 0.7)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--text-h",
+      "value": "rgba(255, 255, 255, 0.96)",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--brand",
+      "value": "#c8f135",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--bar",
+      "value": "#c8f135",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--dot",
+      "value": "#c8f135",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--on-brand",
+      "value": "#000000",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev",
+      "value": "#1d2a0b",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev-bar",
+      "value": "#c8f135",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ev-text",
+      "value": "#e6ffa8",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--star",
+      "value": "#f2b600",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--danger",
+      "value": "#ff6b61",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--link",
+      "value": "#7cc0ff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-pdf",
+      "value": "#ff7b72",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-doc",
+      "value": "#79b8ff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-sheet",
+      "value": "#56d364",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-slide",
+      "value": "#ffa657",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--ft-img",
+      "value": "#d2a8ff",
+      "kind": "color",
+      "definedIn": "tokens/colors.css"
+    },
+    {
+      "name": "--sans",
+      "value": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, Roboto, \"Helvetica Neue\", sans-serif, \"Apple Color Emoji\",\n    \"Segoe UI Emoji\", \"Noto Color Emoji\"",
+      "kind": "font",
+      "definedIn": "tokens/type.css",
+      "annotation": "font"
+    },
+    {
+      "name": "--serif",
+      "value": "Georgia, serif",
+      "kind": "font",
+      "definedIn": "tokens/type.css",
+      "annotation": "font"
+    },
+    {
+      "name": "--sans-mail",
+      "value": "-apple-system, \"Segoe UI\", sans-serif",
+      "kind": "font",
+      "definedIn": "tokens/type.css",
+      "annotation": "font"
+    },
+    {
+      "name": "--mono",
+      "value": "\"JetBrains Mono\", \"DejaVu Sans Mono\", ui-monospace, Menlo, Consolas, monospace",
+      "kind": "font",
+      "definedIn": "tokens/type.css",
+      "annotation": "font"
+    },
+    {
+      "name": "--type-base",
+      "value": "400 13px / 20px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--tracking-base",
+      "value": "0.005em",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-label",
+      "value": "700 13px / 16px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-day",
+      "value": "500 14px / 22px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-name",
+      "value": "700 15px / 20px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-field",
+      "value": "400 15px / 24px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-read",
+      "value": "400 16px / 24px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-title-s",
+      "value": "400 17px / 24px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-event",
+      "value": "600 18px / 24px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-title",
+      "value": "400 22px / 32px var(--sans)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-micro",
+      "value": "700 11px / 14px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-meta",
+      "value": "400 12px / 16px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-cmd-item",
+      "value": "400 16px / 20px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-prompt",
+      "value": "400 18px / 26px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-cmd-input",
+      "value": "400 21px / 28px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-zero",
+      "value": "800 28px / 36px var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--type-wordmark",
+      "value": "800 30px / 1 var(--mono)",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--tracking-caps",
+      "value": "0.06em",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--tracking-caps-wide",
+      "value": "0.08em",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--tracking-wordmark",
+      "value": "-0.02em",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--tracking-meta",
+      "value": "0.017em",
+      "kind": "spacing",
+      "definedIn": "tokens/type.css"
+    },
+    {
+      "name": "--r-s",
+      "value": "2px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--r-m",
+      "value": "3px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--r-l",
+      "value": "4px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--r-xl",
+      "value": "6px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--rail-w",
+      "value": "40px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--head-h",
+      "value": "76px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--gutter-list",
+      "value": "63px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--gutter-right",
+      "value": "30px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--inset",
+      "value": "36px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--inset-narrow",
+      "value": "16px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--pane-w",
+      "value": "398px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--read-w",
+      "value": "712px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--menu-w",
+      "value": "300px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--palette-w",
+      "value": "680px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--dialog-w",
+      "value": "560px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--hour",
+      "value": "44px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--tabbar-h",
+      "value": "56px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--row-h",
+      "value": "36px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--sep-h",
+      "value": "48px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--mrow-h",
+      "value": "40px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--cmd-row-h",
+      "value": "60px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--field-row-h",
+      "value": "38px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--ibtn",
+      "value": "26px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--bar-w",
+      "value": "3px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-1",
+      "value": "2px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-2",
+      "value": "4px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-3",
+      "value": "6px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-4",
+      "value": "8px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-5",
+      "value": "10px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-6",
+      "value": "12px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-7",
+      "value": "14px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-8",
+      "value": "16px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-9",
+      "value": "18px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-10",
+      "value": "24px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--s-11",
+      "value": "28px",
+      "kind": "spacing",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--shadow-menu",
+      "value": "0 0 30px rgba(0, 0, 0, 0.18)",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css",
+      "annotation": "shadow"
+    },
+    {
+      "name": "--shadow-pop",
+      "value": "0 10px 30px rgba(0, 0, 0, 0.25)",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--shadow-alert",
+      "value": "0 8px 30px rgba(0, 0, 0, 0.35)",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css"
+    },
+    {
+      "name": "--ev-edge",
+      "value": "inset 3px 0 0 var(--ev-bar)",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css",
+      "annotation": "shadow"
+    },
+    {
+      "name": "--ease-out",
+      "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--ease-pop",
+      "value": "cubic-bezier(0.2, 0.9, 0.3, 1.1)",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--t-hover",
+      "value": "0.06s",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--t-row",
+      "value": "0.08s",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--t-fade",
+      "value": "0.14s",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--t-leave",
+      "value": "0.16s",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--t-in",
+      "value": "0.18s",
+      "kind": "other",
+      "definedIn": "tokens/layout.css",
+      "annotation": "other"
+    },
+    {
+      "name": "--shadow-menu",
+      "value": "none",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css",
+      "annotation": "shadow"
+    },
+    {
+      "name": "--ev-edge",
+      "value": "none",
+      "kind": "shadow",
+      "definedIn": "tokens/layout.css",
+      "annotation": "shadow"
+    }
+  ],
+  "themes": [],
+  "fonts": [],
+  "brandFonts": [],
+  "source": "spa"
+}

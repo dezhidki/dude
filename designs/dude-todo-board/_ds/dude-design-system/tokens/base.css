@@ -1,0 +1,109 @@
+/* Base: what every dude surface inherits. Element resets, keycaps, focus, scrollbars, keyframes. */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font: var(--type-base);
+  letter-spacing: var(--tracking-base);
+  color: var(--text);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+}
+/* a carbon island inside a light page (cards, side-by-sides) */
+.carbon:not(:root) {
+  background: var(--page);
+  color: var(--text);
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+::selection {
+  background: var(--selection);
+}
+
+/* keyboard focus is always visible: 2px brand outline, 2px off. Text inputs use the 3px bar instead. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* the app's own icons, at their drawn size */
+.d-icon {
+  display: contents;
+}
+
+/* keycap: the most repeated object in dude */
+.d-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--key);
+  border-radius: var(--r-s);
+  font: 700 11px / 16px var(--mono);
+  color: var(--text);
+}
+
+/* scrollbars: invisible until you hover a scrolling area, and thin */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+@keyframes d-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes d-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes d-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+@keyframes d-toast {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes d-slide {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

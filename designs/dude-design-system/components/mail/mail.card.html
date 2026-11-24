@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" viewport="900x900" name="Mail" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Mail</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0}.mc{display:grid;grid-template-columns:1fr;gap:4px;padding:8px 0 24px}.mc .d-tcol{max-width:712px;margin:0 auto;width:100%}.lb{font:600 10px var(--mono);color:var(--text-3);padding:10px 24px 2px}</style>
+</head><body><div id="r"></div>
+<script type="text/babel">
+const { SplitTabs, ListSeparator, ListRow, MessageRow, Message, Invite, ReplyBar, NewMail, Composer, Suggestions, ZeroState } = window.DudeDesignSystem_3fa3b0;
+function MailSpecimen() {
+  const [sel, setSel] = React.useState(0);
+  const [ans, setAns] = React.useState();
+  const [draft, setDraft] = React.useState({ to: 'maya', subject: 'Re: Draft of the thesis chapter 3', text: 'Thursday works. I **added** the baseline, see *section 4.2* and `eval.py`.' });
+  const rows = [
+    { unread: true, from: 'Maya Lindqvist', subject: 'Draft of the thesis chapter 3', snippet: 'Hi! I went through chapter 3 and left comments in the margins.', date: '14:22' },
+    { unread: true, from: 'Omar Haddad', count: 3, subject: 'Re: Poster layout', snippet: 'Looks great. Final PDF attached.', date: '12:08', files: ['poster-final.pdf'] },
+    { draft: true, starred: true, from: 'Jun', subject: 'Lunch on Friday?', snippet: 'There is a new noodle place next to the library. 12:15?', date: '22 nov' },
+  ];
+  return (
+    <div className="mc">
+      <div className="lb">split tabs · separator · rows (click to select)</div>
+      <div style={{ display: 'flex', padding: '0 0 6px 63px' }}><SplitTabs active="important" splits={[{ id: 'important', name: 'Important', n: 4 }, { id: 'other', name: 'Other', n: 12 }, { id: 'gh', name: 'Github' }]} /></div>
+      <div>{rows.map((r, i) => <ListRow key={i} {...r} selected={sel === i} onClick={() => setSel(i)} />)}</div>
+      <ListSeparator>Last 7 days</ListSeparator>
+      <div className="d-tcol">
+        <div className="lb">collapsed · open with invite + files · reply bar</div>
+        <MessageRow name="Me" snippet="Here is the first poster draft. Does the layout work for you?" date="24 nov" />
+        <Message focus from="Department Calendar" to="you" date="09:40" invite={<Invite answer={ans} onAnswer={setAns} when="Thursday, November 26, 2:00 PM – 3:30 PM" where="Lecture hall T2" who="Department Calendar, Maya Lindqvist, Lena Virtanen" />} attachments={[{ name: 'seminar-programme.pdf', size: 248000 }, { name: 'invite.ics', size: 2100 }]} quoted={'On Mon, Omar Haddad wrote:\n> Mostly! Could the title be larger?'}>
+          You have been invited to Research seminar.
+        </Message>
+        <ReplyBar />
+        <NewMail count={2} />
+        <div className="lb">composer, inline under a thread, with suggestions</div>
+        <Composer inline mode="reply" {...draft} onChange={(p) => setDraft({ ...draft, ...p })} files={[{ name: 'eval.py', size: 4200 }]} />
+        <div style={{ padding: '6px 36px' }}><Suggestions inline active={0} people={[{ name: 'Maya Lindqvist', address: 'maya.lindqvist@example.edu' }, { name: 'Omar Haddad', address: 'omar@studio-north.example' }]} /></div>
+      </div>
+      <div className="carbon" style={{ marginTop: 12 }}><ZeroState /></div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('r')).render(<MailSpecimen />);
+</script></body></html>

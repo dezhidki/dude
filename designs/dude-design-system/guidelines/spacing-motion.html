@@ -1,0 +1,11 @@
+<!-- @dsCard group="Spacing" viewport="700x170" subtitle="Click a tile to replay. 0.06–0.18s; none on reduced motion" name="Motion" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Motion</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="card.css">
+<style>.mo{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.mo button{display:grid;gap:8px;justify-items:start;text-align:left;font:11px/14px var(--mono);color:var(--text-3)}.mo i{display:block;width:100%;height:56px;background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-m)}</style></head><body><div class="mo">
+<button data-a="d-fade .14s ease-out"><i></i>fade 0.14s<br>list change</button>
+<button data-a="d-in .18s cubic-bezier(.2,.8,.2,1)"><i></i>in 0.18s · up 8px<br>thread opens</button>
+<button data-a="d-pop .14s cubic-bezier(.2,.9,.3,1.1)"><i></i>pop 0.14s · overshoot<br>palette, dialog</button>
+<button data-a="d-toast .18s cubic-bezier(.2,.8,.2,1)"><i></i>toast 0.18s · up 10px<br>toasts</button>
+<button data-a="d-slide .16s cubic-bezier(.2,.8,.2,1)"><i></i>slide 0.16s · 24px<br>side menu</button>
+</div><script>for(const b of document.querySelectorAll('[data-a]'))b.onclick=()=>{const i=b.querySelector('i');i.style.animation='none';i.offsetWidth;i.style.animation=b.dataset.a};</script></body></html>

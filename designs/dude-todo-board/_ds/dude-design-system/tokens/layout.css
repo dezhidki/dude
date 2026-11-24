@@ -1,0 +1,64 @@
+/* dude layout, radii, depth and motion. Exact values from app/web/style.css: odd numbers are on purpose. */
+:root {
+  /* radii: almost square */
+  --r-s: 2px; /* rows, keycaps, main button, chips, cal buttons */
+  --r-m: 3px; /* icon buttons, overlays (palette, dialog, toast), suggestion list */
+  --r-l: 4px; /* message cards, composer, attachment tiles, fields, segmented */
+  --r-xl: 6px; /* the sign-in-again alert only */
+
+  /* the grid of the window */
+  --rail-w: 40px; /* mail / calendar switch */
+  --head-h: 76px; /* list header (60px under 768px) */
+  --gutter-list: 63px; /* left edge of list text: room for the unread dot at 43px */
+  --gutter-right: 30px;
+  --inset: 36px; /* content inset in threads, panes, palette, dialogs */
+  --inset-narrow: 16px; /* the same under 768px */
+  --pane-w: 398px; /* right pane (hidden under 1200px) */
+  --read-w: 712px; /* reading column */
+  --menu-w: 300px; /* folder side menu */
+  --palette-w: 680px;
+  --dialog-w: 560px;
+  --hour: 44px; /* one hour in any calendar */
+  --tabbar-h: 56px; /* mobile only */
+
+  /* rows */
+  --row-h: 36px; /* a conversation (68px with attachment chips) */
+  --sep-h: 48px; /* "Yesterday", "Last 7 days" */
+  --mrow-h: 40px; /* a collapsed message */
+  --cmd-row-h: 60px; /* a palette line */
+  --field-row-h: 38px; /* To / Cc / subject */
+  --ibtn: 26px;
+  --bar-w: 3px; /* the accent edge on whatever has focus */
+
+  /* spacing: the steps the app actually uses */
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 10px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 16px;
+  --s-9: 18px;
+  --s-10: 24px;
+  --s-11: 28px;
+
+  /* depth: flat. Borders do the work; shadows only where something floats over content in light. */
+  --shadow-menu: 0 0 30px rgba(0, 0, 0, 0.18); /* @kind shadow */ /* side menu, light only */
+  --shadow-pop: 0 10px 30px rgba(0, 0, 0, 0.25); /* To/Cc suggestions */
+  --shadow-alert: 0 8px 30px rgba(0, 0, 0, 0.35); /* sign-in-again bar */
+  --ev-edge: inset 3px 0 0 var(--ev-bar); /* @kind shadow */ /* calendar events, light only */
+
+  /* motion: quick and light; none when the system asks for less */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); /* @kind other */
+  --ease-pop: cubic-bezier(0.2, 0.9, 0.3, 1.1); /* @kind other */ /* a 10% overshoot */
+  --t-hover: 0.06s; /* @kind other */ /* palette line */
+  --t-row: 0.08s; /* @kind other */ /* list row background */
+  --t-fade: 0.14s; /* @kind other */ /* screen change, palette / dialog pop */
+  --t-leave: 0.16s; /* @kind other */ /* a row leaving after Done */
+  --t-in: 0.18s; /* @kind other */ /* thread opens, toast, form slides in */
+}
+.carbon {
+  --shadow-menu: none; /* @kind shadow */
+  --ev-edge: none; /* @kind shadow */
+}

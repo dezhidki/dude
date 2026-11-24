@@ -1,0 +1,260 @@
+/* Controls: icon buttons, the button family, choices, fields. Source classes in brackets. */
+
+/* [.ibtn] square icon button; quiet until hovered */
+.d-ibtn {
+  width: var(--ibtn);
+  height: var(--ibtn);
+  border-radius: var(--r-m);
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+.d-ibtn:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.d-ibtn.on {
+  color: var(--brand);
+}
+.d-ibtn.sm {
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+}
+.d-ibtn.xs {
+  width: 20px;
+  height: 20px;
+}
+
+/* [.btn-main] the one loud button: sign-in "go" */
+.d-btn-main {
+  padding: 8px 24px;
+  width: 360px;
+  max-width: 100%;
+  height: 42px;
+  border-radius: var(--r-s);
+  background: var(--brand);
+  color: var(--on-brand);
+  font: 700 15px / 1 var(--mono);
+  text-transform: lowercase;
+}
+.d-btn-main:hover {
+  filter: brightness(1.08);
+}
+
+/* [.signin-more button] full-width outline under the main button */
+.d-btn-secondary {
+  width: 100%;
+  height: 42px;
+  background: transparent;
+  color: var(--text);
+  font: 600 14px / 1 var(--mono);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+}
+.d-btn-secondary:hover {
+  background: var(--hi);
+}
+
+/* [.replybar button] soft fill, lowercase word + keycap */
+.d-btn-soft {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-l);
+  background: var(--hover);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.d-btn-soft:hover {
+  color: var(--text);
+  background: var(--hi);
+}
+
+/* [.cal-btn] tiny outline, mono lowercase: "today", "week" */
+.d-btn-outline {
+  padding: 3px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  color: var(--text-2);
+  font: 700 11px / 16px var(--mono);
+  text-transform: lowercase;
+}
+.d-btn-outline:hover {
+  color: var(--text);
+  border-color: var(--text-3);
+}
+
+/* [.vbar button] toolbar outline over dark surfaces: "save", "✕" */
+.d-btn-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-s);
+  color: var(--text);
+  border: 1px solid var(--line-2);
+  font: 12px var(--mono);
+}
+.d-btn-toolbar:hover {
+  border-color: var(--brand);
+}
+
+/* [.cfoot > button] bold word, no box: "send", "later", "Cc" */
+.d-btn-quiet {
+  font: var(--type-label);
+  color: var(--text-3);
+}
+.d-btn-quiet.primary {
+  color: var(--text-h);
+}
+.d-btn-quiet:hover {
+  color: var(--text);
+}
+
+/* [.evbtns button] caps word: "nope", "close", "delete" */
+.d-btn-caps {
+  font: var(--type-label);
+  text-transform: uppercase;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+.d-btn-caps.danger {
+  color: var(--now);
+}
+/* [.evbtns .save] the filled caps button */
+.d-btn-save {
+  font: var(--type-label);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--bar);
+  color: #141413;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+}
+
+/* [.settings .link, .setrow button] brand-coloured word */
+.d-btn-link {
+  font: var(--type-label);
+  color: var(--brand);
+}
+
+/* [.newmsgs button] caps banner in brand on a soft fill: "2 new mail. show" */
+.d-btn-banner {
+  background: var(--hi);
+  padding: 8px 12px 4px;
+  border-radius: var(--r-s);
+  font: 700 15px / 20px var(--sans);
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.d-btn-banner:hover {
+  filter: brightness(1.1);
+}
+
+/* [.authbar button] white on the alert bar */
+.d-btn-alert {
+  flex-shrink: 0;
+  background: #fff;
+  color: #141413;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--r-l);
+}
+
+/* [.inv-b] a choice of a few, in a row: rsvp yes / maybe / no */
+.d-choice {
+  margin-right: 4px;
+  padding: 2px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-s);
+  color: var(--text-2);
+  font-weight: 700;
+}
+.d-choice:hover {
+  color: var(--text);
+  border-color: var(--text-3);
+}
+.d-choice.on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--page);
+}
+
+/* [.seg] segmented control in settings */
+.d-seg {
+  display: inline-flex;
+  border-radius: var(--r-l);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+}
+.d-seg button {
+  padding: 6px 14px;
+  font: var(--type-label);
+  color: var(--text-2);
+}
+.d-seg button + button {
+  border-left: 1px solid var(--line-2);
+}
+.d-seg button.on {
+  background: var(--hi);
+  color: var(--text);
+}
+
+/* [.settings .field] the only boxed text input */
+.d-field {
+  width: 100%;
+  max-width: 360px;
+  height: 34px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-l);
+  background: var(--card);
+  color: var(--text);
+  padding: 0 10px;
+  font: 15px var(--sans);
+  outline: none;
+}
+.d-field:focus {
+  border-color: var(--bar);
+}
+/* [.signin-more input] the tall mono field on sign-in */
+.d-field.tall {
+  max-width: none;
+  height: 42px;
+  border-radius: var(--r-s);
+  font: 15px var(--mono);
+}
+
+/* [.cal-opt] native checkbox in the brand colour */
+.d-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 13px var(--sans);
+  color: var(--text);
+  cursor: pointer;
+}
+.d-check input {
+  accent-color: var(--brand);
+  margin: 0;
+}
+
+/* [.sq, .cmd-in] boxless input marked by the 3px bar on its left */
+.d-barinput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: var(--type-title-s);
+  color: var(--text);
+  box-shadow: inset var(--bar-w) 0 0 var(--bar);
+  padding-left: 16px;
+  height: 32px;
+}
+.d-barinput:focus-visible {
+  outline: none;
+}

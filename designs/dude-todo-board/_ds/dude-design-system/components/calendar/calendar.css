@@ -1,0 +1,438 @@
+/* Calendar: 44px hours, hairline grid, flat event blocks with a 3px edge (light), a red now-line. */
+
+/* [.cal-h] the day pane's head: "Tue, Nov 25", ‹ ›, today, week */
+.d-cal-h {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--inset);
+  flex-shrink: 0;
+}
+.d-cal-h .d {
+  font: var(--type-title-s);
+  color: var(--text);
+}
+.d-cal-h .grow,
+.d-wk-h .grow,
+.d-mm-h .grow {
+  flex: 1;
+}
+/* [.cal-b] the scrolling hours */
+.d-cal-b {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  margin: 0 var(--inset) 0 30px;
+  position: relative;
+}
+.d-cal-g {
+  position: relative;
+  margin: 10px 0 10px 46px;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  cursor: cell;
+}
+.d-cal-tz {
+  position: absolute;
+  left: -46px;
+  top: -6px;
+  white-space: nowrap;
+  width: 36px;
+  text-align: right;
+  color: var(--text-2);
+  font: 13px var(--mono);
+}
+.d-cal-hr {
+  height: var(--hour);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+.d-cal-hr span {
+  position: absolute;
+  left: -46px;
+  top: -10px;
+  width: 40px;
+  text-align: right;
+  color: var(--text-2);
+  white-space: nowrap;
+  font-family: var(--mono);
+}
+
+/* [.cal-ev] an event block */
+.d-cal-ev {
+  position: absolute;
+  left: 3px;
+  right: 6px;
+  border-radius: var(--r-s);
+  background: var(--ev);
+  color: var(--ev-text);
+  box-shadow: var(--ev-edge);
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.d-cal-ev b {
+  font-weight: 600;
+  margin-right: 6px;
+}
+.d-cal-ev.short {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* kept here, not on the server: outlined */
+.d-cal-ev.local,
+.d-cal-ev.pending {
+  background: transparent;
+  border: 1px solid var(--ev-bar);
+  color: var(--text);
+  box-shadow: none;
+}
+/* an invitation you're reading: dashed */
+.d-cal-ev.inv {
+  background: transparent;
+  border: 1px dashed var(--ev-bar);
+  color: var(--text);
+  box-shadow: none;
+}
+/* the event being written */
+.d-cal-ev.draft {
+  background: transparent;
+  border: 1px dashed var(--ev);
+  color: var(--text);
+  box-shadow: none;
+  z-index: 2;
+  pointer-events: none;
+}
+.d-cal-ev.declined {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+/* [.cal-now] */
+.d-cal-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--now);
+  z-index: 1;
+}
+.d-cal-now::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--now);
+}
+/* [.cal-chip] all-day */
+.d-cal-allday {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 var(--inset) 8px 76px;
+}
+.d-cal-chip {
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: var(--r-s);
+  background: var(--ev);
+  color: var(--text);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* [.cal-note] "calendar not linked. connect" */
+.d-cal-note {
+  margin: 0 var(--inset) 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-m);
+  color: var(--text-2);
+  font: 12px / 18px var(--mono);
+}
+.d-cal-note button {
+  color: var(--brand);
+  font: 700 12px var(--mono);
+  margin-left: 6px;
+}
+
+/* [.wk] the week */
+.d-wk {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.d-wk-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 28px 12px 24px;
+  flex-shrink: 0;
+}
+.d-wk-h h1 {
+  margin: 0 0 0 8px;
+  font: 400 22px / 28px var(--sans);
+  color: var(--text);
+}
+.d-wk-days,
+.d-wk-all,
+.d-wk-g {
+  display: grid;
+  grid-template-columns: 56px repeat(var(--n), minmax(0, 1fr));
+}
+.d-wk-days,
+.d-wk-all {
+  padding-right: 14px;
+}
+.d-wk-days {
+  flex-shrink: 0;
+  align-items: end;
+  padding-bottom: 6px;
+}
+.d-wk-tz {
+  font: 11px var(--mono);
+  color: var(--text-2);
+  text-align: right;
+  padding-right: 8px;
+}
+.d-wk-dh {
+  text-align: center;
+  color: var(--text-2);
+  font: var(--type-day);
+}
+.d-wk-dh span {
+  padding: 1px 6px;
+  border-radius: var(--r-m);
+}
+.d-wk-dh.today span {
+  color: var(--page);
+  background: var(--brand);
+  font-weight: 700;
+}
+.d-wk-all {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.d-wk-all > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 2px;
+  min-width: 0;
+}
+.d-wk-b {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  scrollbar-gutter: stable;
+}
+.d-wk-g {
+  position: relative;
+  height: calc(24 * var(--hour));
+}
+.d-wk-hrs {
+  position: relative;
+}
+.d-wk-hrs span {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font: 11px var(--mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.d-wk-col {
+  position: relative;
+  border-left: 1px solid var(--line);
+  background: repeating-linear-gradient(to bottom, transparent 0 43px, var(--line) 43px 44px);
+  cursor: cell;
+}
+.d-wk-col.today {
+  background-color: color-mix(in srgb, var(--brand) 4%, transparent);
+}
+
+/* [.mm] the month beside the week */
+.d-mm {
+  padding: 26px 24px 8px;
+}
+.d-mm-h {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.d-mm-h b {
+  font: var(--type-title-s);
+  color: var(--text);
+}
+.d-mm-g {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px 0;
+  text-align: center;
+}
+.d-mm-g > span {
+  font: 700 11px / 22px var(--mono);
+  color: var(--text-2);
+}
+.d-mm-d {
+  height: 26px;
+  border-radius: 13px;
+  color: var(--text);
+  font: 12px var(--mono);
+}
+.d-mm-d.o {
+  color: var(--text-3);
+}
+.d-mm-d.inwk {
+  background: var(--hi);
+  border-radius: 0;
+}
+.d-mm-d span {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+}
+.d-mm-d.today span {
+  color: var(--page);
+  background: var(--brand);
+  font-weight: 700;
+}
+.d-mm-d:hover span {
+  outline: 1px solid var(--line-2);
+}
+/* [.cal-sec] calendar account + options */
+.d-cal-sec {
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+.d-cal-sec-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 13px var(--sans);
+  color: var(--text);
+}
+.d-cal-acct {
+  font: 600 12px / 18px var(--mono);
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.d-cal-acct span {
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+/* [.evform] writing an event: an underlined title, then icon rows of bare inputs */
+.d-evform {
+  padding: 24px 24px 8px var(--inset);
+  flex-shrink: 0;
+}
+.d-evform.fresh {
+  animation: d-in var(--t-in) var(--ease-out);
+}
+.d-etitle {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid var(--bar);
+  outline: none;
+  background: none;
+  font: var(--type-title-s);
+  color: var(--text);
+  padding: 6px 0;
+  margin-bottom: 10px;
+}
+.d-evrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  color: var(--text-3);
+}
+.d-evrow > span {
+  width: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.d-evrow input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: 13px / 20px var(--sans);
+  color: var(--text);
+}
+.d-etitle:focus-visible,
+.d-evrow input:focus-visible {
+  outline: none;
+}
+.d-evparsed {
+  margin: -4px 0 4px 28px;
+  font: 12px var(--mono);
+  color: var(--text-2);
+}
+.d-evbtns {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px var(--inset) 18px;
+}
+.d-evbtns > span {
+  color: var(--text-3);
+  font-size: 12px;
+}
+/* [.evview] someone else's event */
+.d-evview {
+  display: grid;
+  gap: 8px;
+}
+.d-etitle-ro {
+  font: var(--type-event);
+  color: var(--text);
+}
+.d-evline {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+.d-evline > .d-icon > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-2);
+}
+.d-evline.rsvp {
+  align-items: center;
+}
+.d-evnotes {
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-2);
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}

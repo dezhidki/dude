@@ -1,0 +1,322 @@
+/* Overlays: flat, 1px --line-2 border, 3px radius, no shadow in either theme. They pop (0.14s, 10% overshoot). */
+
+/* [.scrim] the palette has no dimming: it floats at 34vh over the live app */
+.d-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 34vh;
+  animation: d-fade 0.1s ease-out;
+}
+.d-scrim.dim {
+  background: var(--scrim);
+  padding-top: 20vh;
+}
+
+/* [.cmd] command palette */
+.d-cmd {
+  width: var(--palette-w);
+  max-width: calc(100vw - 24px);
+  background: var(--pal);
+  color: var(--text);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-m);
+  animation: d-pop var(--t-fade) var(--ease-pop);
+}
+.d-cmd-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  margin: 16px var(--inset) 0;
+  box-shadow: inset 0 -1px 0 var(--line-2);
+  font: 15px var(--mono);
+}
+.d-cmd-in {
+  display: flex;
+  height: 32px;
+  margin: 24px 0;
+  box-shadow: inset var(--bar-w) 0 0 var(--bar);
+  padding: 0 var(--inset);
+}
+.d-cmd-in input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: none;
+  font: var(--type-cmd-input);
+  color: var(--text);
+}
+.d-cmd ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.d-cmd li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--cmd-row-h);
+  padding: 0 var(--inset);
+  cursor: pointer;
+  color: var(--text-2);
+  font: var(--type-cmd-item);
+  transition: background-color var(--t-hover) linear;
+}
+.d-cmd li.on {
+  background: var(--pal-on);
+  color: var(--text);
+}
+.d-cmd li .t {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.d-cmd li .ks {
+  display: flex;
+  gap: 4px;
+}
+/* the empty ring before every command */
+.d-cmd li .ic {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+/* typed time on the right: "TOMORROW 8:00" */
+.d-cmd li .when {
+  font: 13px / 16px var(--mono);
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* [.dlg] */
+.d-dlg {
+  width: var(--dialog-w);
+  max-width: calc(100vw - 24px);
+  background: var(--pal);
+  padding: 24px var(--inset) 28px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-m);
+  animation: d-pop var(--t-fade) var(--ease-pop);
+}
+.d-dlg h2 {
+  margin: 0 0 16px;
+  font: var(--type-title-s);
+}
+/* [.keys] the shortcut sheet */
+.d-keys {
+  columns: 2;
+  column-gap: 32px;
+  max-height: 62vh;
+  overflow-y: auto;
+}
+.d-keys section {
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+.d-keys h5 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps-wide);
+  color: var(--text-3);
+}
+.d-keys div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-2);
+  line-height: 26px;
+}
+.d-keys div > span:last-child {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* [#toast] bottom-left, stacked, terse */
+.d-toasts {
+  position: fixed;
+  left: 56px;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-toasts.inline {
+  position: static;
+}
+.d-toast {
+  background: var(--pal);
+  color: var(--text);
+  padding: 10px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-m);
+  animation: d-toast var(--t-in) var(--ease-out);
+  width: max-content;
+}
+.d-toast .d-key {
+  margin: 0 3px 0 6px;
+}
+
+/* [.sidemenu] folders, slides in beside the rail */
+.d-sidemenu-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+}
+.d-sidemenu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: var(--rail-w);
+  width: var(--menu-w);
+  z-index: 45;
+  background: var(--pane);
+  padding: 20px 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--line-2);
+  box-shadow: var(--shadow-menu);
+  animation: d-slide var(--t-leave) var(--ease-out);
+}
+.d-sidemenu.inline {
+  position: relative;
+  left: 0;
+  height: 100%;
+}
+.d-sm-head {
+  font: 700 13px / 16px var(--mono);
+  color: var(--text-h);
+  padding: 4px 24px 18px 35px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.d-sm-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 24px 0 35px;
+  font: var(--type-label);
+  color: var(--text-h);
+  text-align: left;
+}
+.d-sm-item .n {
+  color: var(--text-3);
+  margin-left: 6px;
+}
+.d-sm-item.on,
+.d-sm-item:hover {
+  background: var(--hover);
+}
+.d-sm-keys {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+.d-sm-keys small {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+.d-sm-sep {
+  padding: 22px 35px 6px;
+  font: 600 12px / 16px var(--sans);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-3);
+}
+.d-sm-gap {
+  height: 18px;
+}
+
+/* [.authbar] the one red thing: login expired */
+.d-authbar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px 10px 16px;
+  border-radius: var(--r-xl);
+  background: var(--alert);
+  color: #fff;
+  box-shadow: var(--shadow-alert);
+  animation: d-pop var(--t-leave) var(--ease-pop);
+}
+.d-authbar.inline {
+  position: static;
+  transform: none;
+  width: max-content;
+}
+
+/* [.viewer] PDFs and pictures, inside the app */
+.d-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  background: var(--viewer);
+  animation: d-fade 0.12s ease-out;
+}
+.d-viewer.inline {
+  position: relative;
+  height: 100%;
+}
+.d-vbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line-2);
+  background: var(--page);
+}
+.d-vname {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 14px var(--mono);
+  color: var(--text-h);
+}
+.d-vbody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.d-vbody img {
+  max-width: 96%;
+  max-height: 96%;
+  object-fit: contain;
+}
+.d-vbody iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #525659;
+}

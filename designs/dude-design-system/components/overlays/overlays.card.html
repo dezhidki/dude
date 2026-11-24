@@ -1,0 +1,35 @@
+<!-- @dsCard group="Components" viewport="900x760" name="Overlays" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Overlays</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0}.oc{display:grid;grid-template-columns:1fr 300px;gap:20px;padding:20px;background:var(--hi)}.oc .col{display:grid;gap:18px;align-content:start}.oc .d-cmd,.oc .d-dlg{width:100%}</style>
+</head><body><div id="r"></div>
+<script type="text/babel">
+const { CommandPalette, Dialog, KeysList, ToastStack, SideMenu, AuthBar } = window.DudeDesignSystem_3fa3b0;
+function OverlaySpecimen() {
+  const [q, setQ] = React.useState('');
+  const all = [{ t: 'Mark Done', keys: ['E'] }, { t: 'Remind Me', keys: ['H'] }, { t: 'Go to Important', keys: ['G', 'I'] }, { t: 'Send Later', keys: ['Ctrl', 'Shift', 'L'] }];
+  const items = all.filter((x) => x.t.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="oc">
+      <div className="col">
+        <CommandPalette inline query={q} onQuery={setQ} items={items} active={0} />
+        <div className="carbon" style={{ background: 'transparent' }}>
+          <CommandPalette inline ask icon="clock" title="remind when" placeholder="when? 8 am, 3 days, aug 7" items={[{ t: 'tomorrow', when: 'Wed 8:00 AM' }, { t: 'next week', when: 'Mon 8:00 AM' }, { t: 'someday', when: '¯\\_(ツ)_/¯' }]} active={1} />
+        </div>
+        <Dialog inline title="keys"><KeysList groups={[['Navigation', [['Next / previous conversation', 'J K'], ['Command', 'Ctrl K'], ['Search', '/']]], ['Conversations', [['Mark Done', 'E'], ['Remind Me', 'H'], ['Trash', '#']]]]} /></Dialog>
+        <ToastStack inline toasts={['sent.', ['sending… ', 'Z', ' undo'], 'muted. new replies skip inbox.']} />
+        <AuthBar inline email="you@example.edu" />
+      </div>
+      <div style={{ height: 600 }}>
+        <SideMenu inline account="you@example.edu" active={0} items={[{ label: 'Important · Other', n: 4, keys: ['G', 'I'] }, { label: 'Starred', keys: ['G', 'S'] }, { label: 'Drafts', keys: ['G', 'D'] }, { label: 'Sent', keys: ['G', 'T'] }, { label: 'Done', keys: ['G', 'E'] }, { label: 'Reminders', keys: ['G', 'H'] }, { label: 'Trash', keys: ['G', '#'] }]} folders={['Projects', 'Receipts']} />
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('r')).render(<OverlaySpecimen />);
+</script></body></html>

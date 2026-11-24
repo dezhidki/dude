@@ -1,0 +1,110 @@
+/* dude colour tokens. Lifted 1:1 from app/web/style.css.
+   Light is the base (:root); carbon (the dark theme) overrides on .carbon — put it on <html> like the app,
+   or on any wrapper to show carbon inside a light page. Text colours meet WCAG AA (4.5:1). */
+:root {
+  /* surfaces, back to front */
+  --page: #ffffff; /* the window behind everything */
+  --list: #ffffff; /* the mail list, the rail, sticky thread top */
+  --pane: #fcfaf7; /* right pane, side menu */
+  --card: #f7f6f2; /* an open message, the composer, fields */
+  --hi: #f2f0eb; /* selected row, attachment tiles, segmented "on" */
+  --hover: #f7f6f2; /* row / icon-button hover */
+  --pal: #ffffff; /* command palette, dialogs, toasts, suggestions */
+  --pal-on: #f2f0eb; /* the active line in a palette or suggestion list */
+  --key: #f2f0eb; /* a keycap */
+
+  /* lines */
+  --line: #edebe5; /* hairlines: pane edges, calendar grid, separators */
+  --line-2: #dedbd5; /* borders you are meant to see: fields, chips, overlays */
+
+  /* text */
+  --text: #141413; /* body, selected split, unread sender */
+  --text-2: #57554f; /* secondary: senders, snippets, dates, icons */
+  --text-3: #6b6863; /* tertiary: counts, group labels, placeholders */
+  --text-m: #57554f; /* collapsed message rows */
+  --text-h: #141413; /* headings, names in an open message */
+
+  /* the one accent: olive in light, acid lime in carbon */
+  --brand: #4d7c0f;
+  --bar: #4d7c0f; /* the 3px focus bar on rows, messages, inputs */
+  --dot: #4d7c0f; /* unread dot */
+  --on-brand: #ffffff; /* text on a brand fill (logo mark, main button) */
+
+  /* calendar */
+  --ev: #dbe8f8; /* event fill */
+  --ev-bar: #3b7ddd; /* event edge */
+  --ev-text: #143a6b; /* text on an event */
+  --now: #e5534b; /* the now line, delete */
+
+  /* status */
+  --star: #9a6c00;
+  --danger: #b3261e; /* "draft" label */
+  --alert: #b3261e; /* sign-in-again bar fill (same in both themes) */
+  --link: #1a5fa8; /* links inside mail */
+  --code: #98c379; /* `code` in the writing box */
+  --selection: rgba(110, 160, 230, 0.35);
+
+  /* file types (attachment labels) */
+  --ft-pdf: #b42318;
+  --ft-doc: #1f5fae;
+  --ft-sheet: #1a7f37;
+  --ft-slide: #a14e00;
+  --ft-img: #7a3fbf;
+
+  /* overlays */
+  --scrim: rgba(0, 0, 0, 0.25); /* behind the keys dialog only; the palette has no scrim */
+  --viewer: rgba(0, 0, 0, 0.92); /* file viewer backdrop */
+  --scroll-thumb: rgba(127, 127, 127, 0.35);
+  --paper: #ffffff; /* designed HTML mail keeps a white sheet in both themes */
+
+  /* semantic aliases */
+  --surface-page: var(--page);
+  --surface-pane: var(--pane);
+  --surface-card: var(--card);
+  --surface-selected: var(--hi);
+  --surface-overlay: var(--pal);
+  --border-subtle: var(--line);
+  --border: var(--line-2);
+  --text-body: var(--text);
+  --text-muted: var(--text-2);
+  --text-faint: var(--text-3);
+  --text-strong: var(--text-h);
+  --accent: var(--brand);
+
+  color-scheme: light;
+}
+
+.carbon {
+  --page: #000;
+  --list: #000;
+  --pane: #070707;
+  --card: #0e0e0e;
+  --hi: #171717;
+  --hover: #0b0b0b;
+  --pal: #0c0c0c;
+  --pal-on: #1b1b1b;
+  --key: #1f1f1f;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --text: rgba(255, 255, 255, 0.92);
+  --text-2: rgba(255, 255, 255, 0.66);
+  --text-3: rgba(255, 255, 255, 0.52);
+  --text-m: rgba(255, 255, 255, 0.7);
+  --text-h: rgba(255, 255, 255, 0.96);
+  --brand: #c8f135;
+  --bar: #c8f135;
+  --dot: #c8f135;
+  --on-brand: #000000;
+  --ev: #1d2a0b;
+  --ev-bar: #c8f135;
+  --ev-text: #e6ffa8;
+  --star: #f2b600;
+  --danger: #ff6b61;
+  --link: #7cc0ff;
+  --ft-pdf: #ff7b72;
+  --ft-doc: #79b8ff;
+  --ft-sheet: #56d364;
+  --ft-slide: #ffa657;
+  --ft-img: #d2a8ff;
+  color-scheme: dark;
+}
