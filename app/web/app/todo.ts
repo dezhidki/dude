@@ -93,7 +93,19 @@ export function deleteTodo(id: string) {
 /** "+ todo" under a day: Enter adds and stays open; Shift+Enter (open) adds and opens the todo */
 export function quickAdd(day: string | null, title: string, open: boolean) {
   const id = `t${Date.now()}`;
-  setTodos([...todos(), { id, title, day, done: false, labels: [], mails: [], tasks: [], notes: '' }]);
+  setTodos([
+    ...todos(),
+    {
+      id,
+      title,
+      day,
+      done: false,
+      labels: boardFilter() ? [boardFilter() as string] : [],
+      mails: [],
+      tasks: [],
+      notes: '',
+    },
+  ]);
   S.todoFresh = id;
   S.todoSel = id;
   S.boardDay = day;
@@ -136,7 +148,7 @@ export function newTodo(day: string | null, extra: Partial<TodoForm> = {}) {
   openForm({
     title: '',
     when: whenText(d, new Date(now())),
-    labels: [],
+    labels: boardFilter() ? [boardFilter() as string] : [],
     mails: [],
     tasks: [],
     notes: '',
@@ -181,6 +193,9 @@ export function saveTodo() {
     };
   // the same day keeps its place; another day gets it at the end, as a move does
   setTodos(old?.day === t.day ? todos().map((x) => (x.id === id ? t : x)) : [...todos().filter((x) => x.id !== id), t]);
+  if (!shown(t)) {
+    S.boardFilter = null; // it lost the filter's label: show it
+  }
   S.todoForm = null;
   S.todoFresh = id;
   S.todoSel = id;
@@ -282,7 +297,7 @@ export function toggleEvDone(day: string, ev: CalItem) {
 // The board's keys, asked first when nothing is being typed: true when the key was one of them.
 export function boardKey(e: KeyboardEvent): boolean {
   const cols = boardCols(),
-    sel = todos().find((t) => t.id === S.todoSel && cols.includes(t.day)); // only a todo on screen
+    sel = todos().find((t) => t.id === S.todoSel && cols.includes(t.day) && shown(t)); // only a todo on screen
   const inDay = () => sortDay(todos().filter((t) => t.day === S.boardDay && shown(t)));
   const pick = (d: -1 | 1) => {
     const l = inDay();

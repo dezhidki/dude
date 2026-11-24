@@ -40,6 +40,27 @@ const STEPS: [string, string, string?, number?][] = [
   ['board again', `__key('3')`, '.tb-card.sel', 400],
   ['board filter', `__click('.tb-filter')`, '.tb-filter.on'],
   ['board filter off', `__click('.tb-filter.on')`, '.tb-card.sel'],
+  // the selected card is the thesis one: under the poster filter it is hidden, and E must not touch it
+  [
+    'filter hides sel',
+    `window.__n = localStorage.getItem('dude:todos'); __click('.tb-filter:nth-child(2)')`,
+    '.tb-filter.on',
+  ],
+  [
+    'filter sel visible',
+    `if (document.querySelector('.tb-card.sel') && !document.querySelector('.tb-col .tb-card.sel[data-todo-id]')) throw new Error('hidden sel'); __key('e')`,
+    undefined,
+    200,
+  ],
+  [
+    'filter e untouched',
+    `if (localStorage.getItem('dude:todos') !== window.__n) throw new Error('E acted on a hidden card')`,
+  ],
+  ['filter quick add', `__click('.tb-col.focus .tb-add')`, '[data-todo="quick"]'],
+  ['filter quick type', `__type('[data-todo="quick"]', 'Filtered one')`],
+  ['filter quick enter', `__key('Enter')`, '.tb-card.fresh'],
+  ['filter quick close', `__key('Escape'); __click('.tb-filter.on')`, '.tb-filter:not(.on)'],
+  ['filter back', `__key('3')`, '.tb-card'],
   ['todo done', `__key('e')`, '.tb-card.done.sel'],
   ['todo undo', `__key('z')`, undefined, 300],
   ['todo move', `__key('ArrowRight', { shiftKey: true })`, '.tb-col.focus:not(.today) .tb-card.sel'],
